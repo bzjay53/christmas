@@ -1,0 +1,63 @@
+name: Christmas CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Extract tag name
+        id: tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+        
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/christmas:${{ steps.tag.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/christmas:latest
+            
+      - name: Deploy to production
+        if: success()
+        run: |
+          echo "Deploying version ${{ steps.tag.outputs.tag }} to production"
+          # 여기에 실제 배포 스크립트 추가 (예: SSH를 통한 서버 업데이트)
+          # ssh user@server "cd /path/to/app && docker-compose pull && docker-compose up -d"
+          
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          release_name: Release ${{ steps.tag.outputs.tag }}
+          draft: false
+          prerelease: false
+          
+      - name: Generate Release Notes
+        run: |
+          echo "## Changes in this Release" > release_notes.md
+          echo "" >> release_notes.md
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"* %s" >> release_notes.md
+          
+      - name: Update Release with Notes
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release_notes.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.tag.outputs.tag }} 
