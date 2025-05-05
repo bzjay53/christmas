@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: 시계열 데이터베이스
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=christmas
+      - POSTGRES_PASSWORD=christmas
+      - POSTGRES_DB=christmas
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U christmas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis: 캐싱 및 메시지 브로커
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API 서비스: FastAPI 애플리케이션
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=development
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=christmas
+      - CHRISTMAS_DB_PASSWORD=christmas
+      - CHRISTMAS_DB_NAME=christmas
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 데이터 수집 서비스
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=development
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=christmas
+      - CHRISTMAS_DB_PASSWORD=christmas
+      - CHRISTMAS_DB_NAME=christmas
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+    command: python -m app.ingestion.main
+
+  # 텔레그램 봇 서비스
+  telegram_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - CHRISTMAS_ENV=development
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-dummy_token}
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+    command: python -m app.notification.telegram_bot
+
+volumes:
+  timescale_data:
+  redis_data: 
