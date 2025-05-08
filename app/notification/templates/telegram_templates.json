@@ -1,0 +1,67 @@
+[
+  {
+    "id": "trade_executed_telegram",
+    "name": "주문 체결 텔레그램 알림",
+    "template_type": "PUSH",
+    "event_type": "TRADE_EXECUTED",
+    "subject": "📈 {symbol} {position_type} 주문 체결",
+    "body": "✅ {symbol} {position_type} 주문이 {executed_time}에 체결되었습니다.\n\n💰 체결 가격: {price}원\n📊 체결 수량: {quantity}주\n💵 주문 금액: {amount}원",
+    "html_body": "<b>✅ {symbol} {position_type} 주문 체결</b>\n\n체결 시간: <i>{executed_time}</i>\n💰 체결 가격: <b>{price}원</b>\n📊 체결 수량: <b>{quantity}주</b>\n💵 주문 금액: <b>{amount}원</b>",
+    "created_at": "2023-11-10T00:00:00",
+    "updated_at": "2023-11-10T00:00:00",
+    "is_active": true,
+    "telegram_template": true
+  },
+  {
+    "id": "stop_loss_triggered_telegram",
+    "name": "손절매 텔레그램 알림",
+    "template_type": "PUSH",
+    "event_type": "STOP_LOSS_TRIGGERED",
+    "subject": "⚠️ {symbol} 손절매 실행",
+    "body": "⚠️ {symbol}에 대한 손절매가 {timestamp}에 실행되었습니다.\n\n📈 진입 가격: {entry_price}원\n📉 손절 가격: {exit_price}원\n💸 손실: {loss_amount}원 ({loss_pct}%)",
+    "html_body": "<b>⚠️ {symbol} 손절매 실행</b>\n\n시간: <i>{timestamp}</i>\n📈 진입 가격: <b>{entry_price}원</b>\n📉 손절 가격: <b>{exit_price}원</b>\n💸 손실: <b>{loss_amount}원 ({loss_pct}%)</b>",
+    "created_at": "2023-11-10T00:00:00",
+    "updated_at": "2023-11-10T00:00:00",
+    "is_active": true,
+    "telegram_template": true
+  },
+  {
+    "id": "take_profit_triggered_telegram",
+    "name": "익절 텔레그램 알림",
+    "template_type": "PUSH",
+    "event_type": "TAKE_PROFIT_TRIGGERED",
+    "subject": "🎯 {symbol} 익절 달성",
+    "body": "🎯 {symbol}에 대한 익절이 {timestamp}에 실행되었습니다.\n\n📈 진입 가격: {entry_price}원\n📈 익절 가격: {exit_price}원\n💰 수익: {profit_amount}원 (+{profit_pct}%)",
+    "html_body": "<b>🎯 {symbol} 익절 달성</b>\n\n시간: <i>{timestamp}</i>\n📈 진입 가격: <b>{entry_price}원</b>\n📈 익절 가격: <b>{exit_price}원</b>\n💰 수익: <b>{profit_amount}원 (+{profit_pct}%)</b>",
+    "created_at": "2023-11-10T00:00:00",
+    "updated_at": "2023-11-10T00:00:00",
+    "is_active": true,
+    "telegram_template": true
+  },
+  {
+    "id": "signal_generated_telegram",
+    "name": "매매 신호 텔레그램 알림",
+    "template_type": "PUSH",
+    "event_type": "SIGNAL_GENERATED",
+    "subject": "🔔 {symbol} {signal_type} 신호 발생",
+    "body": "🔔 {strategy_name} 전략에서 {symbol}에 대한 {signal_type} 신호가 발생했습니다.\n\n⏰ 시간: {timestamp}\n💰 가격: {price}원\n📊 신뢰도: {confidence}%\n\n이 신호를 기반으로 {action}이 {status}.",
+    "html_body": "<b>🔔 {symbol} {signal_type} 신호 발생</b>\n\n<i>{strategy_name}</i> 전략\n⏰ 시간: <i>{timestamp}</i>\n💰 가격: <b>{price}원</b>\n📊 신뢰도: <b>{confidence}%</b>\n\n이 신호를 기반으로 {action}이 <b>{status}</b>",
+    "created_at": "2023-11-10T00:00:00",
+    "updated_at": "2023-11-10T00:00:00",
+    "is_active": true,
+    "telegram_template": true
+  },
+  {
+    "id": "system_error_telegram",
+    "name": "시스템 오류 텔레그램 알림",
+    "template_type": "PUSH",
+    "event_type": "SYSTEM_ERROR",
+    "subject": "❌ 시스템 오류 발생",
+    "body": "❌ 시스템에서 오류가 발생했습니다.\n\n⏰ 시간: {timestamp}\n🔴 오류 유형: {error_type}\n🔴 오류 메시지: {error_message}\n\n📂 모듈: {module}\n⚙️ 함수: {function}",
+    "html_body": "<b>❌ 시스템 오류 발생</b>\n\n⏰ 시간: <i>{timestamp}</i>\n🔴 오류 유형: <b>{error_type}</b>\n🔴 오류 메시지: <b>{error_message}</b>\n\n📂 모듈: <code>{module}</code>\n⚙️ 함수: <code>{function}</code>",
+    "created_at": "2023-11-10T00:00:00",
+    "updated_at": "2023-11-10T00:00:00",
+    "is_active": true,
+    "telegram_template": true
+  }
+] 

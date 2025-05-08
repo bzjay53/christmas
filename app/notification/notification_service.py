@@ -16,6 +16,7 @@ import os
 from app.notification.template_manager import TemplateManager, EventType
 from app.notification.email_notifier import EmailNotifier, EmailConfig
 from app.notification.mobile_notifier import MobileNotifier, FCMConfig
+from app.notification.telegram_notifier import TelegramNotifier, TelegramConfig
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class NotificationChannel(Enum):
     PUSH = auto()   # 모바일 푸시
     SMS = auto()    # SMS
     WEB = auto()    # 웹 알림
+    TELEGRAM = auto()  # 텔레그램
     ALL = auto()    # 모든 채널
 
 
@@ -68,6 +70,7 @@ class NotificationService:
         # 알림 전송 채널 초기화
         self.email_notifier = self._initialize_email_notifier()
         self.mobile_notifier = self._initialize_mobile_notifier()
+        self.telegram_notifier = self._initialize_telegram_notifier()
         
         # 구독 정보
         self.subscriptions: Dict[str, Dict[EventType, Set[NotificationChannel]]] = {}
@@ -96,6 +99,12 @@ class NotificationService:
                 "server_key": "",
                 "api_url": "https://fcm.googleapis.com/fcm/send"
             },
+            "telegram": {
+                "enabled": True,
+                "bot_token": "",
+                "allowed_users": [],
+                "admin_users": []
+            },
             "sms": {
                 "enabled": False
             },
@@ -103,11 +112,11 @@ class NotificationService:
                 "enabled": False
             },
             "default_subscriptions": {
-                "TRADE_EXECUTED": ["EMAIL", "PUSH"],
-                "STOP_LOSS_TRIGGERED": ["EMAIL", "PUSH"],
-                "TAKE_PROFIT_TRIGGERED": ["EMAIL", "PUSH"],
-                "SIGNAL_GENERATED": ["EMAIL"],
-                "SYSTEM_ERROR": ["EMAIL", "PUSH"]
+                "TRADE_EXECUTED": ["EMAIL", "PUSH", "TELEGRAM"],
+                "STOP_LOSS_TRIGGERED": ["EMAIL", "PUSH", "TELEGRAM"],
+                "TAKE_PROFIT_TRIGGERED": ["EMAIL", "PUSH", "TELEGRAM"],
+                "SIGNAL_GENERATED": ["EMAIL", "TELEGRAM"],
+                "SYSTEM_ERROR": ["EMAIL", "PUSH", "TELEGRAM"]
             }
         }
         
@@ -122,7 +131,7 @@ class NotificationService:
             # 기본 설정과 병합
             merged_config = default_config.copy()
             
-            for section in ['email', 'push', 'sms', 'web']:
+            for section in ['email', 'push', 'telegram', 'sms', 'web']:
                 if section in config:
                     merged_config[section].update(config[section])
             
@@ -180,6 +189,46 @@ class NotificationService:
             
         except Exception as e:
             logger.error(f"모바일 푸시 알림 모듈 초기화 오류: {str(e)}")
+            return None
+    
+    def _initialize_telegram_notifier(self) -> Optional[TelegramNotifier]:
+        """텔레그램 알림 모듈 초기화"""
+        # 환경 변수에서 봇 토큰 가져오기
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN') or self.config['telegram'].get('bot_token', '')
+        
+        if not self.config['telegram']['enabled'] or not bot_token:
+            logger.info("텔레그램 알림이 비활성화되었습니다.")
+            return None
+        
+        try:
+            telegram_config = TelegramConfig(bot_token=bot_token)
+            
+            # 텔레그램 알림 객체 생성
+            notifier = TelegramNotifier(
+                config=telegram_config,
+                template_manager=self.template_manager
+            )
+            
+            # 저장된 채팅 ID 로드
+            chat_file = os.path.join(os.path.dirname(__file__), 'config', 'telegram_chats.json')
+            if os.path.exists(chat_file):
+                try:
+                    with open(chat_file, 'r', encoding='utf-8') as file:
+                        chat_data = json.load(file)
+                        chat_ids = chat_data.get('chat_ids', [])
+                        
+                        # 채팅 ID 등록
+                        for chat_id in chat_ids:
+                            notifier.add_chat_id(chat_id)
+                            
+                        logger.info(f"{len(chat_ids)}개의 텔레그램 채팅 ID를 로드했습니다.")
+                except Exception as e:
+                    logger.error(f"텔레그램 채팅 ID 로드 중 오류 발생: {str(e)}")
+            
+            return notifier
+            
+        except Exception as e:
+            logger.error(f"텔레그램 알림 모듈 초기화 오류: {str(e)}")
             return None
     
     def start(self) -> None:
@@ -292,7 +341,25 @@ class NotificationService:
             else:
                 logger.warning(f"푸시 알림 전송 실패: 유효한 기기 토큰이 없습니다.")
         
-        # 기타 채널 추가 가능
+        # 텔레그램 알림
+        if NotificationChannel.TELEGRAM in channels and self.telegram_notifier:
+            try:
+                # 특정 사용자에게만 전송
+                if isinstance(recipient, dict) and 'telegram_chat_id' in recipient:
+                    chat_id = recipient['telegram_chat_id']
+                    self.telegram_notifier.send_event_notification(
+                        chat_id=chat_id,
+                        event_type=event_type,
+                        context=context
+                    )
+                # 모든 등록된 사용자에게 전송
+                else:
+                    self.telegram_notifier.send_event_to_all(
+                        event_type=event_type,
+                        context=context
+                    )
+            except Exception as e:
+                logger.error(f"텔레그램 알림 전송 실패: {str(e)}")
     
     def notify(
         self,
@@ -334,7 +401,13 @@ class NotificationService:
                 channels = [getattr(NotificationChannel, ch) for ch in default_channels if hasattr(NotificationChannel, ch)]
         
         if NotificationChannel.ALL in channels:
-            channels = [NotificationChannel.EMAIL, NotificationChannel.PUSH, NotificationChannel.SMS, NotificationChannel.WEB]
+            channels = [
+                NotificationChannel.EMAIL, 
+                NotificationChannel.PUSH, 
+                NotificationChannel.SMS, 
+                NotificationChannel.WEB,
+                NotificationChannel.TELEGRAM
+            ]
         
         # 알림 큐에 추가
         try:
@@ -491,9 +564,10 @@ class NotificationService:
             "amount": trade_data.get("price", 0) * trade_data.get("quantity", 0)
         }
         
-        # 알림 전송
+        # 알림 전송 (모든 채널)
         return self.notify(
             recipient=user_info,
             event_type=EventType.TRADE_EXECUTED,
-            context=context
+            context=context,
+            channels=[NotificationChannel.ALL]
         ) 

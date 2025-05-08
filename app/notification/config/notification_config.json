@@ -1,0 +1,39 @@
+{
+  "email": {
+    "enabled": false,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 465,
+    "sender_email": "",
+    "sender_password": "",
+    "sender_name": "Christmas 트레이딩 봇",
+    "use_ssl": true,
+    "use_tls": false,
+    "timeout": 30
+  },
+  "push": {
+    "enabled": false,
+    "server_key": "",
+    "api_url": "https://fcm.googleapis.com/fcm/send",
+    "timeout": 10
+  },
+  "telegram": {
+    "enabled": true,
+    "bot_token": "",
+    "allowed_users": [],
+    "admin_users": []
+  },
+  "sms": {
+    "enabled": false
+  },
+  "web": {
+    "enabled": false
+  },
+  "default_subscriptions": {
+    "TRADE_EXECUTED": ["EMAIL", "PUSH", "TELEGRAM"],
+    "STOP_LOSS_TRIGGERED": ["EMAIL", "PUSH", "TELEGRAM"],
+    "TAKE_PROFIT_TRIGGERED": ["EMAIL", "PUSH", "TELEGRAM"],
+    "SIGNAL_GENERATED": ["EMAIL", "TELEGRAM"],
+    "SYSTEM_ERROR": ["EMAIL", "PUSH", "TELEGRAM"]
+  },
+  "admin_email": "admin@example.com"
+} 
