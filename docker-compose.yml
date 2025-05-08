@@ -94,6 +94,30 @@ services:
       - ./app:/app/app
       - ./config:/app/config
     command: python -m app.notification.telegram_bot
+  
+  # 웹 인터페이스 서비스: Flask 애플리케이션
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - api
+      - redis
+    environment:
+      - CHRISTMAS_ENV=development
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - FLASK_APP=app.web.main
+      - FLASK_DEBUG=True
+      - FLASK_PORT=5000
+      - FLASK_HOST=0.0.0.0
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev_secret_key}
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+    command: python -m app.web.run
 
 volumes:
   timescale_data:

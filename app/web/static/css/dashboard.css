@@ -1,0 +1,222 @@
+/* 
+ * Christmas 프로젝트 - 대시보드 스타일시트
+ * 대시보드 및 웹 인터페이스를 위한 스타일 정의
+ */
+
+/* 사이드바 스타일 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    height: 100vh;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.75rem 1rem;
+}
+
+.sidebar .nav-link:hover {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link i {
+    margin-right: 0.5rem;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+/* 메인 콘텐츠 영역 */
+main {
+    padding-top: 16px;
+}
+
+/* 카드 스타일 */
+.card {
+    border-radius: 8px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    font-weight: 700;
+    padding: 0.75rem 1.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* 테이블 스타일 */
+.table thead th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-bottom-width: 1px;
+}
+
+.table td {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+/* 폼 요소 스타일 */
+.form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* 버튼 스타일 */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-outline-primary {
+    border-color: #4e73df;
+    color: #4e73df;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4e73df;
+    color: #fff;
+}
+
+.btn-outline-success {
+    border-color: #1cc88a;
+    color: #1cc88a;
+}
+
+.btn-outline-success:hover {
+    background-color: #1cc88a;
+    color: #fff;
+}
+
+/* 배지 스타일 */
+.badge {
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+}
+
+/* 차트 컨테이너 */
+.chart-container {
+    position: relative;
+    height: 100%;
+    min-height: 300px;
+}
+
+/* 푸터 스타일 */
+.footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem 0;
+    background-color: #343a40;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* 반응형 */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding: 0;
+    }
+    
+    main {
+        margin-top: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        margin-bottom: 0;
+    }
+    
+    .footer {
+        position: static;
+    }
+}
+
+/* 스위치 스타일 */
+.form-switch .form-check-input {
+    width: 3em;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+/* 알림 스타일 */
+.alert {
+    border-radius: 6px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #e6f8ef;
+    color: #1cc88a;
+}
+
+.alert-danger {
+    background-color: #fcede9;
+    color: #e74a3b;
+}
+
+.alert-warning {
+    background-color: #fff8e6;
+    color: #f6c23e;
+}
+
+.alert-info {
+    background-color: #e6f3ff;
+    color: #36b9cc;
+}
+
+/* 로딩 인디케이터 */
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner 0.75s linear infinite;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+} 

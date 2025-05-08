@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Christmas - 초단타 자동 매매 플랫폼{% endblock %}</title>
+    
+    <!-- 부트스트랩 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- 대시보드 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- 폰트어썸 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 사이드바 -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+                <div class="position-sticky">
+                    <div class="sidebar-header p-3">
+                        <h3 class="text-light">Christmas</h3>
+                        <p class="text-muted">초단타 자동 매매 플랫폼</p>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/dashboard') %}active{% endif %}" href="{{ url_for('dashboard.index') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                대시보드
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/dashboard/positions') %}active{% endif %}" href="{{ url_for('dashboard.positions') }}">
+                                <i class="fas fa-chart-line me-2"></i>
+                                포지션
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/dashboard/orders') %}active{% endif %}" href="{{ url_for('dashboard.orders') }}">
+                                <i class="fas fa-list-alt me-2"></i>
+                                주문 목록
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/dashboard/trades') %}active{% endif %}" href="{{ url_for('dashboard.trades') }}">
+                                <i class="fas fa-exchange-alt me-2"></i>
+                                거래 내역
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/backtest') %}active{% endif %}" href="{{ url_for('backtest.index') }}">
+                                <i class="fas fa-vial me-2"></i>
+                                백테스트
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path.startswith('/settings') %}active{% endif %}" href="{{ url_for('settings.index') }}">
+                                <i class="fas fa-cog me-2"></i>
+                                설정
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                        <span>시스템 상태</span>
+                    </h6>
+                    <div class="px-3 py-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">자동매매</span>
+                            <span class="badge bg-success">활성</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">시장 상태</span>
+                            <span class="badge bg-secondary">폐장</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">API 연결</span>
+                            <span class="badge bg-success">정상</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- 메인 콘텐츠 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">{% block page_title %}{% endblock %}</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        {% block page_actions %}{% endblock %}
+                    </div>
+                </div>
+                
+                <!-- 플래시 메시지 -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- 페이지 콘텐츠 -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <!-- 푸터 -->
+    <footer class="footer mt-auto py-3 bg-dark text-light">
+        <div class="container">
+            <div class="d-flex justify-content-between">
+                <span>&copy; 2023 Christmas. All rights reserved.</span>
+                <span>버전 0.1.0</span>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript 번들 -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
