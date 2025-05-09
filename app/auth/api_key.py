@@ -45,9 +45,30 @@ class ApiKeyManager:
         if not os.path.exists(storage_dir):
             os.makedirs(storage_dir)
         
+        # 파일이 없거나 비어 있거나 JSON 형식이 아닌 경우 초기화
+        initialize_file = False
+        
         if not os.path.exists(self.storage_path):
+            initialize_file = True
+        else:
+            # 파일이 있지만 비어 있거나 유효한 JSON이 아닌 경우 확인
+            try:
+                with open(self.storage_path, 'r') as f:
+                    content = f.read().strip()
+                    if not content:  # 파일이 비어 있음
+                        initialize_file = True
+                    else:
+                        # JSON 형식 검증
+                        try:
+                            json.loads(content)
+                        except json.JSONDecodeError:
+                            initialize_file = True
+            except Exception:
+                initialize_file = True
+        
+        if initialize_file:
             with open(self.storage_path, 'w') as f:
-                json.dump({"keys": []}, f)
+                json.dump({"keys": []}, f, indent=2)
     
     def _load_keys(self) -> List[Dict]:
         """저장된 API 키 정보 로드"""

@@ -1,8 +1,9 @@
 from datetime import timedelta
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 
 from .auth_service import (
     authenticate_user, 
@@ -12,9 +13,29 @@ from .auth_service import (
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from .models import User, Token, UserCreate, UserUpdate, UserRole
+from .api_key import get_api_key_manager
 
 # 라우터 정의
 router = APIRouter()
+
+# API 키 요청/응답 모델
+class ApiKeyRequest(BaseModel):
+    user_id: str
+    permissions: List[str] = ["read"]
+    description: str = ""
+    expires_in_days: int = 90
+
+class ApiKeyResponse(BaseModel):
+    api_key: str
+    expires_at: str = None
+
+class ApiKeyValidationRequest(BaseModel):
+    api_key: str
+
+class ApiKeyValidationResponse(BaseModel):
+    is_valid: bool
+    user_id: str = ""
+    permissions: List[str] = []
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()) -> Dict[str, Any]:
@@ -70,4 +91,46 @@ async def read_admin_data(
     """
     관리자 전용 데이터를 가져옵니다. (ADMIN 권한 필요)
     """
-    return {"message": "관리자 전용 데이터", "user": current_user.username} 
+    return {"message": "관리자 전용 데이터", "user": current_user.username}
+
+
+# 테스트를 위한 API 키 관련 엔드포인트 추가
+@router.post("/api-key", response_model=ApiKeyResponse, status_code=status.HTTP_201_CREATED)
+async def create_api_key(request: ApiKeyRequest) -> Dict[str, Any]:
+    """
+    API 키를 생성합니다.
+    """
+    api_key_manager = get_api_key_manager()
+    result = api_key_manager.generate_key(
+        scope=",".join(request.permissions),
+        expires_in_days=request.expires_in_days,
+        user_id=request.user_id,
+        description=request.description
+    )
+    
+    return {
+        "api_key": result["api_key"],
+        "expires_at": result["expires_at"]
+    }
+
+
+@router.post("/validate-key", response_model=ApiKeyValidationResponse)
+async def validate_api_key(request: ApiKeyValidationRequest) -> Dict[str, Any]:
+    """
+    API 키의 유효성을 검증합니다.
+    """
+    api_key_manager = get_api_key_manager()
+    result = api_key_manager.validate_key(request.api_key)
+    
+    if not result:
+        # 유효하지 않은 API 키에 대해 400 Bad Request 반환
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="유효하지 않은 API 키 형식입니다",
+        )
+    
+    return {
+        "is_valid": True,
+        "user_id": result["user_id"],
+        "permissions": result["scope"].split(",") if result["scope"] else []
+    } 

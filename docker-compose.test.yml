@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: 테스트용 데이터베이스
+  timescaledb_test:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=christmas_test
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_DB=christmas_test
+    volumes:
+      - timescale_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U christmas_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis: 테스트용 캐싱 및 메시지 브로커
+  redis_test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_test_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 테스트 실행 서비스
+  test_runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - timescaledb_test
+      - redis_test
+    environment:
+      - CHRISTMAS_ENV=test
+      - CHRISTMAS_DB_HOST=timescaledb_test
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=christmas_test
+      - CHRISTMAS_DB_PASSWORD=test_password
+      - CHRISTMAS_DB_NAME=christmas_test
+      - CHRISTMAS_REDIS_HOST=redis_test
+      - CHRISTMAS_REDIS_PORT=6379
+      - PYTEST_ADDOPTS="-v"
+    volumes:
+      - ./app:/app/app
+      - ./tests:/app/tests
+      - ./config:/app/config
+      - ./test_results:/app/test_results
+    command: pytest -xvs tests/
+
+volumes:
+  timescale_test_data:
+  redis_test_data: 

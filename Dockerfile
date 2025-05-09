@@ -3,11 +3,23 @@ FROM python:3.10-slim AS builder
 
 WORKDIR /app
 
-# 빌드 종속성 설치
+# 빌드 종속성 및 TA-Lib 설치
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
+    wget \
+    make \
     && rm -rf /var/lib/apt/lists/*
+
+# TA-Lib 설치
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
 # Poetry 설치
 RUN pip install --no-cache-dir poetry==1.6.1
@@ -24,10 +36,14 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# 필요한 런타임 패키지 설치
+# 필요한 런타임 패키지 설치 및 TA-Lib 라이브러리 복사
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# TA-Lib 공유 라이브러리 복사
+COPY --from=builder /usr/lib/libta_lib* /usr/lib/
+RUN ldconfig
 
 # 보안을 위한 비루트 사용자 생성
 RUN groupadd -g 1000 appuser && \
