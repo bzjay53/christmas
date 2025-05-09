@@ -1,0 +1,168 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: 시계열 데이터베이스
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${CHRISTMAS_DB_USER:-christmas}
+      - POSTGRES_PASSWORD=${CHRISTMAS_DB_PASSWORD:-christmas}
+      - POSTGRES_DB=${CHRISTMAS_DB_NAME:-christmas}
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHRISTMAS_DB_USER:-christmas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  # Redis: 캐싱 및 메시지 브로커
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-christmas}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-christmas}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # API 서비스: FastAPI 애플리케이션
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=production
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${CHRISTMAS_DB_USER:-christmas}
+      - CHRISTMAS_DB_PASSWORD=${CHRISTMAS_DB_PASSWORD:-christmas}
+      - CHRISTMAS_DB_NAME=${CHRISTMAS_DB_NAME:-christmas}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - CHRISTMAS_REDIS_PASSWORD=${REDIS_PASSWORD:-christmas}
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --workers 4
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+      replicas: 2
+
+  # Nginx: 웹 서버 및 리버스 프록시
+  nginx:
+    image: nginx:1.25-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./config/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # 데이터 수집 서비스
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=production
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${CHRISTMAS_DB_USER:-christmas}
+      - CHRISTMAS_DB_PASSWORD=${CHRISTMAS_DB_PASSWORD:-christmas}
+      - CHRISTMAS_DB_NAME=${CHRISTMAS_DB_NAME:-christmas}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - CHRISTMAS_REDIS_PASSWORD=${REDIS_PASSWORD:-christmas}
+    command: python -m app.ingestion.main
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  # Prometheus: 모니터링 시스템
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --web.console.templates=/etc/prometheus/consoles
+      - --web.enable-lifecycle
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Grafana: 모니터링 시각화 도구
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+volumes:
+  timescale_data:
+  redis_data:
+  prometheus_data:
+  grafana_data: 

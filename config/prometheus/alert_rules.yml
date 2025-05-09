@@ -1,0 +1,52 @@
+groups:
+  - name: christmas_alerts
+    rules:
+      # 인스턴스 다운 알림
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "인스턴스 다운: {{ $labels.instance }}"
+          description: "{{ $labels.job }} 인스턴스가 1분 이상 다운되었습니다."
+
+      # 높은 CPU 사용량 알림
+      - alert: HighCPUUsage
+        expr: (1 - avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "높은 CPU 사용량: {{ $labels.instance }}"
+          description: "{{ $labels.instance }}의 CPU 사용량이 5분 이상 85%를 초과했습니다."
+
+      # 높은 메모리 사용량 알림
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "높은 메모리 사용량: {{ $labels.instance }}"
+          description: "{{ $labels.instance }}의 메모리 사용량이 5분 이상 85%를 초과했습니다."
+
+      # 디스크 공간 부족 알림
+      - alert: LowDiskSpace
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "디스크 공간 부족: {{ $labels.instance }}"
+          description: "{{ $labels.instance }}의 디스크 여유 공간이 10% 미만입니다."
+
+      # 높은 API 에러율 알림
+      - alert: HighApiErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "높은 API 에러율"
+          description: "API 에러율이 5% 이상입니다. 서비스 상태를 확인하세요." 

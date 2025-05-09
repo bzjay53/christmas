@@ -1,0 +1,122 @@
+name: Christmas Blue-Green Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version to deploy (default: latest)'
+        required: false
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set deployment variables
+        id: vars
+        run: |
+          echo "::set-output name=timestamp::$(date +%Y%m%d%H%M%S)"
+          echo "::set-output name=environment::${{ github.event.inputs.environment }}"
+          echo "::set-output name=version::${{ github.event.inputs.version }}"
+          
+          # 블루/그린 환경 결정
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            # 프로덕션 서버에 SSH 접속하여 현재 활성화된 환경 확인
+            # 실제 구현 시에는 서버에서 활성 환경을 확인하는 스크립트 필요
+            # 아래는 예시 코드입니다
+            ACTIVE_ENV="blue" # 실제로는 서버에서 확인한 값으로 설정
+            if [ "$ACTIVE_ENV" == "blue" ]; then
+              TARGET_ENV="green"
+            else
+              TARGET_ENV="blue"
+            fi
+          else
+            # 스테이징 환경에서는 항상 블루로 설정 (예시)
+            TARGET_ENV="blue"
+          fi
+          echo "::set-output name=target_env::$TARGET_ENV"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to target environment
+        id: deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          # SSH 키 설정
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+          
+          # 배포 스크립트 실행
+          echo "Deploying to ${{ steps.vars.outputs.environment }} (${{ steps.vars.outputs.target_env }})"
+          
+          # 환경 변수 파일 생성
+          cat > deploy.env << EOF
+          CHRISTMAS_ENV=${{ steps.vars.outputs.environment }}
+          DEPLOY_TARGET=${{ steps.vars.outputs.target_env }}
+          DEPLOY_VERSION=${{ steps.vars.outputs.version }}
+          DEPLOY_TIMESTAMP=${{ steps.vars.outputs.timestamp }}
+          EOF
+          
+          # 환경 변수 파일 전송
+          scp deploy.env $SSH_USER@$SSH_HOST:$DEPLOY_PATH/deploy.env
+          
+          # 블루/그린 배포 스크립트 실행
+          ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && ./scripts/blue-green-deploy.sh"
+          
+          # 배포 결과 확인
+          DEPLOY_STATUS=$?
+          if [ $DEPLOY_STATUS -ne 0 ]; then
+            echo "::error::Deployment failed with status $DEPLOY_STATUS"
+            exit 1
+          fi
+
+      - name: Run smoke tests
+        if: success()
+        run: |
+          echo "Running smoke tests against ${{ steps.vars.outputs.environment }} (${{ steps.vars.outputs.target_env }})"
+          # 여기에 스모크 테스트 스크립트 추가 (헬스 체크, 기본 기능 확인 등)
+          # curl -f https://${{ steps.vars.outputs.environment }}-${{ steps.vars.outputs.target_env }}.example.com/health
+
+      - name: Perform traffic switch
+        if: success() && github.event.inputs.environment == 'production'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          echo "Switching traffic to ${{ steps.vars.outputs.target_env }} environment"
+          ssh $SSH_USER@$SSH_HOST "cd $DEPLOY_PATH && ./scripts/switch-traffic.sh ${{ steps.vars.outputs.target_env }}"
+
+      - name: Send deployment notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_TITLE: "${{ steps.vars.outputs.environment }} Deployment ${{ job.status }}"
+          SLACK_MESSAGE: "Version: ${{ steps.vars.outputs.version }}\nEnvironment: ${{ steps.vars.outputs.target_env }}\nTriggered by: ${{ github.actor }}"
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }} 
