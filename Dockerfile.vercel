@@ -18,11 +18,8 @@ ENV PATH="/venv/bin:$PATH"
 # Vercel CLI 설치
 RUN npm install -g vercel
 
-# 의존성 파일 복사
-COPY requirements.txt ./
-
-# Python 의존성 설치
-RUN pip install --no-cache-dir -r requirements.txt
+# 기본 Python 의존성 설치
+RUN pip install --no-cache-dir flask gunicorn fastapi uvicorn sqlalchemy psycopg2-binary redis
 
 # 애플리케이션 코드 복사
 COPY app ./app

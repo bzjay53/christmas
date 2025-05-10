@@ -17,7 +17,13 @@ services:
       - VERCEL_DEV=1
       - CHRISTMAS_ENV=development
       - FLASK_DEBUG=True
-    command: vercel dev --listen 3000
+      - VERCEL_TOKEN=${VERCEL_TOKEN:-}
+    command: >
+      bash -c "if [ -n \"$$VERCEL_TOKEN\" ]; then
+        vercel dev --listen 3000 --token $$VERCEL_TOKEN;
+      else
+        vercel dev --listen 3000;
+      fi"
     depends_on:
       - timescaledb
       - redis
@@ -36,7 +42,13 @@ services:
       - VERCEL_BUILD=1
       - CHRISTMAS_ENV=production
       - FLASK_DEBUG=False
-    command: vercel build
+      - VERCEL_TOKEN=${VERCEL_TOKEN:-}
+    command: >
+      bash -c "if [ -n \"$$VERCEL_TOKEN\" ]; then
+        vercel build --token $$VERCEL_TOKEN;
+      else
+        vercel build;
+      fi"
     depends_on:
       - timescaledb
       - redis
