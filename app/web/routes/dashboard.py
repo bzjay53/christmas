@@ -93,6 +93,75 @@ def trades():
         trades=trades
     )
 
+@bp.route('/api/charts/returns')
+def chart_returns():
+    """수익률 차트 데이터 API"""
+    # 샘플 수익률 데이터 (실제로는 DB에서 가져옴)
+    data = {
+        'labels': ['1일', '1주', '1개월', '3개월', '6개월', '1년'],
+        'datasets': [{
+            'label': '수익률',
+            'data': [1.2, 4.5, 7.8, 12.3, 18.7, 27.9],
+            'backgroundColor': '#4e73df',
+            'borderColor': '#4e73df',
+            'tension': 0.4
+        }]
+    }
+    return jsonify(data)
+
+@bp.route('/api/charts/volume')
+def chart_volume():
+    """거래량 차트 데이터 API"""
+    # 샘플 거래량 데이터 (실제로는 DB에서 가져옴)
+    data = {
+        'labels': ['00시', '02시', '04시', '06시', '08시', '10시', '12시', '14시', '16시', '18시', '20시', '22시'],
+        'datasets': [{
+            'label': '거래량',
+            'data': [12, 19, 8, 5, 30, 45, 32, 37, 28, 15, 9, 3],
+            'backgroundColor': '#36b9cc'
+        }]
+    }
+    return jsonify(data)
+
+@bp.route('/api/charts/strategy')
+def chart_strategy():
+    """전략별 수익 차트 데이터 API"""
+    # 샘플 전략 데이터 (실제로는 DB에서 가져옴)
+    data = {
+        'labels': ['RSI 기반', 'MACD 기반', '볼린저밴드', '이동평균선', '기타'],
+        'datasets': [{
+            'data': [42, 23, 15, 12, 8],
+            'backgroundColor': [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#858796'
+            ],
+            'borderWidth': 1
+        }]
+    }
+    return jsonify(data)
+
+@bp.route('/api/charts/winrate')
+def chart_winrate():
+    """일별 승률 차트 데이터 API"""
+    # 일주일 날짜 레이블 생성
+    days = []
+    today = datetime.now()
+    for i in range(6, -1, -1):
+        date = today - timedelta(days=i)
+        days.append(date.strftime('%m월 %d일'))
+    
+    # 샘플 승률 데이터 (실제로는 DB에서 가져옴)
+    data = {
+        'labels': days,
+        'datasets': [{
+            'label': '승률',
+            'data': [95, 100, 98, 97, 100, 99, 100],
+            'backgroundColor': '#1cc88a',
+            'borderColor': '#1cc88a',
+            'tension': 0.1
+        }]
+    }
+    return jsonify(data)
+
 # 헬퍼 함수
 def is_market_open():
     """시장 오픈 여부 확인 (한국 주식시장 기준)"""

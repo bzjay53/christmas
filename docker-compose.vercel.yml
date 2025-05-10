@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  vercel-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+      - ./vercel.json:/app/vercel.json
+      - ./.env:/app/.env
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - VERCEL_DEV=1
+      - CHRISTMAS_ENV=development
+      - FLASK_DEBUG=True
+    command: vercel dev --listen 3000
+    depends_on:
+      - timescaledb
+      - redis
+
+  vercel-build:
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+      - ./vercel.json:/app/vercel.json
+      - ./.env:/app/.env
+    environment:
+      - NODE_ENV=production
+      - VERCEL_BUILD=1
+      - CHRISTMAS_ENV=production
+      - FLASK_DEBUG=False
+    command: vercel build
+    depends_on:
+      - timescaledb
+      - redis
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${CHRISTMAS_DB_USER:-christmas}
+      - POSTGRES_PASSWORD=${CHRISTMAS_DB_PASSWORD:-christmas_secure_password}
+      - POSTGRES_DB=${CHRISTMAS_DB_NAME:-christmas}
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CHRISTMAS_DB_USER:-christmas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${CHRISTMAS_REDIS_PASSWORD:-redis_secure_password}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  docs:
+    image: python:3.10-slim
+    volumes:
+      - ./docs:/app/docs
+      - ./scripts:/app/scripts
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "
+        pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin &&
+        cd docs &&
+        mkdocs serve -a 0.0.0.0:8000
+      "
+
+volumes:
+  timescale-data:
+  redis-data: 
