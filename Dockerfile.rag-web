@@ -1,0 +1,19 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+# 기본 시스템 의존성 설치
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js 의존성 설치
+COPY app/web/package*.json ./
+RUN npm install
+
+# 애플리케이션 코드 복사
+COPY app/web ./web
+
+# 웹 서버 실행
+EXPOSE 3010
+CMD ["node", "web/rag_interface.js"] 

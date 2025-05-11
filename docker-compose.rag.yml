@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  weaviate:
+    image: semitechnologies/weaviate:1.24.5
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai'
+      OPENAI_APIKEY: ${OPENAI_API_KEY:-}
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rag-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.rag
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - WEAVIATE_URL=http://weaviate:8080
+      - CHRISTMAS_ENV=development
+      - PYTHONPATH=/app
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+      - ./docs:/app/docs
+    depends_on:
+      - weaviate
+
+  rag-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.rag-web
+    ports:
+      - "3010:3010"
+    environment:
+      - RAG_API_URL=http://rag-api:8000
+    volumes:
+      - ./app/web:/app/web
+    depends_on:
+      - rag-api
+
+volumes:
+  weaviate-data: 

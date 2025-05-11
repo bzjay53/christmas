@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas RAG 시스템</title>
+    <style>
+        :root {
+            --primary-color: #4062BB;
+            --secondary-color: #5A7D7C;
+            --accent-color: #DB504A;
+            --background-color: #F5F5F5;
+            --card-color: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #DDDDDD;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #335099;
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #496665;
+        }
+        
+        .response-area {
+            padding: 1rem;
+            background-color: #F8F9FA;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            margin-top: 1rem;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+        
+        .source {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #F0F0F0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .source .path {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .source .content {
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.success {
+            background-color: #DFF0D8;
+            color: #3C763D;
+        }
+        
+        .status-badge.warning {
+            background-color: #FCF8E3;
+            color: #8A6D3B;
+        }
+        
+        .status-badge.error {
+            background-color: #F2DEDE;
+            color: #A94442;
+        }
+        
+        .status-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-info div {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Christmas RAG 시스템</h1>
+    </header>
+    
+    <div class="container">
+        <div class="left-column">
+            <div class="card">
+                <h2>시스템 상태</h2>
+                <div id="system-status">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>상태 확인 중...</p>
+                    </div>
+                    <div id="status-content"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>색인 관리</h2>
+                <div class="form-group">
+                    <label for="directory">색인할 디렉토리</label>
+                    <input type="text" id="directory" value="docs" placeholder="docs">
+                </div>
+                <div class="form-group">
+                    <label for="file-extensions">파일 확장자</label>
+                    <input type="text" id="file-extensions" value="md" placeholder="md,txt">
+                </div>
+                <button id="index-button" onclick="indexDocuments()">문서 색인 시작</button>
+                <div id="index-status" class="loading">
+                    <div class="spinner"></div>
+                    <p>색인 처리 중...</p>
+                </div>
+                <div id="index-result" class="status-info"></div>
+            </div>
+        </div>
+        
+        <div class="right-column">
+            <div class="card">
+                <h2>문서 검색</h2>
+                <div class="form-group">
+                    <label for="query">질의</label>
+                    <textarea id="query" placeholder="Christmas 프로젝트에 대해 질문하세요..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="max-chunks">최대 청크 수</label>
+                    <input type="number" id="max-chunks" value="5" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label for="min-score">최소 유사도 점수</label>
+                    <input type="number" id="min-score" value="0.7" min="0.1" max="1.0" step="0.1">
+                </div>
+                <button id="query-button" onclick="submitQuery()">검색</button>
+                <div id="query-status" class="loading">
+                    <div class="spinner"></div>
+                    <p>검색 처리 중...</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>응답</h2>
+                <div id="answer" class="response-area">
+                    질의를 입력하고 검색 버튼을 클릭하세요.
+                </div>
+                
+                <h3>참조 소스</h3>
+                <div id="sources"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 페이지 로드 시 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            checkStatus();
+        });
+        
+        // 시스템 상태 확인
+        async function checkStatus() {
+            const statusElement = document.getElementById('system-status');
+            const statusContent = document.getElementById('status-content');
+            const loadingElement = statusElement.querySelector('.loading');
+            
+            loadingElement.style.display = 'block';
+            statusContent.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                let statusClass = 'success';
+                if (data.status === '실패' || data.status === '오류') {
+                    statusClass = 'error';
+                } else if (data.status === '초기화되지 않음') {
+                    statusClass = 'warning';
+                }
+                
+                let statusHtml = `
+                    <div>
+                        <span class="status-badge ${statusClass}">${data.status}</span>
+                    </div>
+                    <div class="status-info">
+                        <div>색인된 파일: ${data.indexed_files || 0}</div>
+                        <div>총 청크 수: ${data.total_chunks || 0}</div>
+                `;
+                
+                if (data.last_updated) {
+                    statusHtml += `<div>마지막 업데이트: ${new Date(data.last_updated).toLocaleString()}</div>`;
+                }
+                
+                if (data.error) {
+                    statusHtml += `<div>오류: ${data.error}</div>`;
+                }
+                
+                statusHtml += `</div>`;
+                statusContent.innerHTML = statusHtml;
+            } catch (error) {
+                statusContent.innerHTML = `
+                    <div>
+                        <span class="status-badge error">연결 실패</span>
+                    </div>
+                    <div class="status-info">
+                        <div>RAG API 서버에 연결할 수 없습니다.</div>
+                        <div>오류: ${error.message}</div>
+                    </div>
+                `;
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+        
+        // 문서 색인
+        async function indexDocuments() {
+            const directory = document.getElementById('directory').value;
+            const fileExtensions = document.getElementById('file-extensions').value.split(',').map(ext => ext.trim());
+            
+            const indexButton = document.getElementById('index-button');
+            const indexStatus = document.getElementById('index-status');
+            const indexResult = document.getElementById('index-result');
+            
+            indexButton.disabled = true;
+            indexStatus.style.display = 'block';
+            indexResult.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/index', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        directory,
+                        file_extensions: fileExtensions
+                    })
+                });
+                
+                const data = await response.json();
+                
+                indexResult.innerHTML = `
+                    <div>
+                        <span class="status-badge success">요청 성공</span>
+                    </div>
+                    <div>상태: ${data.status}</div>
+                    <div>디렉토리: ${data.directory}</div>
+                `;
+                
+                // 10초 후 상태 업데이트
+                setTimeout(checkStatus, 10000);
+            } catch (error) {
+                indexResult.innerHTML = `
+                    <div>
+                        <span class="status-badge error">요청 실패</span>
+                    </div>
+                    <div>오류: ${error.message}</div>
+                `;
+            } finally {
+                indexButton.disabled = false;
+                indexStatus.style.display = 'none';
+            }
+        }
+        
+        // 질의 제출
+        async function submitQuery() {
+            const query = document.getElementById('query').value;
+            const maxChunks = document.getElementById('max-chunks').value;
+            const minScore = document.getElementById('min-score').value;
+            
+            if (!query.trim()) {
+                alert('질의를 입력하세요.');
+                return;
+            }
+            
+            const queryButton = document.getElementById('query-button');
+            const queryStatus = document.getElementById('query-status');
+            const answerElement = document.getElementById('answer');
+            const sourcesElement = document.getElementById('sources');
+            
+            queryButton.disabled = true;
+            queryStatus.style.display = 'block';
+            answerElement.innerHTML = '검색 중...';
+            sourcesElement.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query,
+                        max_chunks: parseInt(maxChunks),
+                        min_score: parseFloat(minScore)
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '검색 중 오류가 발생했습니다.');
+                }
+                
+                const data = await response.json();
+                
+                // 응답 표시
+                answerElement.textContent = data.answer;
+                
+                // 참조 소스 표시
+                let sourcesHtml = '';
+                
+                if (data.sources && data.sources.length > 0) {
+                    data.sources.forEach((source, index) => {
+                        sourcesHtml += `
+                            <div class="source">
+                                <div class="path">${source.file_path}</div>
+                                <div class="section">섹션: ${source.section}</div>
+                                <div class="content">${source.content}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    sourcesHtml = '<p>참조 소스가 없습니다.</p>';
+                }
+                
+                sourcesElement.innerHTML = sourcesHtml;
+            } catch (error) {
+                answerElement.innerHTML = `
+                    <div class="status-badge error">검색 실패</div>
+                    <div>${error.message}</div>
+                `;
+                sourcesElement.innerHTML = '';
+            } finally {
+                queryButton.disabled = false;
+                queryStatus.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

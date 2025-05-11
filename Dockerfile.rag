@@ -1,0 +1,25 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# 기본 시스템 의존성 설치
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 의존성 설치
+COPY requirements.rag.txt .
+RUN pip install --no-cache-dir -r requirements.rag.txt
+
+# 애플리케이션 코드 복사
+COPY app/rag ./app/rag
+COPY config ./config
+COPY scripts/rag_indexer.py ./scripts/
+
+# 환경 변수 설정
+ENV PYTHONPATH=/app
+
+# API 서버 실행
+CMD ["uvicorn", "app.rag.api:app", "--host", "0.0.0.0", "--port", "8000"] 
