@@ -2,33 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "app/web/simple_test.py",
-      "use": "@vercel/python",
-      "config": { 
-        "maxLambdaSize": "15mb", 
-        "runtime": "python3.9",
-        "installCommand": "pip install -r requirements-vercel.txt"
-      }
-    },
-    {
-      "src": "app/web/static/**",
-      "use": "@vercel/static"
+      "src": "index.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/app/web/static/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "app/web/simple_test.py"
+      "dest": "/"
     }
-  ],
-  "env": {
-    "CHRISTMAS_ENV": "production",
-    "FLASK_APP": "app/web/simple_test.py",
-    "FLASK_ENV": "production"
-  },
-  "public": true
+  ]
 } 
