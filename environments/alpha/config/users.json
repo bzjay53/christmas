@@ -1,0 +1,92 @@
+{
+  "users": [
+    {
+      "id": "alpha-admin",
+      "username": "admin",
+      "password_hash": "$2b$12$QZKJw1Jr.1Cxr1kQgfKLSuBl5Uoy5zQdYZY8N5L/iKVtbZ3oSyT2S",
+      "email": "admin@example.com",
+      "role": "admin",
+      "created_at": "2025-04-30T00:00:00Z",
+      "last_login": null,
+      "is_active": true,
+      "settings": {
+        "notifications_enabled": true,
+        "telegram_chat_id": 123456789,
+        "default_strategy": "alpha_test_strategy",
+        "theme": "dark"
+      }
+    },
+    {
+      "id": "alpha-tester1",
+      "username": "tester1",
+      "password_hash": "$2b$12$XgQTUKQ/Z2XK1y1pxUwsVeXq2fB5dCWazULXD1jv/.iEhVvPIJf0q",
+      "email": "tester1@example.com",
+      "role": "tester",
+      "created_at": "2025-05-01T00:00:00Z",
+      "last_login": null,
+      "is_active": true,
+      "settings": {
+        "notifications_enabled": true,
+        "telegram_chat_id": 234567890,
+        "default_strategy": "alpha_test_strategy",
+        "theme": "light"
+      }
+    },
+    {
+      "id": "alpha-tester2",
+      "username": "tester2",
+      "password_hash": "$2b$12$rE6.qL8mYOyy81Ld.PIfHO27kcpuI5LHFl.QGHKlvaqeTxCrz30w6",
+      "email": "tester2@example.com",
+      "role": "tester",
+      "created_at": "2025-05-01T00:00:00Z",
+      "last_login": null,
+      "is_active": true,
+      "settings": {
+        "notifications_enabled": true,
+        "telegram_chat_id": 345678901,
+        "default_strategy": "alpha_test_strategy",
+        "theme": "dark"
+      }
+    },
+    {
+      "id": "alpha-tester3",
+      "username": "tester3",
+      "password_hash": "$2b$12$C1cMzgZeXhfqLhLlEWH0Fe5gXJqjZ1yaCN.C0T/NhOPJNqO0ZzxLO",
+      "email": "tester3@example.com",
+      "role": "tester",
+      "created_at": "2025-05-01T00:00:00Z",
+      "last_login": null,
+      "is_active": true,
+      "settings": {
+        "notifications_enabled": false,
+        "telegram_chat_id": null,
+        "default_strategy": "alpha_test_strategy",
+        "theme": "light"
+      }
+    },
+    {
+      "id": "alpha-tester4",
+      "username": "tester4",
+      "password_hash": "$2b$12$mHYDMOA.Ir3HnZ3J5WOiTelxhPDDc62ePE/wH3RDpuYYX5OSVJzNO",
+      "email": "tester4@example.com",
+      "role": "tester",
+      "created_at": "2025-05-01T00:00:00Z",
+      "last_login": null,
+      "is_active": false,
+      "settings": {
+        "notifications_enabled": true,
+        "telegram_chat_id": 456789012,
+        "default_strategy": "alpha_test_strategy",
+        "theme": "dark"
+      }
+    }
+  ],
+  "roles": {
+    "admin": {
+      "permissions": ["read", "write", "execute", "manage_users", "manage_system", "view_analytics"]
+    },
+    "tester": {
+      "permissions": ["read", "execute", "view_analytics"]
+    }
+  }
+} 

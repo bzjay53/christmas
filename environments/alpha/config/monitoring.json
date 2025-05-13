@@ -1,0 +1,161 @@
+{
+  "monitoring": {
+    "health_checks": {
+      "enabled": true,
+      "interval_seconds": 60,
+      "endpoints": [
+        {
+          "name": "api_service",
+          "url": "http://api:8000/health",
+          "timeout_seconds": 5,
+          "expected_status": 200
+        },
+        {
+          "name": "web_interface",
+          "url": "http://web:5000/health",
+          "timeout_seconds": 5,
+          "expected_status": 200
+        },
+        {
+          "name": "timescaledb",
+          "command": "pg_isready -h timescaledb -U christmas_alpha",
+          "timeout_seconds": 3,
+          "expected_exit_code": 0
+        },
+        {
+          "name": "redis",
+          "command": "redis-cli -h redis ping",
+          "timeout_seconds": 3,
+          "expected_output": "PONG"
+        },
+        {
+          "name": "weaviate",
+          "url": "http://weaviate:8080/v1/.well-known/ready",
+          "timeout_seconds": 5,
+          "expected_status": 200
+        }
+      ]
+    },
+    "alerts": {
+      "enabled": true,
+      "channels": {
+        "telegram": {
+          "enabled": true,
+          "bot_token": "${TELEGRAM_BOT_TOKEN:-alpha_dummy_token}",
+          "chat_ids": [123456789]
+        },
+        "email": {
+          "enabled": false,
+          "recipients": ["admin@example.com"]
+        }
+      },
+      "rules": [
+        {
+          "name": "high_cpu_usage",
+          "description": "CPU 사용률이 90% 이상인 경우",
+          "query": "avg(node_cpu_seconds_total{mode!='idle'}) by (instance) > 0.9",
+          "severity": "warning",
+          "for": "5m"
+        },
+        {
+          "name": "high_memory_usage",
+          "description": "메모리 사용률이 85% 이상인 경우",
+          "query": "node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.15",
+          "severity": "warning",
+          "for": "5m"
+        },
+        {
+          "name": "api_high_latency",
+          "description": "API 요청 지연시간이 500ms 이상인 경우",
+          "query": "http_request_duration_seconds{service='api'} > 0.5",
+          "severity": "warning",
+          "for": "2m"
+        },
+        {
+          "name": "service_down",
+          "description": "서비스가 다운된 경우",
+          "query": "up == 0",
+          "severity": "critical",
+          "for": "1m"
+        },
+        {
+          "name": "high_error_rate",
+          "description": "오류 발생률이 5% 이상인 경우",
+          "query": "sum(rate(http_requests_total{status=~'5..'}[5m])) / sum(rate(http_requests_total[5m])) > 0.05",
+          "severity": "critical",
+          "for": "2m"
+        }
+      ]
+    },
+    "metrics": {
+      "system": {
+        "cpu": true,
+        "memory": true,
+        "disk": true,
+        "network": true
+      },
+      "application": {
+        "request_count": true,
+        "request_duration": true,
+        "error_count": true,
+        "active_users": true
+      },
+      "business": {
+        "active_trades": true,
+        "trade_volume": true,
+        "profit_loss": true,
+        "strategy_performance": true
+      },
+      "custom": [
+        {
+          "name": "rag_query_count",
+          "description": "RAG 시스템 쿼리 수",
+          "type": "counter"
+        },
+        {
+          "name": "rag_query_duration",
+          "description": "RAG 쿼리 처리 시간",
+          "type": "histogram",
+          "buckets": [0.1, 0.5, 1.0, 2.0, 5.0]
+        },
+        {
+          "name": "strategy_execution_time",
+          "description": "전략 실행 시간",
+          "type": "histogram",
+          "buckets": [0.01, 0.05, 0.1, 0.5, 1.0]
+        }
+      ]
+    },
+    "dashboards": {
+      "system_overview": {
+        "title": "시스템 개요",
+        "refresh_interval": "10s",
+        "panels": ["cpu_usage", "memory_usage", "disk_usage", "network_traffic"]
+      },
+      "application_performance": {
+        "title": "애플리케이션 성능",
+        "refresh_interval": "30s",
+        "panels": ["request_rate", "error_rate", "response_time", "active_sessions"]
+      },
+      "trading_overview": {
+        "title": "트레이딩 개요",
+        "refresh_interval": "1m",
+        "panels": ["active_trades", "trade_volume", "profit_loss", "strategy_performance"]
+      },
+      "rag_performance": {
+        "title": "RAG 시스템 성능",
+        "refresh_interval": "1m",
+        "panels": ["query_count", "query_duration", "embedding_count", "search_relevance"]
+      }
+    },
+    "logging": {
+      "level": "DEBUG",
+      "retention_days": 7,
+      "file_rotation_size_mb": 10,
+      "include_headers": true,
+      "include_request_body": false,
+      "include_response_body": false,
+      "sensitive_fields": ["password", "token", "api_key", "credit_card"]
+    }
+  }
+} 

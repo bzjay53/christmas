@@ -1,0 +1,134 @@
+{
+  "environment": "alpha",
+  "version": "0.1.0-alpha.1",
+  "logging": {
+    "level": "DEBUG",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "/app/logs/app.log",
+    "max_size_mb": 5,
+    "backup_count": 3
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "debug": true,
+    "workers": 1,
+    "timeout": 60,
+    "rate_limit": {
+      "enabled": true,
+      "requests_per_minute": 120
+    },
+    "cors": {
+      "allowed_origins": ["*"],
+      "allowed_methods": ["GET", "POST", "PUT", "DELETE"],
+      "allowed_headers": ["*"]
+    }
+  },
+  "web": {
+    "host": "0.0.0.0",
+    "port": 5000,
+    "debug": true,
+    "session_timeout": 3600
+  },
+  "database": {
+    "type": "postgresql",
+    "host": "timescaledb",
+    "port": 5432,
+    "name": "christmas_alpha",
+    "user": "christmas_alpha",
+    "password": "alpha_password",
+    "pool_size": 5,
+    "max_overflow": 10,
+    "timeout": 30
+  },
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "db": 0,
+    "password": null,
+    "timeout": 5
+  },
+  "weaviate": {
+    "host": "weaviate",
+    "port": 8080,
+    "scheme": "http",
+    "timeout": 10
+  },
+  "rag": {
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "embedding_model": "text-embedding-ada-002",
+    "max_tokens": 4000,
+    "temperature": 0.1,
+    "top_k": 5
+  },
+  "trading": {
+    "max_concurrent_orders": 5,
+    "default_leverage": 1,
+    "default_risk_percent": 1.0,
+    "max_risk_percent": 5.0,
+    "default_stop_loss_percent": 2.0,
+    "default_take_profit_percent": 3.0,
+    "max_order_timeout_seconds": 300,
+    "heartbeat_interval_seconds": 5,
+    "markets": ["KRW-BTC", "KRW-ETH", "KRW-XRP"]
+  },
+  "notification": {
+    "enabled": true,
+    "telegram": {
+      "enabled": true,
+      "bot_token": "alpha_dummy_token",
+      "admin_chat_ids": [123456789]
+    },
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.example.com",
+      "smtp_port": 587,
+      "username": "alpha@example.com",
+      "password": "alpha_email_password",
+      "from_email": "alpha@example.com"
+    }
+  },
+  "security": {
+    "jwt": {
+      "secret_key": "alpha_jwt_secret_key",
+      "algorithm": "HS256",
+      "access_token_expire_minutes": 30
+    },
+    "api_keys": {
+      "enabled": true,
+      "expire_days": 90
+    },
+    "password_policy": {
+      "min_length": 8,
+      "require_uppercase": true,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_special_chars": true
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "prometheus": {
+      "enabled": true,
+      "endpoint": "/metrics"
+    },
+    "performance_tracking": {
+      "enabled": true,
+      "track_endpoints": true,
+      "track_database": true
+    },
+    "health_check": {
+      "enabled": true,
+      "endpoint": "/health",
+      "interval_seconds": 60
+    }
+  },
+  "feature_flags": {
+    "rag_system": true,
+    "advanced_analytics": true,
+    "telegram_notifications": true,
+    "automated_trading": false,
+    "strategy_backtesting": true
+  }
+} 

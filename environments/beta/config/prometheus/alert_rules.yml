@@ -1,0 +1,343 @@
+groups:
+  - name: christmas_beta_test_alerts
+    rules:
+      # API 서비스 가용성 알림
+      - alert: BetaAPIServiceDown
+        expr: up{job="beta_api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          environment: beta
+        annotations:
+          summary: "베타 API 서비스 중단"
+          description: "베타 API 서비스가 {{ $value }}분 동안 중단되었습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # API 응답 시간 알림
+      - alert: BetaAPIHighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="beta_api"}[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 API 응답 시간 높음"
+          description: "95번째 백분위 API 응답 시간이 500ms를 초과했습니다. 현재 값: {{ $value }}s"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 오류율 알림
+      - alert: BetaAPIHighErrorRate
+        expr: sum(rate(http_requests_total{job="beta_api", status=~"5.."}[5m])) / sum(rate(http_requests_total{job="beta_api"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 API 오류율 높음"
+          description: "베타 API 오류율이 5%를 초과했습니다. 현재 오류율: {{ $value | humanizePercentage }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 토큰 갱신 실패 알림
+      - alert: BetaTokenRefreshFailure
+        expr: token_refresh_failures_total{job="beta_api"} > 0
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 토큰 갱신 실패"
+          description: "베타 환경에서 API 토큰 갱신에 실패했습니다. 실패 횟수: {{ $value }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 시스템 부하 알림
+      - alert: BetaHighCPULoad
+        expr: avg by(instance) (rate(node_cpu_seconds_total{mode!="idle",job="beta_node"}[2m])) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 서버 CPU 사용률 높음"
+          description: "베타 서버의 CPU 사용률이 80%를 초과했습니다. 현재 값: {{ $value | humanizePercentage }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 메모리 사용량 알림
+      - alert: BetaHighMemoryUsage
+        expr: (node_memory_MemTotal_bytes{job="beta_node"} - node_memory_MemAvailable_bytes{job="beta_node"}) / node_memory_MemTotal_bytes{job="beta_node"} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 서버 메모리 사용률 높음"
+          description: "베타 서버의 메모리 사용률이 90%를 초과했습니다. 현재 값: {{ $value | humanizePercentage }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 디스크 사용량 알림
+      - alert: BetaHighDiskUsage
+        expr: 100 - ((node_filesystem_avail_bytes{job="beta_node",mountpoint="/"} * 100) / node_filesystem_size_bytes{job="beta_node",mountpoint="/"}) > 85
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+        annotations:
+          summary: "베타 서버 디스크 사용률 높음"
+          description: "베타 서버의 디스크 사용률이 85%를 초과했습니다. 현재 값: {{ $value | humanizePercentage }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 사용자 세션 수 알림
+      - alert: BetaHighUserSessions
+        expr: sum(session_count{job="beta_api"}) > 100
+        for: 5m
+        labels:
+          severity: info
+          environment: beta
+        annotations:
+          summary: "베타 환경 사용자 세션 수 높음"
+          description: "베타 환경의 활성 사용자 세션 수가 100을 초과했습니다. 현재 세션 수: {{ $value }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 테스트 진행 알림
+      - alert: BetaTestProgressSlow
+        expr: beta_test_completed_scenarios_count / beta_test_total_scenarios_count < 0.5 and time() - beta_test_start_time_seconds > 86400 * 7
+        for: 1h
+        labels:
+          severity: info
+          environment: beta
+        annotations:
+          summary: "베타 테스트 진행 속도 느림"
+          description: "베타 테스트가 일주일 이상 진행되었지만 전체 테스트 시나리오의 50% 미만이 완료되었습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+      
+      # 피드백 제출 알림
+      - alert: BetaLowFeedbackSubmission
+        expr: beta_test_feedback_submission_count / beta_test_active_users_count < 0.3
+        for: 1d
+        labels:
+          severity: info
+          environment: beta
+        annotations:
+          summary: "베타 테스트 피드백 제출율 낮음"
+          description: "베타 테스트 사용자의 피드백 제출율이 30% 미만입니다. 더 많은 피드백 독려가 필요합니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-dashboard"
+
+      # 피드백 시스템 알림 규칙
+      - alert: BetaFeedbackSystemDown
+        expr: up{job="feedback_system"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 수집 시스템 중단"
+          description: "베타 테스트 피드백 수집 시스템이 {{ $value }}분 동안 중단되었습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaFeedbackAPIErrors
+        expr: sum(rate(feedback_api_errors_total{job="feedback_system"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 API 오류 발생"
+          description: "베타 테스트 피드백 API에서 오류가 발생하고 있습니다. 5분간 {{ $value | humanize }} 건의 오류가 발생했습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaFeedbackDatabaseErrors
+        expr: sum(rate(feedback_database_errors_total{job="feedback_system"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 데이터베이스 오류 발생"
+          description: "베타 테스트 피드백 데이터베이스 연결 또는 쿼리 오류가 발생하고 있습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaFeedbackNotificationFailure
+        expr: sum(rate(feedback_notification_failures_total{job="feedback_system"}[10m])) > 0
+        for: 10m
+        labels:
+          severity: warning
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 알림 전송 실패"
+          description: "베타 테스트 피드백 알림 전송(이메일/텔레그램)에 실패했습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaFeedbackSurveyUnreachable
+        expr: probe_success{job="blackbox", instance=~".*survey.*"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 설문 URL 접근 불가"
+          description: "베타 테스트 피드백 설문 URL({{ $labels.instance }})에 접근할 수 없습니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaFeedbackProcessingDelay
+        expr: feedback_processing_duration_seconds > 60
+        for: 15m
+        labels:
+          severity: warning
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "피드백 처리 지연"
+          description: "베타 테스트 피드백 처리 시간이 1분을 초과했습니다. 현재 처리 시간: {{ $value | humanizeDuration }}"
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+      
+      - alert: BetaHighPriorityFeedbackReceived
+        expr: sum(feedback_priority_count{priority="high"}) > sum(feedback_priority_count{priority="high"} offset 1h)
+        for: 5m
+        labels:
+          severity: info
+          environment: beta
+          category: feedback
+        annotations:
+          summary: "고우선순위 피드백 수신"
+          description: "새로운 고우선순위 피드백이 수신되었습니다. 즉시 검토가 필요합니다."
+          dashboard_url: "https://grafana.christmas.example.com/d/beta-feedback-dashboard"
+
+  - name: christmas_beta_feedback
+    rules:
+      - alert: FeedbackSystemDown
+        expr: up{job="feedback_system"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: feedback
+        annotations:
+          summary: "피드백 시스템 중단"
+          description: "피드백 수집 시스템이 중단되었습니다."
+      
+      - alert: FeedbackApiErrors
+        expr: sum(rate(feedback_api_errors_total{job="feedback_system"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: feedback
+        annotations:
+          summary: "피드백 API 오류"
+          description: "피드백 API에서 오류가 발생하고 있습니다."
+      
+      - alert: FeedbackDatabaseErrors
+        expr: sum(rate(feedback_database_errors_total{job="feedback_system"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: feedback
+        annotations:
+          summary: "피드백 데이터베이스 오류"
+          description: "피드백 데이터베이스 연결 또는 쿼리 오류가 발생하고 있습니다."
+      
+      - alert: FeedbackNotificationFailures
+        expr: sum(rate(feedback_notification_failures_total{job="feedback_system"}[5m])) > 0
+        for: 10m
+        labels:
+          severity: warning
+          category: feedback
+        annotations:
+          summary: "알림 전송 실패"
+          description: "피드백 관련 알림 전송에 실패하고 있습니다."
+      
+      - alert: SurveyUrlUnavailable
+        expr: probe_success{job="blackbox", instance=~".*survey.*"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          category: feedback
+        annotations:
+          summary: "설문 URL 접근 불가"
+          description: "피드백 설문 URL에 접근할 수 없습니다: {{ $labels.instance }}"
+      
+      - alert: FeedbackProcessingDelay
+        expr: feedback_processing_time_seconds > 300
+        for: 15m
+        labels:
+          severity: warning
+          category: feedback
+        annotations:
+          summary: "피드백 처리 지연"
+          description: "피드백 처리 시간이 5분을 초과합니다."
+      
+      - alert: HighPriorityFeedbackReceived
+        expr: sum(feedback_priority_count{priority="high"}) > sum(feedback_priority_count{priority="high"} offset 1h)
+        for: 0m
+        labels:
+          severity: info
+          category: feedback
+        annotations:
+          summary: "고우선순위 피드백 수신"
+          description: "새로운 고우선순위 피드백이 수신되었습니다."
+
+  - name: christmas_beta_system
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "높은 오류율"
+          description: "5분 동안 5xx 오류율이 5%를 초과합니다."
+      
+      - alert: ApiResponseDelay
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler!=""}[5m])) by (le, handler)) > 2
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "API 응답 시간 지연"
+          description: "API 응답 시간이 2초를 초과합니다."
+      
+      - alert: HighCpuUsage
+        expr: avg(rate(process_cpu_seconds_total[5m]) * 100) > 80
+        for: 15m
+        labels:
+          severity: warning
+          category: resource
+        annotations:
+          summary: "높은 CPU 사용량"
+          description: "CPU 사용량이 80%를 초과합니다."
+      
+      - alert: HighMemoryUsage
+        expr: avg(container_memory_usage_bytes) / avg(container_spec_memory_limit_bytes) * 100 > 85
+        for: 15m
+        labels:
+          severity: warning
+          category: resource
+        annotations:
+          summary: "높은 메모리 사용량"
+          description: "메모리 사용량이 85%를 초과합니다."
+
+  - name: christmas_beta_api
+    rules:
+      - alert: ApiKeyRenewalFailure
+        expr: api_key_renewal_failures_total > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: api
+        annotations:
+          summary: "API 키 갱신 실패"
+          description: "API 키 갱신에 실패했습니다."
+      
+      - alert: ApiRateLimitNearlyReached
+        expr: api_rate_limit_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: api
+        annotations:
+          summary: "API 속도 제한 임계값 접근"
+          description: "API 속도 제한 사용률이 80%를 초과합니다."

@@ -49,14 +49,19 @@ services:
       - CHRISTMAS_DB_NAME=christmas_test
       - CHRISTMAS_REDIS_HOST=redis_test
       - CHRISTMAS_REDIS_PORT=6379
-      - PYTEST_ADDOPTS="-v"
+      - PYTEST_ADDOPTS=-v
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     volumes:
-      - ./app:/app/app
-      - ./tests:/app/tests
-      - ./config:/app/config
+      - ./app:/app/app:rw
+      - ./tests:/app/tests:rw
+      - ./config:/app/config:rw
       - ./test_results:/app/test_results
-    command: pytest -xvs tests/
+      - security_test_data:/app/security
+    # 보안 테스트 실행 전에 파이썬 경로에 app 폴더 추가
+    command: ["sh", "-c", "cd /app && python -m pytest tests/security -v"]
 
 volumes:
   timescale_test_data:
-  redis_test_data: 
+  redis_test_data:
+  security_test_data: 

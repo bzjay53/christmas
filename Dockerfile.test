@@ -2,18 +2,31 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# 빌드 종속성 설치
+# 빌드 의존성 설치
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    gcc \
+    wget \
+    libffi-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 필요한 Python 패키지만 설치
-COPY requirements.test.txt .
+# TA-Lib 설치 (기술적 분석 라이브러리)
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xvzf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
+
+# 보안 테스트에 필요한 모든 패키지 설치
+RUN pip install --no-cache-dir cryptography==41.0.1 pytest==7.3.1 pytest-cov>=4.1.0 pytest-asyncio>=0.21.1 
+
+# 필요한 패키지 및 의존성 설치 (app, tests 디렉토리는 마운트될 예정)
+COPY requirements.test.txt /app/
 RUN pip install --no-cache-dir -r requirements.test.txt
 
-# 애플리케이션 코드 복사
-COPY . .
-
-# 테스트 실행
-CMD ["pytest", "-xvs", "tests/"] 
+# 테스트용 디렉토리 생성
+RUN mkdir -p /app/security/reports /app/security/keys /app/security/audit_logs && \
+    chmod -R 777 /app/security 

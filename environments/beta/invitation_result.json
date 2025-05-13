@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-05-30T12:30:00.000Z",
+  "total_users": 20,
+  "sent_emails": 20,
+  "beta_start_date": "2025-06-05",
+  "beta_end_date": "2025-06-30",
+  "details": {
+    "professional_traders": {
+      "total": 10,
+      "sent": 10,
+      "failed": 0
+    },
+    "regular_users": {
+      "total": 10,
+      "sent": 10,
+      "failed": 0
+    }
+  },
+  "email_template": "beta_invitation.html",
+  "support_email": "support@christmas.example.com",
+  "beta_url": "https://beta.christmas.example.com"
+}

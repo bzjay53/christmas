@@ -1,0 +1,186 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: 시계열 데이터베이스
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "${TIMESCALEDB_PORT:-5532}:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER:-christmas_alpha}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-alpha_password}
+      - POSTGRES_DB=${DB_NAME:-christmas_alpha}
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-christmas_alpha}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis: 캐싱 및 메시지 브로커
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6479}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Weaviate: 벡터 데이터베이스 (RAG 시스템용)
+  weaviate:
+    image: semitechnologies/weaviate:1.21.2
+    ports:
+      - "${WEAVIATE_PORT:-7800}:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=20
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=text2vec-openai
+      - ENABLE_MODULES=text2vec-openai
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+
+  # API 서비스: FastAPI 애플리케이션
+  api:
+    build:
+      context: ../../
+      dockerfile: environments/alpha/Dockerfile
+    ports:
+      - "${API_PORT:-7000}:8000"
+    depends_on:
+      - timescaledb
+      - redis
+      - weaviate
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-alpha}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.1.0-alpha.1}
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${DB_USER:-christmas_alpha}
+      - CHRISTMAS_DB_PASSWORD=${DB_PASSWORD:-alpha_password}
+      - CHRISTMAS_DB_NAME=${DB_NAME:-christmas_alpha}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - CHRISTMAS_WEAVIATE_HOST=weaviate
+      - CHRISTMAS_WEAVIATE_PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs/api:/app/logs
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # 데이터 수집 서비스
+  ingestion:
+    build:
+      context: ../../
+      dockerfile: environments/alpha/Dockerfile
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-alpha}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.1.0-alpha.1}
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${DB_USER:-christmas_alpha}
+      - CHRISTMAS_DB_PASSWORD=${DB_PASSWORD:-alpha_password}
+      - CHRISTMAS_DB_NAME=${DB_NAME:-christmas_alpha}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs:/app/logs
+    command: python -m app.ingestion.main
+
+  # 텔레그램 봇 서비스
+  telegram_bot:
+    build:
+      context: ../../
+      dockerfile: environments/alpha/Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-alpha}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.1.0-alpha.1}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-alpha_dummy_token}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs:/app/logs
+    command: python -m app.notification.telegram_bot
+
+  # 웹 인터페이스 서비스: Flask 애플리케이션
+  web:
+    build:
+      context: ../../
+      dockerfile: environments/alpha/Dockerfile
+    ports:
+      - "${WEB_PORT:-4000}:5000"
+    depends_on:
+      - api
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-alpha}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.1.0-alpha.1}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - FLASK_APP=app.web.main
+      - FLASK_DEBUG=True
+      - FLASK_PORT=5000
+      - FLASK_HOST=0.0.0.0
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-alpha_secret_key}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs/web:/app/logs
+    command: python -m app.web.run
+
+  # 모니터링: Prometheus
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    ports:
+      - "${PROMETHEUS_PORT:-7090}:9090"
+    volumes:
+      - ../../config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # 모니터링: Grafana
+  grafana:
+    image: grafana/grafana:10.0.3
+    ports:
+      - "${GRAFANA_PORT:-7030}:3000"
+    volumes:
+      - ../../config/grafana:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=alpha_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+volumes:
+  timescale_data:
+  redis_data:
+  weaviate_data:
+  prometheus_data:
+  grafana_data: 

@@ -1,0 +1,126 @@
+{
+  "professional_traders": [
+    {
+      "username": "pro_trader_1",
+      "email": "trader1@example.com",
+      "full_name": "김 트레이더",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_2",
+      "email": "trader2@example.com",
+      "full_name": "이 전문가",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_3",
+      "email": "trader3@example.com",
+      "full_name": "박 애널리스트",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_4",
+      "email": "trader4@example.com",
+      "full_name": "최 투자자",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_5",
+      "email": "trader5@example.com",
+      "full_name": "정 트레이더",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_6",
+      "email": "trader6@example.com",
+      "full_name": "강 전문가",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_7",
+      "email": "trader7@example.com",
+      "full_name": "조 애널리스트",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_8",
+      "email": "trader8@example.com",
+      "full_name": "윤 투자자",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_9",
+      "email": "trader9@example.com",
+      "full_name": "장 전문가",
+      "group": "expert"
+    },
+    {
+      "username": "pro_trader_10",
+      "email": "trader10@example.com",
+      "full_name": "임 트레이더",
+      "group": "expert"
+    }
+  ],
+  "regular_users": [
+    {
+      "username": "regular_user_1",
+      "email": "user1@example.com",
+      "full_name": "김 사용자",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_2",
+      "email": "user2@example.com",
+      "full_name": "이 테스터",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_3",
+      "email": "user3@example.com",
+      "full_name": "박 일반인",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_4",
+      "email": "user4@example.com",
+      "full_name": "최 사용자",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_5",
+      "email": "user5@example.com",
+      "full_name": "정 테스터",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_6",
+      "email": "user6@example.com",
+      "full_name": "강 일반인",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_7",
+      "email": "user7@example.com",
+      "full_name": "조 사용자",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_8",
+      "email": "user8@example.com",
+      "full_name": "윤 테스터",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_9",
+      "email": "user9@example.com",
+      "full_name": "장 일반인",
+      "group": "regular"
+    },
+    {
+      "username": "regular_user_10",
+      "email": "user10@example.com",
+      "full_name": "임 사용자",
+      "group": "regular"
+    }
+  ]
+}

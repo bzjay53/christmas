@@ -1,0 +1,221 @@
+{
+  "scenarios": [
+    {
+      "id": "alpha_scenario_1",
+      "name": "기본 사용자 인증 및 시스템 접근",
+      "description": "사용자 로그인, 기본 기능 접근 및 시스템 탐색을 검증합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "회원 가입 및 로그인",
+          "description": "사용자 계정 생성 후 로그인하여 대시보드에 접근합니다",
+          "expected_result": "로그인 성공 및 대시보드 페이지 표시",
+          "verification_method": "UI 확인"
+        },
+        {
+          "step": 2,
+          "action": "메뉴 및 대시보드 확인",
+          "description": "모든 메뉴와 대시보드 요소가 제대로 표시되는지 확인합니다",
+          "expected_result": "모든 UI 요소가 올바르게 표시됨",
+          "verification_method": "UI 확인"
+        },
+        {
+          "step": 3,
+          "action": "계정 설정 업데이트",
+          "description": "계정 프로필 정보 및 알림 설정을 변경합니다",
+          "expected_result": "변경사항이 저장되고 적용됨",
+          "verification_method": "설정 확인"
+        }
+      ],
+      "prerequisites": ["테스트 계정 가입"],
+      "priority": "높음",
+      "estimated_time": 15
+    },
+    {
+      "id": "alpha_scenario_2",
+      "name": "RAG 시스템 기능 테스트",
+      "description": "RAG 시스템을 사용한 문서 검색 및 질의응답 기능을 테스트합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "문서 검색",
+          "description": "키워드로 관련 문서를 검색합니다",
+          "expected_result": "관련 문서가 정확도 순으로 표시됨",
+          "verification_method": "검색 결과 확인"
+        },
+        {
+          "step": 2,
+          "action": "질의응답 테스트",
+          "description": "시스템에 질문하고 응답을 확인합니다",
+          "expected_result": "질문에 대한 정확한 답변 제공",
+          "verification_method": "응답 정확도 평가"
+        },
+        {
+          "step": 3,
+          "action": "문서 업로드",
+          "description": "새로운 문서를 업로드하고 색인화합니다",
+          "expected_result": "문서가 성공적으로 업로드되고 검색에 반영됨",
+          "verification_method": "문서 색인 로그 확인"
+        }
+      ],
+      "prerequisites": ["로그인 완료", "RAG 시스템 접근 권한"],
+      "priority": "높음",
+      "estimated_time": 20
+    },
+    {
+      "id": "alpha_scenario_3",
+      "name": "기본 트레이딩 전략 테스트",
+      "description": "알파 테스트용 기본 스켈핑 전략을 백테스트하고 설정합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "전략 선택",
+          "description": "사용 가능한 전략 목록에서 기본 스켈핑 전략을 선택합니다",
+          "expected_result": "선택한 전략의 상세 정보가 표시됨",
+          "verification_method": "UI 확인"
+        },
+        {
+          "step": 2,
+          "action": "전략 파라미터 조정",
+          "description": "전략 파라미터를 조정하고 백테스트를 실행합니다",
+          "expected_result": "백테스트 결과가 그래프와 통계로 표시됨",
+          "verification_method": "백테스트 결과 확인"
+        },
+        {
+          "step": 3,
+          "action": "전략 저장",
+          "description": "조정된 전략을 저장합니다",
+          "expected_result": "전략이 저장되고 사용자 계정에 연결됨",
+          "verification_method": "저장된 전략 목록 확인"
+        }
+      ],
+      "prerequisites": ["로그인 완료", "트레이딩 권한"],
+      "priority": "높음",
+      "estimated_time": 25
+    },
+    {
+      "id": "alpha_scenario_4",
+      "name": "모니터링 및 알림 시스템 테스트",
+      "description": "시스템 모니터링 및 알림 기능을 테스트합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "모니터링 대시보드 확인",
+          "description": "모니터링 대시보드에 접근하여 시스템 상태를 확인합니다",
+          "expected_result": "시스템 메트릭과 그래프가 표시됨",
+          "verification_method": "대시보드 UI 확인"
+        },
+        {
+          "step": 2,
+          "action": "알림 설정",
+          "description": "사용자 알림 설정을 구성합니다",
+          "expected_result": "알림 설정이 저장되고 적용됨",
+          "verification_method": "설정 확인"
+        },
+        {
+          "step": 3,
+          "action": "테스트 알림 생성",
+          "description": "테스트 알림을 트리거하여 전달을 확인합니다",
+          "expected_result": "알림이 지정된 채널(텔레그램 등)로 전송됨",
+          "verification_method": "알림 수신 확인"
+        }
+      ],
+      "prerequisites": ["로그인 완료", "관리자 권한"],
+      "priority": "중간",
+      "estimated_time": 20
+    },
+    {
+      "id": "alpha_scenario_5",
+      "name": "API 기능 테스트",
+      "description": "외부 시스템과의 통합을 위한 API 기능을 테스트합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "API 키 생성",
+          "description": "사용자 API 키를 생성합니다",
+          "expected_result": "API 키가 생성되고 표시됨",
+          "verification_method": "API 키 확인"
+        },
+        {
+          "step": 2,
+          "action": "API 요청 테스트",
+          "description": "기본 엔드포인트에 API 요청을 보냅니다",
+          "expected_result": "API 응답이 올바른 형식과 데이터로 반환됨",
+          "verification_method": "API 응답 확인"
+        },
+        {
+          "step": 3,
+          "action": "API 권한 테스트",
+          "description": "제한된 API 엔드포인트에 접근 테스트를 수행합니다",
+          "expected_result": "적절한 권한 제어가 이루어짐",
+          "verification_method": "응답 코드 확인"
+        }
+      ],
+      "prerequisites": ["로그인 완료", "API 접근 권한"],
+      "priority": "중간",
+      "estimated_time": 15
+    },
+    {
+      "id": "alpha_scenario_6",
+      "name": "백테스팅 시스템 테스트",
+      "description": "다양한 전략과 조건에서 백테스팅 시스템을 검증합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "백테스트 데이터 선택",
+          "description": "백테스트에 사용할 기간과 데이터를 선택합니다",
+          "expected_result": "선택한 데이터가 로드됨",
+          "verification_method": "데이터 미리보기 확인"
+        },
+        {
+          "step": 2,
+          "action": "복합 전략 백테스트",
+          "description": "여러 전략을 조합하여 백테스트를 실행합니다",
+          "expected_result": "백테스트가 완료되고 결과가 표시됨",
+          "verification_method": "백테스트 결과 확인"
+        },
+        {
+          "step": 3,
+          "action": "백테스트 결과 분석",
+          "description": "백테스트 결과를 분석하고 보고서를 생성합니다",
+          "expected_result": "분석 보고서가 생성되고 다운로드 가능함",
+          "verification_method": "보고서 내용 확인"
+        }
+      ],
+      "prerequisites": ["로그인 완료", "백테스팅 권한"],
+      "priority": "중간",
+      "estimated_time": 30
+    },
+    {
+      "id": "alpha_scenario_7",
+      "name": "보안 및 권한 모델 테스트",
+      "description": "시스템의 보안 설정 및 권한 모델을 검증합니다",
+      "steps": [
+        {
+          "step": 1,
+          "action": "역할 기반 접근 테스트",
+          "description": "서로 다른 역할로 접근하여 권한을 확인합니다",
+          "expected_result": "각 역할에 맞는 접근 제어가 적용됨",
+          "verification_method": "접근 로그 확인"
+        },
+        {
+          "step": 2,
+          "action": "비밀번호 정책 확인",
+          "description": "비밀번호 변경 시 정책 준수 여부를 테스트합니다",
+          "expected_result": "약한 비밀번호가 거부되고 강한 비밀번호만 허용됨",
+          "verification_method": "비밀번호 변경 피드백 확인"
+        },
+        {
+          "step": 3,
+          "action": "세션 타임아웃 테스트",
+          "description": "세션 타임아웃 설정을 테스트합니다",
+          "expected_result": "설정된 시간 후 세션이 만료됨",
+          "verification_method": "세션 상태 확인"
+        }
+      ],
+      "prerequisites": ["관리자 및 일반 사용자 계정"],
+      "priority": "높음",
+      "estimated_time": 20
+    }
+  ]
+} 

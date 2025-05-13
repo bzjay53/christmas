@@ -1,0 +1,112 @@
+groups:
+- name: christmas_beta_alerts
+  rules:
+  # 서비스 가용성 알림
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "서비스 다운: {{ $labels.instance }}"
+      description: "{{ $labels.job }} 서비스가 다운되었습니다. 인스턴스: {{ $labels.instance }}"
+
+  # API 응답 시간 알림
+  - alert: APIHighResponseTime
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)) > 2
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "API 응답 시간 높음: {{ $labels.job }}"
+      description: "{{ $labels.job }}의 95% 응답 시간이 2초를 초과합니다 (현재 값: {{ $value }}초)"
+
+  # 서비스 오류율 알림
+  - alert: HighErrorRate
+    expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (job) / sum(rate(http_requests_total[5m])) by (job) > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "높은 오류율: {{ $labels.job }}"
+      description: "{{ $labels.job }}에서 5%가 넘는 요청이 5xx 오류를 반환합니다 (현재 값: {{ $value | humanizePercentage }})"
+
+  # 메모리 사용량 알림
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "높은 메모리 사용량"
+      description: "메모리 사용량이 90%를 초과합니다 (현재 값: {{ $value | humanizePercentage }})"
+
+  # CPU 사용량 알림
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "높은 CPU 사용량"
+      description: "CPU 사용량이 85%를 초과합니다 (현재 값: {{ $value }}%)"
+
+  # 디스크 공간 알림
+  - alert: LowDiskSpace
+    expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "낮은 디스크 여유 공간: {{ $labels.mountpoint }}"
+      description: "{{ $labels.mountpoint }}의 디스크 여유 공간이 10% 미만입니다 (현재 값: {{ $value | humanizePercentage }})"
+
+  # 한국투자증권 API 토큰 갱신 알림
+  - alert: KISTokenAgeHigh
+    expr: max(kis_api_refresh_token_age_seconds) > 12 * 3600
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "한국투자증권 API 토큰 갱신 필요"
+      description: "토큰 연령이 12시간을 초과하여 갱신이 필요합니다 (현재 값: {{ $value | humanizeDuration }})"
+
+  # KIS API 오류율 알림
+  - alert: KISAPIHighErrorRate
+    expr: sum(rate(kis_api_request_count{status="error"}[5m])) / sum(rate(kis_api_request_count[5m])) > 0.05
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "한국투자증권 API 높은 오류율"
+      description: "한국투자증권 API 요청의 오류율이 5%를 초과합니다 (현재 값: {{ $value | humanizePercentage }})"
+
+  # 주문 실행 지연 알림
+  - alert: OrderExecutionDelay
+    expr: histogram_quantile(0.95, sum(rate(order_execution_time_seconds_bucket[5m])) by (le)) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "주문 실행 지연"
+      description: "주문 실행 시간의 95%가 1초를 초과합니다 (현재 값: {{ $value }}초)"
+
+  # 텔레그램 봇 연결 알림
+  - alert: TelegramBotDisconnected
+    expr: telegram_bot_connected == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "텔레그램 봇 연결 해제"
+      description: "텔레그램 봇이 연결되어 있지 않습니다"
+
+  # 데이터베이스 연결 풀 알림
+  - alert: HighDBConnections
+    expr: sum(db_connections_total) / sum(db_connections_max) > 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "높은 데이터베이스 연결 사용량"
+      description: "데이터베이스 연결 풀이 80%를 초과하여 사용 중입니다 (현재 값: {{ $value | humanizePercentage }})" 

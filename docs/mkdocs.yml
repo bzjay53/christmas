@@ -1,0 +1,96 @@
+site_name: Christmas 프로젝트 문서
+site_description: 'Christmas 프로젝트의 문서 모음'
+site_url: 'https://christmas-docs.vercel.app'
+
+repo_name: 'christmas'
+repo_url: 'https://github.com/yourusername/christmas'
+
+theme:
+  name: material
+  language: ko
+  palette:
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - content.code.annotate
+    - search.highlight
+    - search.share
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mermaid2:
+      version: 9.3.0
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - 홈: index.md
+  - 프로젝트 개요:
+    - 프로젝트 계획: '01. Christmas_plan.md'
+    - 요구사항: '02. christmas_requirement.md'
+    - 사용자 플로우: '03. christmas_userflow.md'
+    - 정보 아키텍처: '04. Christmas_IA.md'
+  - 아키텍처:
+    - 시스템 아키텍처: 'architecture.md'
+    - 프로젝트 구조: '09. christmas_project-structure.md'
+    - 데이터베이스 스키마: 'database.md'
+    - 메시지 흐름: '07. christmas_message-flow.md'
+    - 파일 의존성: '08. christmas_file-dependencies.md'
+  - 개발 가이드:
+    - 의존성 관리: '10. christmas_dependency-management.md'
+    - 코드 품질: '11. christmas_code-quality.md'
+    - 테스트 전략: '12. christmas_test-strategy.md'
+    - 디버깅: '06. christmas_debug.md'
+    - API 문서: 'api.md'
+  - 운영:
+    - 배포: 'deployment.md'
+    - CI/CD 파이프라인: '26. cicd_pipeline.md'
+    - 보안 가이드라인: '14. christmas_Security Guidelines.md'
+    - 성능 최적화: '15. Performance Optimization Guide.md'
+  - RAG 및 리팩토링:
+    - RAG 시스템: '19. christmas_RAG.md'
+    - 리팩토링 거버넌스: '20. christmas_Refactoring Governance.md'
+    - 참조 문서 맵: '21. christmas_Reference Document Map.md'
+  - 협업:
+    - 팀 협업 가이드: '16. Christmas_Team Collaboration Guide.md'
+    - 문서 맵: '17. christmas_doc-map.md'
+  - 프로젝트 관리:
+    - WBS: 'wbs.md'
+    - 테스트 진행 상황: '19. test_qa_progress.md'
+    - 최종 검토 체크리스트: 'final_review_checklist.md'
+    - 프로젝트 완료 보고서: 'project_completion_report.md'
+    - 종료 미팅 안건: 'project_closing_meeting.md'
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername/christmas
+      name: GitHub 

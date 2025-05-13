@@ -1,0 +1,176 @@
+{
+  "timestamp": "2025-06-01T09:00:00.000Z",
+  "baseline_name": "beta_test_initial_baseline",
+  "environment": "beta",
+  "version": "0.2.0-beta.1",
+  "apis": {
+    "response_times": {
+      "p50": 120,
+      "p90": 250,
+      "p95": 350,
+      "p99": 500
+    },
+    "error_rates": {
+      "4xx": 0.01,
+      "5xx": 0.001,
+      "total": 0.011
+    },
+    "requests_per_second": {
+      "avg": 10,
+      "peak": 25
+    },
+    "endpoints": [
+      {
+        "path": "/api/v1/auth/login",
+        "method": "POST",
+        "response_time_ms": {
+          "p50": 150,
+          "p95": 300
+        },
+        "success_rate": 0.995
+      },
+      {
+        "path": "/api/v1/portfolios",
+        "method": "GET",
+        "response_time_ms": {
+          "p50": 180,
+          "p95": 350
+        },
+        "success_rate": 0.998
+      },
+      {
+        "path": "/api/v1/market/stocks",
+        "method": "GET",
+        "response_time_ms": {
+          "p50": 200,
+          "p95": 400
+        },
+        "success_rate": 0.992
+      },
+      {
+        "path": "/api/v1/orders",
+        "method": "POST",
+        "response_time_ms": {
+          "p50": 220,
+          "p95": 450
+        },
+        "success_rate": 0.990
+      },
+      {
+        "path": "/api/v1/strategies",
+        "method": "GET",
+        "response_time_ms": {
+          "p50": 160,
+          "p95": 320
+        },
+        "success_rate": 0.995
+      }
+    ]
+  },
+  "system": {
+    "cpu": {
+      "idle": 70,
+      "user": 25,
+      "system": 5,
+      "load_average": [0.8, 0.9, 1.0]
+    },
+    "memory": {
+      "total_mb": 8192,
+      "used_percent": 40,
+      "swap_used_percent": 5
+    },
+    "disk": {
+      "total_gb": 100,
+      "used_percent": 35,
+      "iops": {
+        "read": 150,
+        "write": 50
+      }
+    },
+    "network": {
+      "bandwidth_mbps": {
+        "in": 25,
+        "out": 35
+      },
+      "packets_per_second": {
+        "in": 1200,
+        "out": 900
+      },
+      "errors_per_minute": {
+        "in": 0.1,
+        "out": 0.05
+      }
+    }
+  },
+  "database": {
+    "connections": {
+      "active": 15,
+      "idle": 5,
+      "max": 100
+    },
+    "queries": {
+      "transactions_per_second": 50,
+      "query_time_ms": {
+        "p50": 5,
+        "p95": 20,
+        "p99": 50
+      },
+      "slow_queries_per_minute": 0.5
+    },
+    "cache": {
+      "hit_ratio": 0.85,
+      "size_mb": 512
+    }
+  },
+  "message_queue": {
+    "queue_depth": {
+      "avg": 10,
+      "peak": 50
+    },
+    "processing_time_ms": {
+      "p50": 15,
+      "p95": 45
+    },
+    "error_rate": 0.001
+  },
+  "token_service": {
+    "refresh_rate_per_hour": 10,
+    "failure_rate": 0.0001,
+    "token_age_seconds": {
+      "avg": 1800,
+      "max": 3600
+    }
+  },
+  "user_activity": {
+    "concurrent_users": {
+      "avg": 10,
+      "peak": 25
+    },
+    "session_duration_minutes": {
+      "avg": 25,
+      "p95": 60
+    },
+    "actions_per_session": {
+      "avg": 35
+    }
+  },
+  "alerts": {
+    "baseline_thresholds": {
+      "critical": {
+        "api_response_time_ms": 1000,
+        "error_rate": 0.05,
+        "cpu_used_percent": 90,
+        "memory_used_percent": 90,
+        "disk_used_percent": 85
+      },
+      "warning": {
+        "api_response_time_ms": 500,
+        "error_rate": 0.02,
+        "cpu_used_percent": 80,
+        "memory_used_percent": 80,
+        "disk_used_percent": 75
+      }
+    }
+  },
+  "notes": "이 베이스라인은 베타 테스트 초기 단계에서 설정되었습니다. 사용자 수가 증가함에 따라 조정이 필요할 수 있습니다."
+}

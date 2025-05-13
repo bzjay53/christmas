@@ -8,6 +8,7 @@ import logging
 from pathlib import Path
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_assets import Environment, Bundle
+from datetime import datetime
 
 # 로깅 설정
 logging.basicConfig(
@@ -77,15 +78,24 @@ def create_app(test_config=None):
     assets.register('js_all', js)
     
     # Blueprint 등록
-    from app.web.routes import dashboard, backtest, settings
+    from app.web.routes import dashboard, backtest, settings, demo
     app.register_blueprint(dashboard.bp)
     app.register_blueprint(backtest.bp)
     app.register_blueprint(settings.bp)
+    app.register_blueprint(demo.bp)
     
     # 루트 경로 설정
     @app.route('/')
     def index():
-        return redirect(url_for('dashboard.index'))
+        return jsonify({
+            'app': 'Christmas Trading Project',
+            'status': 'running',
+            'timestamp': datetime.now().isoformat(),
+            'endpoints': [
+                '/dashboard',
+                '/demo'
+            ]
+        })
     
     # 에러 핸들러
     @app.errorhandler(404)
@@ -97,11 +107,11 @@ def create_app(test_config=None):
         return render_template('error/500.html'), 500
     
     # API 상태 확인 엔드포인트
-    @app.route('/api/health')
-    def api_health():
+    @app.route('/health')
+    def health():
         return jsonify({
             'status': 'ok',
-            'version': '0.1.0'
+            'timestamp': datetime.now().isoformat()
         })
     
     logger.info("웹 애플리케이션이 초기화되었습니다.")

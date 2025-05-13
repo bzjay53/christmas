@@ -1,0 +1,288 @@
+version: '3.8'
+
+services:
+  # TimescaleDB: 시계열 데이터베이스
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    ports:
+      - "${TIMESCALEDB_PORT:-5533}:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER:-christmas_beta}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-beta_password}
+      - POSTGRES_DB=${DB_NAME:-christmas_beta}
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-christmas_beta}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis: 캐싱 및 메시지 브로커
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6480}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Weaviate: 벡터 데이터베이스 (RAG 시스템용)
+  weaviate:
+    image: semitechnologies/weaviate:1.21.2
+    ports:
+      - "${WEAVIATE_PORT:-7801}:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=20
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=text2vec-openai
+      - ENABLE_MODULES=text2vec-openai
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    restart: unless-stopped
+
+  # API 서비스: FastAPI 애플리케이션
+  api:
+    build:
+      context: ../../
+      dockerfile: environments/beta/Dockerfile
+    ports:
+      - "${API_PORT:-7001}:8000"
+    depends_on:
+      - timescaledb
+      - redis
+      - weaviate
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-beta}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.2.0-beta.1}
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${DB_USER:-christmas_beta}
+      - CHRISTMAS_DB_PASSWORD=${DB_PASSWORD:-beta_password}
+      - CHRISTMAS_DB_NAME=${DB_NAME:-christmas_beta}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - CHRISTMAS_WEAVIATE_HOST=weaviate
+      - CHRISTMAS_WEAVIATE_PORT=8080
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENABLE_PROFILING=true
+      - API_RATE_LIMIT=180
+      - KIS_MOCK_APP_KEY=${KIS_MOCK_APP_KEY:-your_mock_app_key}
+      - KIS_MOCK_APP_SECRET=${KIS_MOCK_APP_SECRET:-your_mock_app_secret}
+      - KIS_MOCK_ACCOUNT=${KIS_MOCK_ACCOUNT:-your_mock_account}
+      - KIS_REAL_APP_KEY=${KIS_REAL_APP_KEY:-your_real_app_key}
+      - KIS_REAL_APP_SECRET=${KIS_REAL_APP_SECRET:-your_real_app_secret}
+      - KIS_REAL_ACCOUNT=${KIS_REAL_ACCOUNT:-your_real_account}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-beta_test_token}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs/api:/app/logs
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+
+  # 데이터 수집 서비스
+  ingestion:
+    build:
+      context: ../../
+      dockerfile: environments/beta/Dockerfile
+    depends_on:
+      - timescaledb
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-beta}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.2.0-beta.1}
+      - CHRISTMAS_DB_HOST=timescaledb
+      - CHRISTMAS_DB_PORT=5432
+      - CHRISTMAS_DB_USER=${DB_USER:-christmas_beta}
+      - CHRISTMAS_DB_PASSWORD=${DB_PASSWORD:-beta_password}
+      - CHRISTMAS_DB_NAME=${DB_NAME:-christmas_beta}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MARKET_DATA_SOURCES=upbit,binance,bithumb
+      - DATA_REFRESH_INTERVAL=30
+      - KIS_MOCK_APP_KEY=${KIS_MOCK_APP_KEY:-your_mock_app_key}
+      - KIS_MOCK_APP_SECRET=${KIS_MOCK_APP_SECRET:-your_mock_app_secret}
+      - KIS_MOCK_ACCOUNT=${KIS_MOCK_ACCOUNT:-your_mock_account}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs:/app/logs
+    command: python -m app.ingestion.main
+    restart: unless-stopped
+
+  # 텔레그램 봇 서비스
+  telegram_bot:
+    build:
+      context: ../../
+      dockerfile: environments/beta/Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-beta}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.2.0-beta.1}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-beta_test_token}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - NOTIFICATION_QUEUE_SIZE=100
+      - NOTIFICATION_BATCH_SIZE=10
+      - KIS_MOCK_APP_KEY=${KIS_MOCK_APP_KEY:-your_mock_app_key}
+      - KIS_MOCK_APP_SECRET=${KIS_MOCK_APP_SECRET:-your_mock_app_secret}
+      - KIS_MOCK_ACCOUNT=${KIS_MOCK_ACCOUNT:-your_mock_account}
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs:/app/logs
+    command: python -m app.notification.telegram_bot
+    restart: unless-stopped
+
+  # 웹 인터페이스 서비스: Flask 애플리케이션
+  web:
+    build:
+      context: ../../
+      dockerfile: environments/beta/Dockerfile
+    ports:
+      - "${WEB_PORT:-4001}:5000"
+    depends_on:
+      - api
+      - redis
+    environment:
+      - CHRISTMAS_ENV=${CHRISTMAS_ENV:-beta}
+      - CHRISTMAS_VERSION=${CHRISTMAS_VERSION:-0.2.0-beta.1}
+      - CHRISTMAS_REDIS_HOST=redis
+      - CHRISTMAS_REDIS_PORT=6379
+      - FLASK_APP=app.web.main
+      - FLASK_DEBUG=True
+      - FLASK_PORT=5000
+      - FLASK_HOST=0.0.0.0
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-beta_secret_key}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENABLE_USAGE_TRACKING=true
+    volumes:
+      - ../../app:/app/app
+      - ../../config:/app/config
+      - ../../logs/web:/app/logs
+    command: python -m app.web.run
+    restart: unless-stopped
+
+  # 모니터링: Prometheus
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    ports:
+      - "${PROMETHEUS_PORT:-7091}:9090"
+    volumes:
+      - ../../config/prometheus/beta:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  # 모니터링: Grafana
+  grafana:
+    image: grafana/grafana:10.0.3
+    ports:
+      - "${GRAFANA_PORT:-7031}:3000"
+    volumes:
+      - ../../config/grafana/beta:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=beta_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    restart: unless-stopped
+
+  # 로그 집계: ELK 스택
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    volumes:
+      - ../../config/logstash/beta:/usr/share/logstash/pipeline
+      - ../../logs:/logs
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    environment:
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # 사용자 행동 분석: Matomo
+  matomo_db:
+    image: mariadb:10.5
+    volumes:
+      - matomo_db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=matomo_root_pw
+      - MYSQL_DATABASE=matomo
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD=matomo_pw
+    restart: unless-stopped
+
+  matomo:
+    image: matomo:4.14-apache
+    ports:
+      - "${MATOMO_PORT:-8080}:80"
+    volumes:
+      - matomo_data:/var/www/html
+    environment:
+      - MATOMO_DATABASE_HOST=matomo_db
+      - MATOMO_DATABASE_DBNAME=matomo
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD=matomo_pw
+    depends_on:
+      - matomo_db
+    restart: unless-stopped
+
+  # 성능 모니터링: Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:1.35
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
+      - "${JAEGER_COLLECTOR_PORT:-14268}:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=9411
+    restart: unless-stopped
+
+volumes:
+  timescale_data:
+  redis_data:
+  weaviate_data:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  matomo_db_data:
+  matomo_data: 

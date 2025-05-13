@@ -20,9 +20,9 @@ services:
       - VERCEL_TOKEN=${VERCEL_TOKEN:-}
     command: >
       bash -c "if [ -n \"$$VERCEL_TOKEN\" ]; then
-        vercel dev --listen 3000 --token $$VERCEL_TOKEN;
+        vercel dev --listen 3000 --token $$VERCEL_TOKEN --yes;
       else
-        vercel dev --listen 3000;
+        vercel dev --listen 3000 --yes;
       fi"
     depends_on:
       - timescaledb
@@ -45,9 +45,9 @@ services:
       - VERCEL_TOKEN=${VERCEL_TOKEN:-}
     command: >
       bash -c "if [ -n \"$$VERCEL_TOKEN\" ]; then
-        vercel build --token $$VERCEL_TOKEN;
+        vercel build --token $$VERCEL_TOKEN --yes;
       else
-        vercel build;
+        vercel build --yes;
       fi"
     depends_on:
       - timescaledb

@@ -1,0 +1,41 @@
+{
+  "environment": "production",
+  "endpoints": {
+    "api": "https://api.christmas-trading.com",
+    "web": "https://www.christmas-trading.com",
+    "monitoring": "https://monitoring.christmas-trading.com"
+  },
+  "checks": {
+    "infrastructure": true,
+    "application": true,
+    "security": true,
+    "performance": true,
+    "monitoring": true,
+    "backup": true
+  },
+  "thresholds": {
+    "api_response_time_ms": 200,
+    "error_rate_percentage": 0.1,
+    "cpu_usage_percentage": 70,
+    "memory_usage_percentage": 80
+  },
+  "infrastructure": {
+    "components": [
+      {"name": "API 서버", "endpoint": "/health", "expected_status": 200},
+      {"name": "웹 서버", "endpoint": "/ping", "expected_status": 200},
+      {"name": "데이터베이스", "endpoint": "/db/health", "expected_status": 200},
+      {"name": "캐시 서버", "endpoint": "/cache/health", "expected_status": 200},
+      {"name": "로드 밸런서", "endpoint": "/lb/health", "expected_status": 200}
+    ]
+  },
+  "security": {
+    "checks": [
+      {"name": "TLS/SSL 설정", "min_version": "TLS 1.2"},
+      {"name": "방화벽 규칙", "required": ["inbound_http", "inbound_https", "outbound_api"]},
+      {"name": "인증 시스템", "required": ["oauth2", "mfa"]},
+      {"name": "권한 부여", "required": ["rbac"]},
+      {"name": "비밀 관리", "required": ["vault", "env_vars"]},
+      {"name": "취약점 스캔", "max_critical": 0, "max_high": 0}
+    ]
+  }
+} 

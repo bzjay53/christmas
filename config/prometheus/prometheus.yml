@@ -10,23 +10,34 @@ alerting:
           # - alertmanager:9093
 
 rule_files:
-  # - "alert_rules.yml"
+  # - "first_rules.yml"
+  # - "second_rules.yml"
 
 scrape_configs:
   - job_name: "prometheus"
-    metrics_path: /metrics
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "api"
+  - job_name: "christmas_api"
+    scrape_interval: 5s
     metrics_path: /metrics
     static_configs:
       - targets: ["api:8000"]
 
-  - job_name: "node_exporter"
+  - job_name: "christmas_web"
+    scrape_interval: 5s
+    metrics_path: /metrics
     static_configs:
-      - targets: ["node-exporter:9100"]
+      - targets: ["web:5000"]
 
-  - job_name: "cadvisor"
+  - job_name: "christmas_ingestion"
+    scrape_interval: 5s
+    metrics_path: /metrics
     static_configs:
-      - targets: ["cadvisor:8080"] 
+      - targets: ["ingestion:8000"]
+
+  - job_name: "christmas_telegram_bot"
+    scrape_interval: 5s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["telegram_bot:8000"]

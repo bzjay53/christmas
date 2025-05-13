@@ -1,0 +1,99 @@
+{
+  "survey_urls": {
+    "mid_survey": "https://forms.christmas-trading.com/beta/mid-survey",
+    "final_survey": "https://forms.christmas-trading.com/beta/final-survey"
+  },
+  "telegram_bot": {
+    "token": "1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789",
+    "chat_id": "-100123456789"
+  },
+  "feedback_email": "beta-feedback@christmas-trading.com",
+  "feedback_database": {
+    "host": "timescaledb",
+    "port": 5432,
+    "dbname": "feedback_data",
+    "user": "christmas_app",
+    "password": "Christmas@Beta2025DB",
+    "schema": "public",
+    "tables": {
+      "feedback": "beta_feedback",
+      "survey_results": "beta_survey_results",
+      "user_actions": "beta_user_actions",
+      "issues": "beta_issues"
+    }
+  },
+  "monitoring": {
+    "prometheus": {
+      "url": "http://prometheus:9090",
+      "metrics_prefix": "feedback_"
+    },
+    "grafana": {
+      "url": "http://grafana:3000",
+      "dashboard_uid": "beta-feedback-dashboard"
+    }
+  },
+  "notifications": {
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.office365.com",
+      "smtp_port": 587,
+      "username": "beta-feedback@christmas-trading.com",
+      "password": "Christmas@Beta2025",
+      "recipients": [
+        "dev-team@christmas-trading.com",
+        "product-team@christmas-trading.com"
+      ]
+    },
+    "slack": {
+      "enabled": true,
+      "webhook_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+      "channel": "#beta-feedback"
+    }
+  },
+  "feedback_categories": [
+    "UI/UX",
+    "성능",
+    "기능",
+    "버그",
+    "제안",
+    "기타"
+  ],
+  "priority_levels": [
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "auto_categorization": {
+    "enabled": true,
+    "keywords": {
+      "성능": ["느림", "지연", "버벅", "속도", "빠르", "느려"],
+      "버그": ["오류", "에러", "버그", "문제", "작동하지 않음", "고장"],
+      "UI/UX": ["인터페이스", "UI", "사용성", "화면", "레이아웃", "디자인"],
+      "기능": ["기능", "추가", "빠짐", "없음", "필요"]
+    }
+  },
+  "health_check": {
+    "interval_seconds": 300,
+    "endpoints": [
+      {
+        "name": "survey_mid",
+        "url": "https://forms.christmas-trading.com/beta/mid-survey",
+        "method": "HEAD",
+        "timeout_seconds": 5
+      },
+      {
+        "name": "survey_final",
+        "url": "https://forms.christmas-trading.com/beta/final-survey",
+        "method": "HEAD",
+        "timeout_seconds": 5
+      },
+      {
+        "name": "database",
+        "type": "database",
+        "query": "SELECT 1",
+        "timeout_seconds": 3
+      }
+    ]
+  }
+} 

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-05-13T10:43:09.927355",
+  "baseline_reference": "beta_test_initial_baseline",
+  "metrics": {
+    "api": {
+      "response_times": [],
+      "error_rates": [],
+      "requests_per_second": []
+    },
+    "system": {
+      "cpu_usage": [],
+      "memory_usage": [],
+      "disk_usage": []
+    },
+    "users": {
+      "concurrent_users": []
+    }
+  },
+  "issues": [],
+  "summary": {
+    "total_issues": 0,
+    "critical_issues": 0,
+    "warning_issues": 0
+  }
+}

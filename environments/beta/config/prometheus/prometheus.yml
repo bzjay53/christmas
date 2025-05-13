@@ -1,0 +1,100 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - "alert_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'app_metrics'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'ingestion'
+    static_configs:
+      - targets: ['ingestion:8001']
+    metrics_path: '/metrics'
+    
+  - job_name: 'strategy'
+    static_configs:
+      - targets: ['strategy:8002']
+    metrics_path: '/metrics'
+    
+  - job_name: 'orders'
+    static_configs:
+      - targets: ['orders:8003']
+    metrics_path: '/metrics'
+    
+  - job_name: 'portfolio'
+    static_configs:
+      - targets: ['portfolio:8004']
+    metrics_path: '/metrics'
+    
+  - job_name: 'risk'
+    static_configs:
+      - targets: ['risk:8005']
+    metrics_path: '/metrics'
+    
+  - job_name: 'backtest'
+    static_configs:
+      - targets: ['backtest:8006']
+    metrics_path: '/metrics'
+    
+  - job_name: 'monitoring'
+    static_configs:
+      - targets: ['monitoring:8007']
+    metrics_path: '/metrics'
+    
+  - job_name: 'notification'
+    static_configs:
+      - targets: ['notification:8008']
+    metrics_path: '/metrics'
+    
+  - job_name: 'telegram_bot'
+    static_configs:
+      - targets: ['telegram_bot:8009']
+    metrics_path: '/metrics'
+
+  - job_name: 'feedback_system'
+    static_configs:
+      - targets: ['feedback_system:4000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://forms.christmas-trading.com/beta/mid-survey
+        - https://forms.christmas-trading.com/beta/final-survey
+        - https://api.christmas-trading.com/health
+        - https://grafana.christmas-trading.com/ping
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115 
