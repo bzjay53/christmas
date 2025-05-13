@@ -18,33 +18,51 @@ bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 @bp.route('/')
 def index():
     """대시보드 메인 페이지"""
-    # 대시보드 데이터 준비 (실제로는 서비스에서 가져옴)
-    dashboard_data = {
-        'account_balance': 10000000,  # 1천만원
-        'profit_today': 105000,  # 10.5만원
-        'profit_percent_today': 1.05,
-        'open_positions': 3,
-        'pending_orders': 2,
-        'recent_trades': get_sample_recent_trades(),
-        'portfolio_value': 15000000,  # 1천5백만원
-        'daily_pnl': get_sample_daily_pnl(),
-        'asset_allocation': get_sample_asset_allocation(),
-        'current_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    # 실제 데이터 대신 샘플 데이터 생성
+    data = {
+        'last_update': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'total_profit': '2,750,000',
+        'profit_change': '12.5',
+        'total_orders': '32',
+        'success_rate': '94.8',
+        'active_positions': '5',
+        'avg_holding_time': '45분',
+        'total_alerts': '8',
+        'critical_alerts': '2',
+        'warning_alerts': '3',
+        
+        # 성과 차트 데이터
+        'performance_dates': json.dumps(['7/1', '7/2', '7/3', '7/4', '7/5', '7/6', '7/7']),
+        'daily_profits': json.dumps([120000, 85000, 135000, 215000, 178000, 298000, 350000]),
+        
+        # 최근 주문 데이터
+        'recent_orders': [
+            {'symbol': '삼성전자', 'time': '10:15:22', 'side': '매수', 'price': '72,500'},
+            {'symbol': 'LG화학', 'time': '10:08:45', 'side': '매도', 'price': '680,000'},
+            {'symbol': 'POSCO', 'time': '10:02:31', 'side': '매수', 'price': '375,000'},
+            {'symbol': '카카오', 'time': '09:55:17', 'side': '매도', 'price': '57,800'},
+            {'symbol': 'SK하이닉스', 'time': '09:48:03', 'side': '매수', 'price': '127,500'},
+        ],
+        
+        # 현재 포지션 데이터
+        'current_positions': [
+            {'symbol': '삼성전자', 'quantity': '200', 'entry_price': '72,500', 'current_price': '73,400', 'profit': '1.24'},
+            {'symbol': 'POSCO', 'quantity': '50', 'entry_price': '375,000', 'current_price': '378,500', 'profit': '0.93'},
+            {'symbol': 'SK하이닉스', 'quantity': '100', 'entry_price': '127,500', 'current_price': '129,000', 'profit': '1.18'},
+            {'symbol': '현대차', 'quantity': '80', 'entry_price': '182,500', 'current_price': '180,000', 'profit': '-1.37'},
+            {'symbol': '네이버', 'quantity': '40', 'entry_price': '224,000', 'current_price': '227,500', 'profit': '1.56'},
+        ],
+        
+        # 전략 성과 데이터
+        'strategy_names': json.dumps(['추세추종', '모멘텀', '평균회귀', '가격돌파']),
+        'strategy_performance': json.dumps([
+            {'name': '승률', 'data': [92, 86, 89, 78]},
+            {'name': '거래량', 'data': [300, 240, 280, 120]},
+            {'name': '손익비', 'data': [2.8, 1.9, 2.3, 1.7]}
+        ])
     }
     
-    # 현재 시장 상태 (정규 장 시간 여부)
-    market_status = {
-        'is_market_open': is_market_open(),
-        'next_market_event': get_next_market_event(),
-        'auto_trading_enabled': True
-    }
-    
-    return render_template(
-        'dashboard/index.html',
-        title='대시보드',
-        dashboard_data=dashboard_data,
-        market_status=market_status
-    )
+    return render_template('dashboard.html', **data)
 
 @bp.route('/pnl-chart-data')
 def pnl_chart_data():
@@ -161,6 +179,37 @@ def chart_winrate():
         }]
     }
     return jsonify(data)
+
+@bp.route('/api/stats')
+def get_stats():
+    """대시보드 통계 API"""
+    # 실제 데이터 대신 샘플 데이터 생성
+    stats = {
+        'total_profit': random.randint(2500000, 3000000),
+        'total_orders': random.randint(25, 40),
+        'success_rate': round(random.uniform(92.0, 98.0), 1),
+        'active_positions': random.randint(3, 7),
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    return jsonify(stats)
+
+@bp.route('/api/performance')
+def get_performance():
+    """성과 데이터 API"""
+    # 7일간의 성과 데이터 생성
+    dates = []
+    profits = []
+    
+    for i in range(7):
+        day = (datetime.now() - timedelta(days=6-i)).strftime('%-m/%-d')
+        dates.append(day)
+        profits.append(random.randint(80000, 350000))
+    
+    return jsonify({
+        'dates': dates,
+        'profits': profits
+    })
 
 # 헬퍼 함수
 def is_market_open():

@@ -22,7 +22,9 @@
     }
   ],
   "env": {
-    "CHRISTMAS_ENV": "production"
+    "CHRISTMAS_ENV": "production",
+    "FLASK_APP": "app/web/simple_test.py",
+    "FLASK_ENV": "production"
   },
   "public": true
 } 

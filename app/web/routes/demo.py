@@ -22,6 +22,58 @@ def index():
     return render_template('demo/vercel.html')
 
 
+@bp.route('/api/stats')
+def get_stats():
+    """통계 데이터 API"""
+    logger.info("통계 데이터 API 요청")
+    
+    # 샘플 데이터 생성
+    stats = {
+        'total_assets': f"{random.randint(950, 1050)}만원",
+        'daily_profit': f"{random.randint(8, 15)}만 {random.randint(1000, 9999)}원",
+        'trades_count': random.randint(35, 50),
+        'win_rate': "100%",
+        'system_status': {
+            'api_server': 'normal',
+            'database': 'normal',
+            'redis_cache': 'normal',
+            'websocket': 'normal',
+            'backup_system': 'normal'
+        },
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    return jsonify(stats)
+
+
+@bp.route('/api/market')
+def get_market_data():
+    """시장 데이터 API"""
+    logger.info("시장 데이터 API 요청")
+    
+    # 오늘 날짜
+    today = datetime.now()
+    
+    # 7일간의 샘플 데이터 생성
+    dates = [(today - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7, 0, -1)]
+    values = [random.randint(97, 103) for _ in range(7)]
+    
+    market_data = {
+        'dates': dates,
+        'values': values,
+        'strategies': {
+            'RSI 전략': random.randint(25, 35),
+            'MACD 전략': random.randint(20, 30),
+            'Bollinger Bands': random.randint(15, 25),
+            '이동평균선': random.randint(10, 20),
+            '패턴 인식': random.randint(5, 15)
+        },
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    return jsonify(market_data)
+
+
 @bp.route('/api/health')
 def health_check():
     """서버 상태 체크 API"""

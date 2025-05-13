@@ -111,7 +111,8 @@ def create_app(test_config=None):
     def health():
         return jsonify({
             'status': 'ok',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'version': '1.0.0'
         })
     
     logger.info("웹 애플리케이션이 초기화되었습니다.")
@@ -120,4 +121,4 @@ def create_app(test_config=None):
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True) 
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True) 

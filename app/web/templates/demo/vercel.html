@@ -3,184 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vercel 배포 데모 - 크리스마스 프로젝트</title>
+    <title>Christmas - Vercel 배포 데모</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/noto-sans-kr@0.1.1/styles.min.css">
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: #f8f9fa;
-            padding-top: 20px;
+        }
+        .hero {
+            background: linear-gradient(135deg, #4062BB 0%, #5D9CEC 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
         }
         .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
             border: none;
-        }
-        .card-header {
-            background-color: #f1f8ff;
-            border-radius: 15px 15px 0 0 !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            font-weight: 600;
-        }
-        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s;
+            margin-bottom: 20px;
         }
-        .stat-card:hover {
+        .card:hover {
             transform: translateY(-5px);
         }
-        .time-display {
-            font-size: 1.5rem;
-            font-weight: 300;
+        .card-header {
+            background-color: rgba(64, 98, 187, 0.1);
+            border-bottom: none;
+            font-weight: bold;
         }
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #4caf50;
+        .btn-primary {
+            background-color: #4062BB;
+            border-color: #4062BB;
+        }
+        .btn-primary:hover {
+            background-color: #304e96;
+            border-color: #304e96;
+        }
+        .footer {
+            background-color: #343a40;
             color: white;
-            text-align: center;
-            border-radius: 25px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+            padding: 2rem 0;
+            margin-top: 3rem;
         }
     </style>
 </head>
 <body>
+    <!-- 상단 배너 -->
+    <div class="hero">
+        <div class="container text-center">
+            <h1 class="display-4">Christmas 프로젝트</h1>
+            <p class="lead">초단타(스캘핑) 자동 매매 플랫폼</p>
+            <p>정식 버전 v1.0.0 배포</p>
+        </div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
     <div class="container">
-        <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="display-5">크리스마스 프로젝트</h1>
-            <div class="time-display" id="current-time">00:00:00</div>
-        </header>
-        
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card stat-card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-primary">현재 수익률</h5>
-                        <p class="display-4 mb-0">+12.8%</p>
-                        <small class="text-muted">전일 대비 +2.3%</small>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        프로젝트 개요
+                    </div>
+                    <div class="card-body">
+                        <p>Christmas는 Docker 컨테이너 기반의 초단타(스캘핑) 자동 매매 플랫폼입니다. 모든 매수·매도에서 실패 없이 이익을 실현(100% Win-Rate)하는 것을 목표로 합니다.</p>
+                        <a href="/dashboard" class="btn btn-primary">대시보드 보기</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card stat-card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-success">거래 횟수</h5>
-                        <p class="display-4 mb-0">237</p>
-                        <small class="text-muted">오늘 15건</small>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        배포 정보
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stat-card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-warning">승률</h5>
-                        <p class="display-4 mb-0">68%</p>
-                        <small class="text-muted">지난 달 대비 +5%</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stat-card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-danger">최대 손실</h5>
-                        <p class="display-4 mb-0">2.7%</p>
-                        <small class="text-muted">지난 주 대비 -0.5%</small>
+                    <div class="card-body">
+                        <p>이 페이지는 Vercel을 통해 배포된 서버리스 애플리케이션입니다. Christmas 프로젝트의 웹 인터페이스를 보여주는 데모 페이지입니다.</p>
+                        <p><strong>배포 환경:</strong> Production</p>
+                        <p><strong>버전:</strong> v1.0.0</p>
+                        <p><strong>배포 일자:</strong> 2025-06-29</p>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row">
-            <div class="col-md-8">
+
+        <div class="row mt-4">
+            <div class="col-md-4">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <span>수익률 추이</span>
-                        <button id="refresh-btn" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-sync-alt"></i> 새로고침
-                        </button>
+                    <div class="card-header">
+                        핵심 기능
                     </div>
                     <div class="card-body">
-                        <canvas id="sample-chart" height="250"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-header">최근 거래 내역</div>
-                    <div class="card-body p-0">
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>AAPL</strong>
-                                    <div class="text-muted small">2023-11-15 14:32</div>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+2.3%</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>TSLA</strong>
-                                    <div class="text-muted small">2023-11-15 13:45</div>
-                                </div>
-                                <span class="badge bg-danger rounded-pill">-1.7%</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>AMZN</strong>
-                                    <div class="text-muted small">2023-11-15 11:17</div>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+3.1%</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>MSFT</strong>
-                                    <div class="text-muted small">2023-11-15 10:05</div>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+1.5%</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>GOOGL</strong>
-                                    <div class="text-muted small">2023-11-15 09:22</div>
-                                </div>
-                                <span class="badge bg-success rounded-pill">+2.8%</span>
-                            </li>
+                            <li class="list-group-item">실시간 시장 데이터 분석</li>
+                            <li class="list-group-item">다양한 기술적 지표 기반 전략</li>
+                            <li class="list-group-item">전자동 주문 실행</li>
+                            <li class="list-group-item">성능 모니터링 및 분석</li>
+                            <li class="list-group-item">텔레그램 알림 서비스</li>
                         </ul>
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        시스템 상태
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <span class="badge bg-success">API 서버: 정상</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="badge bg-success">데이터베이스: 정상</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="badge bg-success">Redis 캐시: 정상</span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="badge bg-success">WebSocket: 정상</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-success">백업 시스템: 정상</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        문서 및 리소스
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="#" class="btn btn-outline-primary btn-sm">사용자 매뉴얼</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">API 문서</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">설치 가이드</a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">기술 지원</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <footer class="mt-5 text-center text-muted">
-            <p>
-                © 2023 크리스마스 프로젝트 | 
-                <span class="badge bg-light text-dark">Vercel 배포 데모</span>
-            </p>
-        </footer>
     </div>
-    
-    <div id="toast">메시지가 표시됩니다</div>
-    
+
+    <!-- 푸터 -->
+    <footer class="footer mt-5">
+        <div class="container text-center">
+            <p>© 2025 Christmas 프로젝트 - 정식 버전 v1.0.0</p>
+            <p>Vercel 서버리스 배포 데모</p>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='js/vercel-demo.js') }}"></script>
 </body>
 </html> 
