@@ -1,0 +1,50 @@
+{
+  "docker": {
+    "registry": "registry.christmas-trading.com"
+  },
+  "ssh": {
+    "user": "christmas-admin"
+  },
+  "environments": {
+    "blue": {
+      "host": "app-blue.christmas-trading.com",
+      "domain": "app-blue.christmas-trading.com",
+      "deploy_path": "/opt/christmas/blue"
+    },
+    "green": {
+      "host": "app-green.christmas-trading.com",
+      "domain": "app-green.christmas-trading.com",
+      "deploy_path": "/opt/christmas/green"
+    }
+  },
+  "load_balancer": {
+    "host": "lb.christmas-trading.com",
+    "config_path": "/etc/nginx/conf.d"
+  },
+  "database": {
+    "host": "db.christmas-trading.com",
+    "name": "christmas_production",
+    "user": "christmas_admin"
+  },
+  "notifications": {
+    "slack_webhook": "https://hooks.slack.com/services/TXXXXXXXX/BXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX",
+    "email_recipients": [
+      "team@christmas-trading.com",
+      "admin@christmas-trading.com"
+    ]
+  },
+  "monitoring": {
+    "grafana_url": "https://grafana.christmas-trading.com",
+    "prometheus_url": "https://prometheus.christmas-trading.com",
+    "sentry_url": "https://sentry.christmas-trading.com"
+  },
+  "deployment": {
+    "canary_deployment": true,
+    "initial_traffic_percentage": 10,
+    "canary_duration_minutes": 30,
+    "rollback_on_error": true,
+    "auto_scale_enabled": true,
+    "min_instances": 3,
+    "max_instances": 10
+  }
+} 

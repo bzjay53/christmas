@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-05-13T13:01:05.269883",
+  "total_issues": 5,
+  "resolved_issues": {
+    "count": 2,
+    "list": [
+      "\ubcf4\uc548 \ud0a4 \uad00\ub9ac \ubb38\uc81c",
+      "\ubc31\uc5c5 \ubc0f \ubcf5\uad6c \ud14c\uc2a4\ud2b8 \uc2e4\ud328"
+    ]
+  },
+  "failed_issues": {
+    "count": 3,
+    "list": [
+      "\uce90\uc2dc \uc11c\ubc84 \uc0c1\ud0dc \ubb38\uc81c",
+      "\uc758\uc874\uc131 \ubc84\uc804 \ubd88\uc77c\uce58",
+      "Sentry \uc0c1\ud0dc \ubb38\uc81c"
+    ]
+  },
+  "dry_run": true
+}

@@ -1,0 +1,43 @@
+{
+  "redis": {
+    "host": "redis.christmas-trading.com",
+    "port": 6379,
+    "password": "secure_redis_password",
+    "maxmemory": "4gb",
+    "maxclients": 10000
+  },
+  "dependencies": {
+    "psutil": "5.9.5"
+  },
+  "security": {
+    "api_keys": {
+      "KIS_API_KEY": "your_key_here",
+      "KIS_API_SECRET": "your_secret_here",
+      "TELEGRAM_BOT_TOKEN": "your_telegram_token"
+    },
+    "files_to_check": [
+      "app/ingestion/market_api.py",
+      "app/notification/telegram_bot.py",
+      "scripts/beta_stabilization.py"
+    ],
+    "update_docker_compose": true,
+    "docker_compose_file": "docker-compose.yml"
+  },
+  "sentry": {
+    "url": "https://sentry.christmas-trading.com",
+    "token": "your_sentry_token",
+    "organization": "christmas",
+    "project": "christmas-platform",
+    "retention_days": 30,
+    "is_self_hosted": true,
+    "docker_compose_file": "docker-compose.sentry.yml"
+  },
+  "backup": {
+    "directory": "environments/production/backups",
+    "db_host": "db.christmas-trading.com",
+    "db_port": 5432,
+    "db_user": "postgres",
+    "db_password": "secure_db_password",
+    "db_name": "christmas_production"
+  }
+} 
