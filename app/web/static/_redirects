@@ -1,0 +1,6 @@
+# API 요청을 서버리스 함수로 리다이렉트
+/api/*  /.netlify/functions/api/:splat  200
+/demo/*  /.netlify/functions/demo-trade/:splat  200
+
+# SPA 라우팅을 위한 리다이렉트
+/*      /index.html     200

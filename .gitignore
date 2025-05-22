@@ -125,3 +125,6 @@ config/local.yml
 # Docker volumes
 data/ 
 .vercel
+
+# Local Netlify folder
+.netlify

@@ -1,0 +1,12 @@
+{
+  "name": "christmas-project",
+  "version": "1.0.0",
+  "description": "Christmas \ucd08\ub2e8\ud0c0 \ub9e4\ub9e4 \ud50c\ub7ab\ud3fc",
+  "scripts": {
+    "build": "python setup.py",
+    "dev": "python app/web/main.py"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

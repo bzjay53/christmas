@@ -1,0 +1,733 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}모의투자 - Christmas{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.33.0/dist/apexcharts.min.css">
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.33.0/dist/apexcharts.min.js"></script>
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .account-card {
+        border-left: 4px solid #4cc9f0;
+    }
+    
+    .trade-card {
+        border-left: 4px solid #4361ee;
+    }
+    
+    .order-card {
+        border-left: 4px solid #3a0ca3;
+    }
+    
+    .position-card {
+        border-left: 4px solid #7209b7;
+    }
+    
+    .btn-buy {
+        background-color: #4cc9f0;
+        border-color: #4cc9f0;
+    }
+    
+    .btn-sell {
+        background-color: #f72585;
+        border-color: #f72585;
+    }
+    
+    .price-up {
+        color: #ff5252;
+    }
+    
+    .price-down {
+        color: #4caf50;
+    }
+    
+    .stock-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .stock-row:hover {
+        background-color: rgba(76, 201, 240, 0.1);
+    }
+    
+    .stock-row.selected {
+        background-color: rgba(76, 201, 240, 0.2);
+    }
+    
+    .order-form {
+        display: none;
+    }
+    
+    .chart-container {
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    
+    .badge-buy {
+        background-color: rgba(76, 201, 240, 0.2);
+        color: #4cc9f0;
+    }
+    
+    .badge-sell {
+        background-color: rgba(247, 37, 133, 0.2);
+        color: #f72585;
+    }
+    
+    #price-chart {
+        height: 250px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4>모의투자</h4>
+        <div>
+            <button id="refresh-button" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-arrow-clockwise"></i> 새로고침
+            </button>
+            <button id="reset-button" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-x-circle"></i> 계좌 초기화
+            </button>
+        </div>
+    </div>
+    
+    <!-- 계좌 정보 카드 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card account-card">
+                <div class="card-header">
+                    <h5 class="card-title">계좌 정보</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>투자 예수금:</strong> <span id="account-balance">{{ account.balance }}</span>원</p>
+                            <p><strong>평가 금액:</strong> <span id="stock-value">{{ account.stock_value }}</span>원</p>
+                            <p><strong>총 자산:</strong> <span id="total-value">{{ account.total_value }}</span>원</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>실현 손익:</strong> <span id="pnl" class="{% if account.pnl|float > 0 %}text-success{% elif account.pnl|float < 0 %}text-danger{% endif %}">{{ account.pnl }}</span>원</p>
+                            <p><strong>수익률:</strong> <span id="pnl-percent" class="{% if account.pnl_percent|float > 0 %}text-success{% elif account.pnl_percent|float < 0 %}text-danger{% endif %}">{{ account.pnl_percent }}</span>%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card position-card">
+                <div class="card-header">
+                    <h5 class="card-title">보유 포지션</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>종목</th>
+                                <th>수량</th>
+                                <th>평균가</th>
+                                <th>현재가</th>
+                                <th>손익(%)</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-table">
+                            <tr>
+                                <td colspan="6" class="text-center py-3">보유 중인 포지션이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 주문 영역 -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">종목 목록</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>종목명</th>
+                                <th>현재가</th>
+                                <th>변동률</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stock in stock_list %}
+                            <tr class="stock-row" data-symbol="{{ stock.symbol }}" data-code="{{ stock.code }}">
+                                <td>{{ stock.symbol }}</td>
+                                <td class="stock-price">{{ stock.current_price }}</td>
+                                <td class="{% if stock.change_percent.startswith('+') %}price-up{% elif stock.change_percent.startswith('-') %}price-down{% endif %}">
+                                    {{ stock.change_percent }}%
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-buy trade-btn" data-action="buy" data-symbol="{{ stock.symbol }}">매수</button>
+                                    <button class="btn btn-sm btn-sell trade-btn" data-action="sell" data-symbol="{{ stock.symbol }}">매도</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card trade-card">
+                <div class="card-header">
+                    <h5 class="card-title">차트 및 주문</h5>
+                </div>
+                <div class="card-body">
+                    <div id="price-chart" class="mb-4"></div>
+                    
+                    <div id="order-form" class="order-form">
+                        <h5 id="selected-stock">종목을 선택하세요</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="order-type">주문 유형</label>
+                                    <select class="form-control" id="order-type">
+                                        <option value="buy">매수</option>
+                                        <option value="sell">매도</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="order-price">주문 가격</label>
+                                    <input type="text" class="form-control" id="order-price" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="order-quantity">수량</label>
+                                    <input type="number" class="form-control" id="order-quantity" min="1" value="1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="order-total">총 금액</label>
+                                    <input type="text" class="form-control" id="order-total" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button id="submit-order" class="btn btn-primary">주문 제출</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 거래 내역 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card order-card">
+                <div class="card-header">
+                    <h5 class="card-title">거래 내역</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>주문 ID</th>
+                                <th>종목</th>
+                                <th>유형</th>
+                                <th>가격</th>
+                                <th>수량</th>
+                                <th>총액</th>
+                                <th>시간</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table">
+                            <tr>
+                                <td colspan="8" class="text-center py-3">거래 내역이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 전역 변수
+    let selectedSymbol = '';
+    let currentPrice = 0;
+    let orders = [];
+    let positions = [];
+    let chart = null;
+    let chartSeries = [{
+        name: '가격',
+        data: []
+    }];
+    
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', function() {
+        // 차트 초기화
+        initChart();
+        
+        // 계좌 정보 로드
+        refreshAccountInfo();
+        
+        // 포지션 정보 로드
+        refreshPositions();
+        
+        // 종목 목록 이벤트 핸들러
+        setupStockRows();
+        
+        // 주문 버튼 이벤트 핸들러
+        setupTradeButtons();
+        
+        // 주문 제출 이벤트 핸들러
+        document.getElementById('submit-order').addEventListener('click', submitOrder);
+        
+        // 새로고침 버튼 이벤트 핸들러
+        document.getElementById('refresh-button').addEventListener('click', function() {
+            refreshAccountInfo();
+            refreshPositions();
+            updatePrices();
+        });
+        
+        // 계좌 초기화 버튼 이벤트 핸들러
+        document.getElementById('reset-button').addEventListener('click', function() {
+            if (confirm('계좌를 초기화하시겠습니까? 모든 포지션과 거래 내역이 삭제됩니다.')) {
+                resetAccount();
+            }
+        });
+        
+        // 수량 변경 이벤트 핸들러
+        document.getElementById('order-quantity').addEventListener('input', updateOrderTotal);
+        
+        // 주문 유형 변경 이벤트 핸들러
+        document.getElementById('order-type').addEventListener('change', updateOrderForm);
+        
+        // 가격 자동 업데이트 타이머 설정
+        setInterval(updatePrices, 5000);
+    });
+    
+    // 차트 초기화
+    function initChart() {
+        let options = {
+            series: chartSeries,
+            chart: {
+                type: 'line',
+                height: 250,
+                animations: {
+                    enabled: true,
+                    easing: 'linear',
+                    dynamicAnimation: {
+                        speed: 1000
+                    }
+                },
+                toolbar: {
+                    show: false
+                },
+                zoom: {
+                    enabled: false
+                }
+            },
+            colors: ['#4cc9f0'],
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2,
+            },
+            grid: {
+                borderColor: '#e0e0e0',
+                strokeDashArray: 3,
+                xaxis: {
+                    lines: {
+                        show: false
+                    }
+                }
+            },
+            markers: {
+                size: 3
+            },
+            xaxis: {
+                type: 'datetime',
+                labels: {
+                    formatter: function(value) {
+                        return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    formatter: function(value) {
+                        return value.toLocaleString();
+                    }
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'HH:mm:ss'
+                }
+            },
+            legend: {
+                show: false
+            }
+        };
+        
+        chart = new ApexCharts(document.querySelector("#price-chart"), options);
+        chart.render();
+    }
+    
+    // 종목 행 설정
+    function setupStockRows() {
+        document.querySelectorAll('.stock-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const symbol = this.dataset.symbol;
+                const code = this.dataset.code;
+                
+                // 선택된 행 강조
+                document.querySelectorAll('.stock-row').forEach(r => r.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // 선택된 종목 정보 설정
+                selectedSymbol = symbol;
+                document.getElementById('selected-stock').textContent = symbol;
+                
+                // 주문 폼 표시
+                document.getElementById('order-form').style.display = 'block';
+                
+                // 가격 정보 가져오기
+                fetchStockPrice(symbol);
+            });
+        });
+    }
+    
+    // 매수/매도 버튼 설정
+    function setupTradeButtons() {
+        document.querySelectorAll('.trade-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // 부모 이벤트(행 클릭) 방지
+                
+                const symbol = this.dataset.symbol;
+                const action = this.dataset.action;
+                
+                // 행 선택
+                document.querySelectorAll('.stock-row').forEach(r => {
+                    if (r.dataset.symbol === symbol) {
+                        r.click();
+                    }
+                });
+                
+                // 주문 유형 설정
+                document.getElementById('order-type').value = action;
+                updateOrderForm();
+            });
+        });
+    }
+    
+    // 주문 폼 업데이트
+    function updateOrderForm() {
+        const orderType = document.getElementById('order-type').value;
+        const submitBtn = document.getElementById('submit-order');
+        
+        if (orderType === 'buy') {
+            submitBtn.textContent = '매수 주문';
+            submitBtn.className = 'btn btn-buy';
+        } else {
+            submitBtn.textContent = '매도 주문';
+            submitBtn.className = 'btn btn-sell';
+        }
+        
+        updateOrderTotal();
+    }
+    
+    // 주문 총액 업데이트
+    function updateOrderTotal() {
+        const quantity = parseInt(document.getElementById('order-quantity').value) || 0;
+        const total = quantity * currentPrice;
+        
+        document.getElementById('order-total').value = total.toLocaleString() + '원';
+    }
+    
+    // 가격 정보 가져오기
+    function fetchStockPrice(symbol) {
+        fetch(`/demo/api/mock/price/${symbol}`)
+            .then(response => response.json())
+            .then(data => {
+                // 현재 가격 업데이트
+                currentPrice = data.raw_price;
+                document.getElementById('order-price').value = data.price + '원';
+                
+                // 주문 총액 업데이트
+                updateOrderTotal();
+                
+                // 차트 데이터 추가
+                const timestamp = new Date(data.timestamp).getTime();
+                updateChart(timestamp, data.raw_price);
+            })
+            .catch(error => console.error('가격 정보 가져오기 오류:', error));
+    }
+    
+    // 차트 업데이트
+    function updateChart(timestamp, price) {
+        // 데이터 10개 이상이면 첫 번째 항목 제거
+        if (chartSeries[0].data.length > 10) {
+            chartSeries[0].data.shift();
+        }
+        
+        // 새 데이터 추가
+        chartSeries[0].data.push({
+            x: timestamp,
+            y: price
+        });
+        
+        // 차트 업데이트
+        chart.updateSeries(chartSeries);
+    }
+    
+    // 모든 가격 업데이트
+    function updatePrices() {
+        document.querySelectorAll('.stock-row').forEach(row => {
+            const symbol = row.dataset.symbol;
+            
+            fetch(`/demo/api/mock/price/${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 가격 업데이트
+                    const priceCell = row.querySelector('.stock-price');
+                    priceCell.textContent = data.price;
+                    
+                    // 변동률 업데이트
+                    const changeCell = priceCell.nextElementSibling;
+                    changeCell.textContent = data.change_percent + '%';
+                    
+                    // 색상 업데이트
+                    if (parseFloat(data.change_percent) > 0) {
+                        changeCell.className = 'price-up';
+                    } else if (parseFloat(data.change_percent) < 0) {
+                        changeCell.className = 'price-down';
+                    } else {
+                        changeCell.className = '';
+                    }
+                    
+                    // 선택된 종목이면 주문 정보도 업데이트
+                    if (symbol === selectedSymbol) {
+                        currentPrice = data.raw_price;
+                        document.getElementById('order-price').value = data.price + '원';
+                        updateOrderTotal();
+                        
+                        // 차트 데이터 추가
+                        const timestamp = new Date(data.timestamp).getTime();
+                        updateChart(timestamp, data.raw_price);
+                    }
+                })
+                .catch(error => console.error('가격 업데이트 오류:', error));
+        });
+    }
+    
+    // 계좌 정보 새로고침
+    function refreshAccountInfo() {
+        fetch('/demo/api/mock/account')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('account-balance').textContent = data.balance;
+                document.getElementById('stock-value').textContent = data.stock_value;
+                document.getElementById('total-value').textContent = data.total_value;
+                document.getElementById('pnl').textContent = data.pnl;
+                document.getElementById('pnl-percent').textContent = data.pnl_percent;
+                
+                // 손익 색상 설정
+                const pnl = document.getElementById('pnl');
+                const pnlPercent = document.getElementById('pnl-percent');
+                
+                if (parseFloat(data.pnl.replace(/,/g, '')) > 0) {
+                    pnl.className = 'text-success';
+                    pnlPercent.className = 'text-success';
+                } else if (parseFloat(data.pnl.replace(/,/g, '')) < 0) {
+                    pnl.className = 'text-danger';
+                    pnlPercent.className = 'text-danger';
+                } else {
+                    pnl.className = '';
+                    pnlPercent.className = '';
+                }
+            })
+            .catch(error => console.error('계좌 정보 가져오기 오류:', error));
+    }
+    
+    // 포지션 정보 새로고침
+    function refreshPositions() {
+        fetch('/demo/api/mock/positions')
+            .then(response => response.json())
+            .then(data => {
+                positions = data;
+                updatePositionsTable();
+            })
+            .catch(error => console.error('포지션 정보 가져오기 오류:', error));
+    }
+    
+    // 포지션 테이블 업데이트
+    function updatePositionsTable() {
+        const tableBody = document.getElementById('positions-table');
+        
+        if (positions.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-3">보유 중인 포지션이 없습니다.</td></tr>';
+            return;
+        }
+        
+        let html = '';
+        positions.forEach(position => {
+            const profitClass = parseFloat(position.profit) > 0 ? 'text-success' : parseFloat(position.profit) < 0 ? 'text-danger' : '';
+            
+            html += `
+                <tr>
+                    <td>${position.symbol}</td>
+                    <td>${position.quantity}</td>
+                    <td>${position.entry_price}원</td>
+                    <td>${position.current_price}원</td>
+                    <td class="${profitClass}">${position.profit}%</td>
+                    <td>
+                        <button class="btn btn-sm btn-sell" onclick="closePosition('${position.symbol}')">청산</button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableBody.innerHTML = html;
+    }
+    
+    // 포지션 청산
+    function closePosition(symbol) {
+        // 실제로는 여기서 청산 API를 호출합니다
+        // 여기서는 간단히 포지션을 제거하고 테이블을 업데이트합니다
+        positions = positions.filter(p => p.symbol !== symbol);
+        updatePositionsTable();
+        
+        // 알림 표시
+        alert(`${symbol} 포지션이 청산되었습니다.`);
+        
+        // 계좌 정보 새로고침
+        refreshAccountInfo();
+    }
+    
+    // 주문 제출
+    function submitOrder() {
+        if (!selectedSymbol) {
+            alert('종목을 선택해주세요.');
+            return;
+        }
+        
+        const quantity = parseInt(document.getElementById('order-quantity').value);
+        if (!quantity || quantity <= 0) {
+            alert('유효한 수량을 입력해주세요.');
+            return;
+        }
+        
+        const orderType = document.getElementById('order-type').value;
+        const price = currentPrice;
+        
+        // 주문 API 요청
+        fetch('/demo/api/mock/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                symbol: selectedSymbol,
+                type: orderType,
+                price: price,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 주문 목록에 추가
+                orders.unshift(data);
+                updateOrdersTable();
+                
+                // 성공 메시지
+                alert(`${selectedSymbol} ${orderType === 'buy' ? '매수' : '매도'} 주문이 성공적으로 체결되었습니다.`);
+                
+                // 계좌 정보 및 포지션 새로고침
+                refreshAccountInfo();
+                refreshPositions();
+            } else {
+                alert('주문 처리 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('주문 제출 오류:', error);
+            alert('주문 처리 중 오류가 발생했습니다.');
+        });
+    }
+    
+    // 주문 내역 테이블 업데이트
+    function updateOrdersTable() {
+        const tableBody = document.getElementById('orders-table');
+        
+        if (orders.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-3">거래 내역이 없습니다.</td></tr>';
+            return;
+        }
+        
+        let html = '';
+        orders.forEach(order => {
+            const total = order.price * order.quantity;
+            const date = new Date(order.timestamp);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            
+            html += `
+                <tr>
+                    <td>${order.order_id}</td>
+                    <td>${order.symbol}</td>
+                    <td><span class="badge ${order.type === 'buy' ? 'badge-buy' : 'badge-sell'}">${order.type === 'buy' ? '매수' : '매도'}</span></td>
+                    <td>${order.price.toLocaleString()}원</td>
+                    <td>${order.quantity}</td>
+                    <td>${total.toLocaleString()}원</td>
+                    <td>${formattedDate}</td>
+                    <td>${order.status}</td>
+                </tr>
+            `;
+        });
+        
+        tableBody.innerHTML = html;
+    }
+    
+    // 계좌 초기화
+    function resetAccount() {
+        // 간단히 모든 상태 초기화
+        orders = [];
+        positions = [];
+        updateOrdersTable();
+        updatePositionsTable();
+        
+        // 계좌 정보 초기화 (실제로는 API 호출)
+        document.getElementById('account-balance').textContent = '10,000,000';
+        document.getElementById('stock-value').textContent = '0';
+        document.getElementById('total-value').textContent = '10,000,000';
+        document.getElementById('pnl').textContent = '0';
+        document.getElementById('pnl-percent').textContent = '0.0';
+        
+        alert('계좌가 초기화되었습니다.');
+    }
+</script>
+{% endblock %} 

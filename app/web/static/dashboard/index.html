@@ -1,0 +1,367 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}대시보드 - Christmas{% endblock %}
+
+{% block page_title %}대시보드{% endblock %}
+
+{% block page_actions %}
+<button id="refresh-dashboard" class="btn btn-sm btn-outline-primary">
+    <i class="fas fa-sync-alt me-1"></i> 새로고침
+</button>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/noto-sans-kr@0.1.1/styles.min.css">
+{% endblock %}
+
+{% block content %}
+<!-- 상태 카드 섹션 -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            총 자산
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">10,500,000원</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            오늘의 수익
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">+104,200원</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            오늘의 거래 수
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">42건</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            현재 승률
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">100%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 차트 섹션 -->
+<div class="row">
+    <!-- 수익률 차트 -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">수익률 추이</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="returnsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전략별 수익 차트 -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">전략별 수익</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="strategyPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 시간대별 거래량 -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">시간대별 거래량</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 일별 승률 -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">일별 승률</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="winRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 최근 거래 섹션 -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">최근 거래</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>종목</th>
+                        <th>유형</th>
+                        <th>가격</th>
+                        <th>수량</th>
+                        <th>수익</th>
+                        <th>전략</th>
+                        <th>상태</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13:42:18</td>
+                        <td>비트코인</td>
+                        <td>매도</td>
+                        <td>38,500,000원</td>
+                        <td>0.05</td>
+                        <td class="text-success">+21,500원</td>
+                        <td>RSI 과매도</td>
+                        <td><span class="badge bg-success">완료</span></td>
+                    </tr>
+                    <tr>
+                        <td>13:40:05</td>
+                        <td>비트코인</td>
+                        <td>매수</td>
+                        <td>38,070,000원</td>
+                        <td>0.05</td>
+                        <td>-</td>
+                        <td>RSI 과매도</td>
+                        <td><span class="badge bg-success">완료</span></td>
+                    </tr>
+                    <tr>
+                        <td>12:32:47</td>
+                        <td>이더리움</td>
+                        <td>매도</td>
+                        <td>2,100,000원</td>
+                        <td>0.5</td>
+                        <td class="text-success">+35,000원</td>
+                        <td>MACD 매도</td>
+                        <td><span class="badge bg-success">완료</span></td>
+                    </tr>
+                    <tr>
+                        <td>12:27:31</td>
+                        <td>이더리움</td>
+                        <td>매수</td>
+                        <td>2,030,000원</td>
+                        <td>0.5</td>
+                        <td>-</td>
+                        <td>MACD 매수</td>
+                        <td><span class="badge bg-success">완료</span></td>
+                    </tr>
+                    <tr>
+                        <td>11:15:22</td>
+                        <td>리플</td>
+                        <td>매도</td>
+                        <td>550원</td>
+                        <td>1000</td>
+                        <td class="text-success">+18,000원</td>
+                        <td>볼린저밴드</td>
+                        <td><span class="badge bg-success">완료</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('dashboard.trades') }}" class="btn btn-sm btn-primary">
+                모든 거래 보기
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts/dashboard-charts.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 차트 객체 저장
+        const charts = {
+            returns: null,
+            volume: null,
+            strategy: null,
+            winRate: null
+        };
+        
+        // 차트 초기화
+        initializeCharts();
+        
+        // 새로고침 버튼 이벤트
+        document.getElementById('refresh-dashboard').addEventListener('click', function() {
+            updateChartData();
+        });
+        
+        // 차트 초기화 함수
+        function initializeCharts() {
+            // 빈 데이터로 차트 먼저 생성
+            charts.returns = ChristmasCharts.createReturnsChart('returnsChart');
+            charts.volume = ChristmasCharts.createVolumeChart('volumeChart');
+            charts.strategy = ChristmasCharts.createStrategyPieChart('strategyPieChart');
+            charts.winRate = ChristmasCharts.createWinRateChart('winRateChart');
+            
+            // 실제 데이터 로드
+            updateChartData();
+        }
+        
+        // 차트 데이터 업데이트 함수
+        async function updateChartData() {
+            try {
+                // 새로고침 버튼 비활성화 및 로딩 표시
+                const refreshButton = document.getElementById('refresh-dashboard');
+                const originalContent = refreshButton.innerHTML;
+                refreshButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 새로고침 중...';
+                refreshButton.disabled = true;
+                
+                // 병렬로 모든 API 요청
+                const [returnsData, volumeData, strategyData, winRateData] = await Promise.all([
+                    fetch('/dashboard/api/charts/returns').then(r => r.json()),
+                    fetch('/dashboard/api/charts/volume').then(r => r.json()),
+                    fetch('/dashboard/api/charts/strategy').then(r => r.json()),
+                    fetch('/dashboard/api/charts/winrate').then(r => r.json())
+                ]);
+                
+                // 차트 데이터 업데이트
+                charts.returns.data = returnsData;
+                charts.returns.update();
+                
+                charts.volume.data = volumeData;
+                charts.volume.update();
+                
+                charts.strategy.data = strategyData;
+                charts.strategy.update();
+                
+                charts.winRate.data = winRateData;
+                charts.winRate.update();
+                
+                // 새로고침 버튼 복원
+                refreshButton.innerHTML = originalContent;
+                refreshButton.disabled = false;
+                
+                // 성공 알림
+                showNotification('차트 데이터가 업데이트되었습니다.', 'success');
+            } catch (error) {
+                console.error('차트 데이터 업데이트 실패:', error);
+                
+                // 새로고침 버튼 복원
+                const refreshButton = document.getElementById('refresh-dashboard');
+                refreshButton.innerHTML = '<i class="fas fa-sync-alt me-1"></i> 새로고침';
+                refreshButton.disabled = false;
+                
+                // 오류 알림
+                showNotification('데이터 로드 중 오류가 발생했습니다.', 'danger');
+            }
+        }
+        
+        /**
+         * 알림 표시
+         * @param {string} message - 알림 메시지
+         * @param {string} type - 알림 유형 (success, danger, warning, info)
+         */
+        function showNotification(message, type = 'info') {
+            // 알림 컨테이너 생성
+            let container = document.querySelector('.notifications-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'notifications-container position-fixed top-0 end-0 p-3';
+                container.style.zIndex = '1080';
+                document.body.appendChild(container);
+            }
+            
+            // 알림 요소 생성
+            const notification = document.createElement('div');
+            notification.className = `toast align-items-center text-white bg-${type} border-0`;
+            notification.setAttribute('role', 'alert');
+            notification.setAttribute('aria-live', 'assertive');
+            notification.setAttribute('aria-atomic', 'true');
+            
+            notification.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // 토스트 초기화 및 표시
+            const toast = new bootstrap.Toast(notification, {
+                autohide: true,
+                delay: 3000
+            });
+            
+            toast.show();
+            
+            // 지정된 시간 후 제거
+            setTimeout(() => {
+                notification.remove();
+            }, 3500);
+        }
+    });
+</script>
+{% endblock %} 
