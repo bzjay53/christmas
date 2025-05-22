@@ -8,6 +8,9 @@
   port = 8000
   targetPort = 8080
 
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
