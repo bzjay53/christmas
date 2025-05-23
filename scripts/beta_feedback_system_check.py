@@ -31,8 +31,11 @@ console = Console()
 class FeedbackSystemChecker:
     """베타 테스트 피드백 수집 시스템 점검 클래스"""
     
-    def __init__(self, config_path="environments/beta/config/feedback_system.json"):
+    def __init__(self, config_path=None):
         """초기화"""
+        if config_path is None:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            config_path = os.path.join(base_dir, "environments", "beta", "config", "feedback_system.json")
         self.config_path = config_path
         self.load_config()
         self.issues = []
@@ -298,13 +301,30 @@ class FeedbackSystemChecker:
             console.print("5. Prometheus 알림 규칙을 확인하고 필요한 규칙을 추가하세요.")
 
 def main():
+    """메인 함수"""
     parser = argparse.ArgumentParser(description="베타 테스트 피드백 수집 시스템 점검")
     parser.add_argument("--config", help="설정 파일 경로")
+    parser.add_argument("--verbose", action="store_true", help="상세 로그 출력")
+    
     args = parser.parse_args()
     
-    config_path = args.config if args.config else "environments/beta/config/feedback_system.json"
-    checker = FeedbackSystemChecker(config_path)
+    # 상세 로그 설정
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+        log.info("상세 로그 모드 활성화")
+    
+    checker = FeedbackSystemChecker(args.config)
     checker.run_all_checks()
+    
+    # 이슈 요약 출력
+    if checker.issues:
+        log.warning(f"{len(checker.issues)}개의 이슈가 발견되었습니다.")
+        for i, issue in enumerate(checker.issues):
+            log.warning(f"이슈 {i+1}: {issue}")
+        return 1
+    else:
+        log.info("모든 점검이 성공적으로 완료되었습니다.")
+        return 0
 
 if __name__ == "__main__":
     main() 

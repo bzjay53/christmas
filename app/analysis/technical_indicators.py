@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional, Union, Tuple
 import logging
 
 # 로깅 설정
@@ -248,4 +248,7 @@ class TechnicalIndicators:
         result_df = result_df.sort_values("timestamp", ascending=False)
         
         # 딕셔너리 형태로 반환
-        return result_df.to_dict("records") 
+        return result_df.to_dict("records")
+
+# 전역 인스턴스
+indicators = TechnicalIndicators() 

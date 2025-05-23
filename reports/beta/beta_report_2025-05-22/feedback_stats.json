@@ -1,0 +1,24 @@
+{
+  "total_count": 50,
+  "by_priority": {
+    "low": 13,
+    "medium": 13,
+    "high": 12,
+    "critical": 12
+  },
+  "by_category": {
+    "UI/UX": 9,
+    "성능": 9,
+    "기능": 8,
+    "버그": 8,
+    "제안": 8,
+    "기타": 8
+  },
+  "by_status": {
+    "resolved": 17,
+    "in_progress": 17,
+    "open": 16
+  },
+  "avg_response_time": 29.5,
+  "avg_satisfaction": 3.0
+}

@@ -1,0 +1,29 @@
+{
+  "total_count": 30,
+  "by_severity": {
+    "P0": 8,
+    "P1": 8,
+    "P2": 7,
+    "P3": 7
+  },
+  "by_category": {
+    "성능": 5,
+    "기능": 5,
+    "UI/UX": 5,
+    "시스템 안정성": 5,
+    "보안": 5,
+    "기타": 5
+  },
+  "by_status": {
+    "resolved": 8,
+    "in_progress": 8,
+    "acknowledged": 7,
+    "open": 7
+  },
+  "by_source": {
+    "automated": 10,
+    "manual": 10,
+    "feedback": 10
+  },
+  "avg_resolution_time": 14.0
+}

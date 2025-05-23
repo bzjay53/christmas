@@ -4,7 +4,8 @@
   "description": "Christmas 프로젝트의 Netlify 서버리스 함수",
   "main": "index.js",
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "axios": "^1.4.0"
   },
   "engines": {
     "node": ">=14.0.0"

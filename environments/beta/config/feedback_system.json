@@ -1,11 +1,11 @@
 {
   "survey_urls": {
-    "mid_survey": "https://forms.christmas-trading.com/beta/mid-survey",
-    "final_survey": "https://forms.christmas-trading.com/beta/final-survey"
+    "mid_survey": "https://forms.office.com/Pages/ResponsePage.aspx?id=christmas-trading-mid-survey",
+    "final_survey": "https://forms.office.com/Pages/ResponsePage.aspx?id=christmas-trading-final-survey"
   },
   "telegram_bot": {
-    "token": "1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789",
-    "chat_id": "-100123456789"
+    "token": "7889451962:AAE3IwomldkE9jXxgmJHWQOLIU-yegU5X2Y",
+    "chat_id": "1394057485"
   },
   "feedback_email": "beta-feedback@christmas-trading.com",
   "feedback_database": {
@@ -37,6 +37,7 @@
       "enabled": true,
       "smtp_server": "smtp.office365.com",
       "smtp_port": 587,
+      "use_tls": true,
       "username": "beta-feedback@christmas-trading.com",
       "password": "Christmas@Beta2025",
       "recipients": [
@@ -78,13 +79,13 @@
     "endpoints": [
       {
         "name": "survey_mid",
-        "url": "https://forms.christmas-trading.com/beta/mid-survey",
+        "url": "https://forms.office.com/Pages/ResponsePage.aspx?id=christmas-trading-mid-survey",
         "method": "HEAD",
         "timeout_seconds": 5
       },
       {
         "name": "survey_final",
-        "url": "https://forms.christmas-trading.com/beta/final-survey",
+        "url": "https://forms.office.com/Pages/ResponsePage.aspx?id=christmas-trading-final-survey",
         "method": "HEAD",
         "timeout_seconds": 5
       },

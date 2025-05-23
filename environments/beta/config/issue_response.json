@@ -1,7 +1,7 @@
 {
   "prometheus": {
     "url": "http://prometheus:9090",
-    "query_interval": 60
+    "query_timeout_seconds": 10
   },
   "grafana": {
     "url": "http://grafana:3000",
@@ -12,18 +12,30 @@
       "enabled": true,
       "smtp_server": "smtp.office365.com",
       "smtp_port": 587,
-      "username": "alerts@christmas-trading.com",
+      "use_tls": true,
+      "username": "beta-alerts@christmas-trading.com",
       "password": "Christmas@Beta2025",
-      "from_address": "alerts@christmas-trading.com",
       "recipients": [
-        "dev-team@christmas-trading.com",
-        "ops-team@christmas-trading.com"
+        "oncall@christmas-trading.com",
+        "dev-team@christmas-trading.com"
       ]
     },
     "telegram": {
       "enabled": true,
-      "token": "1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789",
-      "chat_id": "-100123456789"
+      "token": "7889451962:AAE3IwomldkE9jXxgmJHWQOLIU-yegU5X2Y",
+      "chat_id": "1394057485"
+    },
+    "phone": {
+      "enabled": true,
+      "twilio": {
+        "account_sid": "AC1234567890abcdef1234567890abcdef",
+        "auth_token": "1234567890abcdef1234567890abcdef",
+        "from_number": "+12345678901",
+        "to_numbers": [
+          "+82101234567",
+          "+82109876543"
+        ]
+      }
     },
     "slack": {
       "enabled": true,
@@ -31,106 +43,95 @@
       "channel": "#beta-alerts"
     }
   },
-  "alert_rules": [
-    {
-      "name": "높은 오류율",
-      "query": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) > 0.05",
+  "alert_rules": {
+    "error_rate": {
+      "query": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5",
+      "description": "5분간 HTTP 5xx 에러율이 5%를 초과함",
       "severity": "P1",
-      "description": "5분 동안 5xx 오류율이 5%를 초과합니다.",
-      "category": "성능",
-      "check_interval": 60
+      "category": "시스템 안정성"
     },
-    {
-      "name": "API 응답 시간 지연",
-      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler!=\"\"}[5m])) by (le, handler)) > 2",
+    "api_latency": {
+      "query": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler!=\"/health\"}[5m])) by (le, handler)) > 2",
+      "description": "API 응답시간(p95)이 2초를 초과함",
       "severity": "P2",
-      "description": "API 응답 시간이 2초를 초과합니다.",
-      "category": "성능",
-      "check_interval": 120
+      "category": "성능"
     },
-    {
-      "name": "높은 CPU 사용량",
+    "cpu_usage": {
       "query": "avg(rate(process_cpu_seconds_total[5m]) * 100) > 80",
+      "description": "CPU 사용률이 80%를 초과함",
       "severity": "P2",
-      "description": "CPU 사용량이 80%를 초과합니다.",
-      "category": "리소스",
-      "check_interval": 300
+      "category": "리소스"
     },
-    {
-      "name": "높은 메모리 사용량",
-      "query": "avg(container_memory_usage_bytes) / avg(container_spec_memory_limit_bytes) * 100 > 85",
+    "memory_usage": {
+      "query": "sum(container_memory_usage_bytes{pod=~\"christmas-.*\"}) / sum(container_memory_limit_bytes{pod=~\"christmas-.*\"}) * 100 > 85",
+      "description": "메모리 사용률이 85%를 초과함",
       "severity": "P2",
-      "description": "메모리 사용량이 85%를 초과합니다.",
-      "category": "리소스",
-      "check_interval": 300
+      "category": "리소스"
     },
-    {
-      "name": "API 키 갱신 실패",
-      "query": "api_key_renewal_failures_total > 0",
-      "severity": "P1",
-      "description": "API 키 갱신에 실패했습니다.",
-      "category": "API",
-      "check_interval": 60
-    },
-    {
-      "name": "피드백 시스템 중단",
-      "query": "up{job=\"feedback_system\"} == 0",
+    "feedback_system_down": {
+      "query": "up{job=\"feedback-system\"} == 0",
+      "description": "피드백 시스템 접근 불가",
       "severity": "P0",
-      "description": "피드백 수집 시스템이 중단되었습니다.",
-      "category": "피드백",
-      "check_interval": 60
+      "category": "서비스 중단"
     },
-    {
-      "name": "피드백 API 오류",
-      "query": "sum(rate(feedback_api_errors_total{job=\"feedback_system\"}[5m])) > 0",
+    "high_priority_feedback": {
+      "query": "feedback_priority_count{level=\"critical\"} > 0",
+      "description": "Critical 우선순위 피드백 수신됨",
       "severity": "P1",
-      "description": "피드백 API에서 오류가 발생하고 있습니다.",
-      "category": "피드백",
-      "check_interval": 120
-    },
-    {
-      "name": "피드백 설문 URL 접근 불가",
-      "query": "probe_success{job=\"blackbox\", instance=~\".*survey.*\"} == 0",
-      "severity": "P1",
-      "description": "피드백 설문 URL에 접근할 수 없습니다.",
-      "category": "피드백",
-      "check_interval": 300
-    },
-    {
-      "name": "고우선순위 피드백 수신",
-      "query": "sum(feedback_priority_count{priority=\"high\"}) > sum(feedback_priority_count{priority=\"high\"} offset 1h)",
-      "severity": "P2",
-      "description": "새로운 고우선순위 피드백이 수신되었습니다.",
-      "category": "피드백",
-      "check_interval": 300
+      "category": "사용자 피드백"
     }
-  ],
+  },
   "response_actions": {
     "P0": {
-      "notify_channels": ["email", "telegram", "slack"],
-      "escalation_time": 15,
-      "auto_create_jira": true
+      "notification_channels": ["telegram", "email", "phone"],
+      "escalation_timeout_minutes": 15,
+      "jira": {
+        "create_issue": true,
+        "project_key": "BETA",
+        "issue_type": "Incident",
+        "priority": "Highest"
+      }
     },
     "P1": {
-      "notify_channels": ["email", "telegram", "slack"],
-      "escalation_time": 60,
-      "auto_create_jira": true
+      "notification_channels": ["telegram", "email"],
+      "escalation_timeout_minutes": 30,
+      "jira": {
+        "create_issue": true,
+        "project_key": "BETA",
+        "issue_type": "Bug",
+        "priority": "High"
+      }
     },
     "P2": {
-      "notify_channels": ["telegram", "slack"],
-      "escalation_time": 240,
-      "auto_create_jira": true
+      "notification_channels": ["telegram", "email"],
+      "escalation_timeout_minutes": 120,
+      "jira": {
+        "create_issue": true,
+        "project_key": "BETA",
+        "issue_type": "Task",
+        "priority": "Medium"
+      }
     },
     "P3": {
-      "notify_channels": ["slack"],
-      "escalation_time": 0,
-      "auto_create_jira": false
+      "notification_channels": ["telegram"],
+      "escalation_timeout_minutes": 480,
+      "jira": {
+        "create_issue": true,
+        "project_key": "BETA",
+        "issue_type": "Task",
+        "priority": "Low"
+      }
     }
   },
   "jira": {
-    "url": "https://christmas-project.atlassian.net",
-    "username": "jira-bot@christmas-trading.com",
-    "api_token": "ATATT3xFfGF0abcdefghijklmnopqrstuvwxyz",
-    "project_key": "BETA"
-  }
+    "url": "https://christmas-trading.atlassian.net",
+    "api_token": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "username": "jira-automation@christmas-trading.com",
+    "project_keys": ["BETA", "PROD"],
+    "api_version": "3",
+    "api_endpoint": "/rest/api/3/issue"
+  },
+  "monitoring_interval_seconds": 60,
+  "check_feedback_system": true,
+  "feedback_system_config_path": "../feedback_system.json"
 } 

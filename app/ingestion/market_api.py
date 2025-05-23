@@ -31,6 +31,17 @@ class MarketAPIClient:
             base_url=self.base_url, 
             headers={"Content-Type": "application/json"}
         )
+    
+    @classmethod
+    def create_mock_client(cls) -> 'MarketAPIClient':
+        """
+        테스트용 모의 클라이언트를 생성합니다.
+        실제 API 서버에 연결하지 않고 모의 데이터를 반환합니다.
+        
+        Returns:
+            모의 MarketAPIClient 인스턴스
+        """
+        return cls(app_key="mock_app_key", app_secret="mock_app_secret", base_url="https://mock-api.example.com")
         
     async def __aenter__(self):
         return self

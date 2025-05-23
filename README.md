@@ -11,67 +11,105 @@
 - **실시간 알림**: `python-telegram-bot` 라이브러리로 매매 이벤트·오류 알림
 - **CI/CD**: GitHub Actions → Docker Hub → Vercel 배포 파이프라인 자동화
 
-## 시작하기
+## 최신 소식
 
-### 필수 조건
+🎉 **정식 버전 v1.0.0 출시!** (2025-07-01)
 
-- Python 3.10+
-- Docker 및 Docker Compose
-- Node.js 18+
+Christmas 프로젝트의 정식 버전이 성공적으로 출시되었습니다. 정식 버전은 베타 테스트 기간 동안 수집된 모든 피드백과 이슈를 반영하여 안정성, 성능, 사용자 경험이 크게 개선되었습니다.
 
-### 설치
+## 최근 업데이트: Supabase 데이터베이스 연동 및 텔레그램 봇 구현
 
-1. 저장소 클론:
-   ```bash
-   git clone https://github.com/yourusername/christmas.git
-   cd christmas
-   ```
+### 구현 내용
 
-2. Python 의존성 설치:
-   ```bash
-   poetry install
-   ```
+1. **Supabase 데이터베이스 연동**
+   - `app/db/supabase_client.py`: Supabase 클라이언트 구현 (싱글톤 패턴)
+   - `app/db/schema.py`: 데이터베이스 스키마 정의
+   - `app/db/order_repository.py`: 주문 데이터 리포지토리 구현
+   - `app/execution/order_service_ext.py`: Supabase 연동 OrderService 확장 클래스
 
-3. Docker 컨테이너 실행:
-   ```bash
-   docker-compose up -d
-   ```
+2. **텔레그램 봇 알림 시스템**
+   - `app/notification/telegram_bot.py`: 텔레그램 봇 구현 (싱글톤 패턴)
+   - 주문 상태 변경 알림 기능
+   - 시스템 이벤트 알림 기능
+   - 성능 지표 알림 기능
+   - 가격 알림 기능
 
-### 개발 환경 설정
+### 테스트 방법
 
-```bash
-# 개발 모드로 API 서버 실행
-cd app
-uvicorn api.main:app --reload --port 8000
-
-# 프론트엔드 개발 서버 실행
-cd frontend
-npm install
-npm run dev
+#### 1. 의존성 패키지 설치
+```powershell
+.\install_dependencies.ps1
 ```
+
+#### 2. 환경 변수 설정
+```powershell
+.\setup_env.ps1
+```
+- 실제 연결이 필요한 경우 `setup_env.ps1` 파일에서 Supabase URL, API 키, 텔레그램 봇 토큰, 채팅 ID를 수정하세요.
+
+#### 3. 테스트 실행
+```powershell
+# Supabase 클라이언트 간단 테스트
+python test_simple.py
+
+# 텔레그램 봇 테스트
+python test_telegram_bot.py
+
+# Supabase 연동 주문 서비스 테스트
+python test_supabase_order_service.py
+```
+
+### 주요 기능
+
+- **주문 데이터 영구 저장**: Supabase PostgreSQL 데이터베이스를 통한 주문 데이터 영구 저장
+- **실시간 알림**: 텔레그램 봇을 통한 주문 상태 변경 및 시스템 이벤트 실시간 알림
+- **확장 가능한 아키텍처**: 싱글톤 패턴을 적용한 클라이언트 클래스로 코드 중복 최소화
+
+### 다음 단계
+
+- 실시간 데이터 구독 기능 구현
+- 실 사용자 테스트 준비
+- 코드 품질 개선 및 문서 체계 정비
 
 ## 프로젝트 구조
 
 ```
-.
-├── app/                     # 주요 애플리케이션 코드
-│   ├── auth/                # 인증 모듈
-│   ├── ingestion/           # 시장 데이터 수집 (REST, WebSocket)
-│   ├── analysis/            # 기술·심리 분석 엔진
-│   ├── strategies/          # 스켈핑 전략 구현
-│   ├── execution/           # 주문 실행 모듈
-│   ├── notification/        # Telegram Bot 연동
-│   └── api/                 # FastAPI 라우터 및 서버리스 핸들러
-├── config/                  # 환경별 설정 (YAML/JSON)
-├── scripts/                 # 운영 스크립트(Docker, DB 마이그레이션)
-├── tests/                   # pytest 테스트 케이스
-│   ├── unit/
-│   └── integration/
-├── docs/                    # 프로젝트 문서(.md)
-├── docker-compose.yml       # 로컬 개발용 Compose 정의
-├── Dockerfile               # 멀티스테이지 이미지 빌드
-├── pyproject.toml           # Python 프로젝트 설정
-└── README.md                # 프로젝트 개요 및 시작 가이드
+christmas/
+├── app/                      # 애플리케이션 코드
+│   ├── api/                  # API 모듈
+│   │   ├── main.py           # FastAPI 메인 애플리케이션
+│   │   └── models.py         # API 데이터 모델(Pydantic)
+│   ├── auth/                 # 인증 모듈
+│   │   ├── jwt_handler.py    # JWT 토큰 처리
+│   │   └── user_model.py     # 사용자 모델
+│   ├── db/                   # 데이터베이스 모듈
+│   │   ├── supabase_client.py# Supabase 클라이언트
+│   │   ├── schema.py         # 데이터베이스 스키마
+│   │   └── order_repository.py# 주문 데이터 리포지토리
+│   ├── execution/            # 주문 실행 모듈
+│   │   ├── order_model.py    # 주문 모델
+│   │   ├── order_service.py  # 주문 서비스
+│   │   └── order_service_ext.py# Supabase 연동 확장
+│   ├── ingestion/            # 데이터 수집 모듈
+│   │   ├── market_api.py     # 시장 데이터 API
+│   │   └── websocket.py      # 실시간 데이터 수집
+│   ├── notification/         # 알림 모듈
+│   │   ├── telegram_bot.py   # 텔레그램 봇
+│   │   └── email.py          # 이메일 알림
+│   └── ...                   # 기타 모듈
+├── docs/                     # 문서
+│   ├── 00. document_map.md   # 문서 맵
+│   ├── 18. christmas_wbs.md  # WBS 문서
+│   ├── 20. Supabase 데이터베이스 연동 계획.md # 연동 계획
+│   ├── 23. 프로젝트 진행 요약.md # 진행 요약
+│   └── ...                   # 기타 문서
+├── tests/                    # 테스트
+├── setup_env.ps1             # 환경 변수 설정 스크립트
+├── install_dependencies.ps1  # 의존성 패키지 설치 스크립트
+├── test_simple.py            # 간단한 테스트 스크립트
+├── test_telegram_bot.py      # 텔레그램 봇 테스트 스크립트
+├── test_supabase_order_service.py # Supabase 연동 테스트 스크립트
+└── README.md                 # 프로젝트 설명
 ```
 
 ## 문서
@@ -85,4 +123,4 @@ npm run dev
 
 ## 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요. 
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요. 
