@@ -1,7 +1,7 @@
 [build]
-  command = "python setup.py"
-  publish = "app/web/static"
-  functions = "app/web/functions"
+  base = "web-dashboard"
+  publish = "dist"
+  command = "npm run build"
 
 [dev]
   command = "python app/web/main.py"
@@ -27,11 +27,20 @@
   status = 200
 
 [build.environment]
-  PYTHON_VERSION = "3.10"
+  NODE_VERSION = "18"
 
 [functions]
   directory = "app/web/functions"
   node_bundler = "esbuild"
 
 [functions."api/*"]
-  included_files = ["app/web/**"] 
+  included_files = ["app/web/**"]
+
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build" 
