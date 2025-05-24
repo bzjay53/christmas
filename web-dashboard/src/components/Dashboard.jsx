@@ -13,7 +13,14 @@ import {
   ListItemIcon,
   Divider,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  Button
 } from '@mui/material'
 import {
   TrendingUp,
@@ -23,7 +30,13 @@ import {
   Notifications,
   Schedule,
   CheckCircle,
-  Warning
+  Warning,
+  AccountCircle,
+  ExitToApp,
+  Settings,
+  Dashboard as DashboardIcon,
+  TrendingFlat,
+  Psychology
 } from '@mui/icons-material'
 import {
   LineChart,
@@ -38,11 +51,19 @@ import {
   Cell
 } from 'recharts'
 import MobileTestPanel from './MobileTestPanel'
+import Navigation from './Navigation'
+import Trading from './Trading'
+import Portfolio from './Portfolio'
+import UserProfile from './UserProfile'
 
-function Dashboard() {
+function Dashboard({ user, onLogout, onUpdateProfile, onCheckTradingPermission, onShowNotification }) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  // 현재 활성 페이지 상태
+  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [anchorEl, setAnchorEl] = useState(null)
 
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 10150000,
@@ -130,21 +151,36 @@ function Dashboard() {
     return value.toLocaleString()
   }
 
-  return (
-    <Box sx={{ p: isMobile ? 1 : 3 }}>
-      <Typography 
-        variant={isMobile ? "h5" : "h4"} 
-        gutterBottom 
-        sx={{ 
-          color: 'white', 
-          mb: isMobile ? 2 : 3,
-          textAlign: isMobile ? 'center' : 'left',
-          fontSize: isSmallMobile ? '1.25rem' : undefined
-        }}
-      >
-        🎄 Christmas Trading 대시보드
-      </Typography>
+  // 사용자 메뉴 핸들러
+  const handleUserMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
 
+  const handleUserMenuClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleLogout = () => {
+    handleUserMenuClose()
+    onLogout()
+  }
+
+  // 페이지 렌더링 함수
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'trading':
+        return <Trading user={user} onShowNotification={onShowNotification} />
+      case 'portfolio':
+        return <Portfolio user={user} onShowNotification={onShowNotification} />
+      case 'profile':
+        return <UserProfile user={user} updateUserProfile={onUpdateProfile} />
+      default:
+        return renderDashboardContent()
+    }
+  }
+
+  const renderDashboardContent = () => (
+    <>
       {/* 모바일 UI & 알림 테스트 패널 */}
       <MobileTestPanel />
 
@@ -204,11 +240,11 @@ function Dashboard() {
                   wordBreak: 'keep-all'
                 }}
               >
-                ₩{formatCurrency(portfolioData.dailyPnL, true)}
+                {portfolioData.dailyPnL >= 0 ? '+' : ''}₩{formatCurrency(Math.abs(portfolioData.dailyPnL), true)}
               </Typography>
               <Box display="flex" alignItems="center" flexWrap="wrap">
                 {portfolioData.dailyPnL >= 0 ? 
-                  <TrendingUp sx={{ color: 'success.main', mr: 0.5, fontSize: isMobile ? '1rem' : '1.2rem' }} /> : 
+                  <TrendingUp sx={{ color: 'success.main', mr: 0.5, fontSize: isMobile ? '1rem' : '1.2rem' }} /> :
                   <TrendingDown sx={{ color: 'error.main', mr: 0.5, fontSize: isMobile ? '1rem' : '1.2rem' }} />
                 }
                 <Typography 
@@ -218,7 +254,7 @@ function Dashboard() {
                     fontSize: isSmallMobile ? '0.65rem' : undefined
                   }}
                 >
-                  {portfolioData.dailyPnL >= 0 ? '+' : ''}{(portfolioData.dailyPnL / 10000000 * 100).toFixed(2)}%
+                  {portfolioData.dailyPnL >= 0 ? '수익' : '손실'}
                 </Typography>
               </Box>
             </CardContent>
@@ -229,7 +265,7 @@ function Dashboard() {
           <Card sx={{ height: '100%' }}>
             <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
               <Box display="flex" alignItems="center" mb={1}>
-                <CheckCircle sx={{ mr: 0.5, color: 'success.main', fontSize: isMobile ? '1.2rem' : '1.5rem' }} />
+                <TrendingFlat sx={{ mr: 0.5, color: 'info.main', fontSize: isMobile ? '1.2rem' : '1.5rem' }} />
                 <Typography variant={isMobile ? "body2" : "h6"} sx={{ fontSize: isSmallMobile ? '0.75rem' : undefined }}>
                   승률
                 </Typography>
@@ -237,20 +273,26 @@ function Dashboard() {
               <Typography 
                 variant={isMobile ? "h6" : "h4"} 
                 sx={{ 
-                  color: 'success.main', 
+                  color: 'info.main', 
                   mb: 1,
-                  fontSize: isSmallMobile ? '1rem' : undefined
+                  fontSize: isSmallMobile ? '1rem' : undefined,
+                  wordBreak: 'keep-all'
                 }}
               >
                 {portfolioData.winRate}%
               </Typography>
-              <Typography 
-                variant={isMobile ? "caption" : "body2"} 
-                color="textSecondary"
-                sx={{ fontSize: isSmallMobile ? '0.65rem' : undefined }}
-              >
-                🎯 목표: 100%
-              </Typography>
+              <Box display="flex" alignItems="center" flexWrap="wrap">
+                <CheckCircle sx={{ color: 'success.main', mr: 0.5, fontSize: isMobile ? '1rem' : '1.2rem' }} />
+                <Typography 
+                  variant={isMobile ? "caption" : "body2"} 
+                  sx={{ 
+                    color: 'success.main',
+                    fontSize: isSmallMobile ? '0.65rem' : undefined
+                  }}
+                >
+                  완벽한 성과
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -261,7 +303,7 @@ function Dashboard() {
               <Box display="flex" alignItems="center" mb={1}>
                 <Schedule sx={{ mr: 0.5, color: 'warning.main', fontSize: isMobile ? '1.2rem' : '1.5rem' }} />
                 <Typography variant={isMobile ? "body2" : "h6"} sx={{ fontSize: isSmallMobile ? '0.75rem' : undefined }}>
-                  보유 포지션
+                  활성 포지션
                 </Typography>
               </Box>
               <Typography 
@@ -269,10 +311,11 @@ function Dashboard() {
                 sx={{ 
                   color: 'warning.main', 
                   mb: 1,
-                  fontSize: isSmallMobile ? '1rem' : undefined
+                  fontSize: isSmallMobile ? '1rem' : undefined,
+                  wordBreak: 'keep-all'
                 }}
               >
-                {portfolioData.positions}개
+                {portfolioData.positions}
               </Typography>
               <Typography 
                 variant={isMobile ? "caption" : "body2"} 
@@ -468,6 +511,89 @@ function Dashboard() {
           </Card>
         </Grid>
       </Grid>
+    </>
+  )
+
+  return (
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+      color: 'white'
+    }}>
+      {/* 상단 앱바 */}
+      <AppBar position="static" sx={{ backgroundColor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            🎄 Christmas Trading
+          </Typography>
+          
+          {/* 사용자 정보 */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', sm: 'block' } }}>
+              {user?.firstName || user?.email}님
+            </Typography>
+            <IconButton
+              size="large"
+              edge="end"
+              aria-label="account of current user"
+              aria-controls="user-menu"
+              aria-haspopup="true"
+              onClick={handleUserMenuOpen}
+              color="inherit"
+            >
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                {(user?.firstName || user?.email || 'U').charAt(0).toUpperCase()}
+              </Avatar>
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* 사용자 메뉴 */}
+      <Menu
+        id="user-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleUserMenuClose}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={() => { setCurrentPage('profile'); handleUserMenuClose(); }}>
+          <Settings sx={{ mr: 1 }} />
+          프로필 설정
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ExitToApp sx={{ mr: 1 }} />
+          로그아웃
+        </MenuItem>
+      </Menu>
+
+      {/* 네비게이션 */}
+      <Navigation 
+        currentPage={currentPage} 
+        onPageChange={setCurrentPage}
+        isMobile={isMobile}
+      />
+
+      {/* 메인 콘텐츠 */}
+      <Box sx={{ p: isMobile ? 1 : 3 }}>
+        {currentPage === 'dashboard' && (
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            gutterBottom 
+            sx={{ 
+              color: 'white', 
+              mb: isMobile ? 2 : 3,
+              textAlign: isMobile ? 'center' : 'left',
+              fontSize: isSmallMobile ? '1.25rem' : undefined
+            }}
+          >
+            🎄 Christmas Trading 대시보드
+          </Typography>
+        )}
+        
+        {renderCurrentPage()}
+      </Box>
     </Box>
   )
 }
