@@ -7,7 +7,7 @@
 - **100% Win-Rate**: 모든 트레이드에서 손실 없이 이익을 보장하는 자동화 전략
 - **스켈핑 전략**: RSI(14), MACD(12,26,9), 볼린저 밴드(20σ±2) 기반의 1분 이하 초단타 매매
 - **컨테이너화**: Docker 멀티스테이지 빌드로 빌드·런타임 분리, 이미지 크기 최소화
-- **서버리스 호스팅**: Vercel Python Functions(Flask/FastAPI)로 백엔드 및 React SPA 배포
+- **서버리스 호스팅**: netlify Python Functions(Flask/FastAPI)로 백엔드 및 React SPA 배포
 - **실시간 알림**: `python-telegram-bot` 라이브러리로 매매 이벤트·오류 알림
 - **CI/CD**: GitHub Actions → Docker Hub → Vercel 배포 파이프라인 자동화
 
