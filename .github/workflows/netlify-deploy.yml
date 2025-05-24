@@ -8,8 +8,6 @@ on:
     paths:
       - 'web-dashboard/**'
       - 'netlify.toml'
-      - 'requirements.txt'
-      - 'setup.py'
 
 jobs:
   deploy:
