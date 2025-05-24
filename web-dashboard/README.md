@@ -1,6 +1,14 @@
 # 🎄 Christmas Trading Dashboard
 
+![Christmas Trading Dashboard](https://img.shields.io/badge/Christmas-Trading-red)
+![React](https://img.shields.io/badge/React-18.0-blue)
+![Material-UI](https://img.shields.io/badge/Material--UI-5.0-green)
+
 실시간 자동매매 시스템을 위한 React 기반 웹 대시보드입니다.
+
+## 🔄 배포 테스트 (2025-05-25)
+- **main 브랜치 자동 배포 테스트 진행 중**
+- **Netlify 직접 연동 확인 중**
 
 ## ✨ 주요 기능
 
