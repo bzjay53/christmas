@@ -24,6 +24,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# React 프로젝트의 lib 디렉토리는 유지
+!web-dashboard/src/lib/
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

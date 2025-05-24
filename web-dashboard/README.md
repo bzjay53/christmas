@@ -140,4 +140,24 @@ MIT License
 
 ---
 
-**🎄 Merry Christmas & Happy Trading! 🎄** 
+**🎄 Merry Christmas & Happy Trading! 🎄**
+
+## Build Status
+
+- ✅ Local build successful
+- 🔄 GitHub Actions deployment testing (2025-05-25)
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+This project is part of the Christmas automated trading system. 
