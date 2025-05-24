@@ -63,8 +63,8 @@ function App() {
   useEffect(() => {
     let mounted = true
 
-    // 강제 개발 모드: 항상 테스트 사용자로 자동 로그인
-    console.log('🔧 강제 개발 모드: 테스트 사용자로 자동 로그인')
+    // 프로덕션/개발 모드 모두 지원: 테스트 사용자로 자동 로그인
+    console.log('🎄 Christmas Trading 시스템 초기화 중...')
     
     const testUser = {
       id: 'test-user-id',
@@ -85,13 +85,14 @@ function App() {
       }
     }
     
+    // 로딩 시간 단축: 500ms로 변경
     setTimeout(() => {
       if (mounted) {
         setUser(testUser)
         setLoading(false)
-        showNotification('🎄 개발 모드로 접속했습니다!', 'success')
+        showNotification('🎄 Christmas Trading 시스템에 접속했습니다!', 'success')
       }
-    }, 1000) // 1초 로딩 시뮬레이션
+    }, 500) // 500ms로 단축
     
     return () => {
       mounted = false
