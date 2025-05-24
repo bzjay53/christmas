@@ -48,10 +48,14 @@ import {
   CreditCard,
   Payment,
   Psychology,
-  AutoAwesome
+  AutoAwesome,
+  SmartToy,
+  Verified
 } from '@mui/icons-material'
 import { supabaseHelpers } from '../lib/supabase'
 import { StrategyFactory } from '../lib/tradingStrategies'
+import { ChristmasAIStrategy } from '../lib/tradingStrategies'
+import { OpenAIServiceFactory } from '../lib/openaiService'
 
 function UserProfile({ user, updateUserProfile }) {
   const [activeTab, setActiveTab] = useState(0)
@@ -147,6 +151,11 @@ function UserProfile({ user, updateUserProfile }) {
     avgConfidence: 0,
     lastLearningDate: null
   })
+
+  // AI 전략 테스트 함수 추가
+  const [aiTestResults, setAiTestResults] = useState(null)
+  const [isTestingAI, setIsTestingAI] = useState(false)
+  const [testError, setTestError] = useState(null)
 
   // 컴포넌트 마운트 시 API 설정 로드
   useEffect(() => {
@@ -295,6 +304,129 @@ function UserProfile({ user, updateUserProfile }) {
   }
 
   const membershipInfo = getMembershipInfo()
+
+  // 실제 AI 매매 엔진 테스트
+  const testAIStrategy = async () => {
+    if (!aiSettings.openai_api_key) {
+      setTestError('OpenAI API 키가 설정되지 않았습니다.')
+      return
+    }
+
+    setIsTestingAI(true)
+    setTestError(null)
+    setAiTestResults(null)
+
+    try {
+      // 테스트용 시장 데이터 생성 (실제 환경에서는 실시간 데이터 사용)
+      const mockMarketData = {
+        symbol: 'KOSPI200',
+        timestamp: Date.now(),
+        prices: [
+          2580, 2585, 2590, 2588, 2592, 2595, 2598, 2600, 2605, 2603,
+          2608, 2610, 2615, 2612, 2618, 2620, 2625, 2628, 2630, 2635
+        ],
+        volume: [
+          1000000, 1200000, 1100000, 1300000, 1150000, 1400000, 1250000,
+          1350000, 1500000, 1450000, 1600000, 1550000, 1700000, 1650000,
+          1800000, 1750000, 1900000, 1850000, 2000000, 1950000
+        ]
+      }
+
+      // AI 전략 인스턴스 생성
+      const aiStrategy = new ChristmasAIStrategy({
+        strategyType: aiSettings.selected_strategy || 'ai_learning',
+        learningEnabled: true,
+        riskTolerance: 0.6,
+        strategyLevel: aiSettings.openai_model === 'gpt-4o' ? 'expert' : 'intermediate',
+        openaiModel: aiSettings.openai_model || 'gpt-4o-mini'
+      })
+
+      console.log('AI 전략 테스트 시작...', {
+        strategy: aiSettings.selected_strategy,
+        model: aiSettings.openai_model
+      })
+
+      // 전통적 신호 생성
+      const traditionalSignal = aiStrategy.generateTraditionalSignal(mockMarketData)
+      
+      // AI 신호 생성 (실제 OpenAI API 호출)
+      const aiSignal = await aiStrategy.generateAISignal(mockMarketData, aiSettings.openai_api_key)
+
+      // 결과 정리
+      const testResults = {
+        timestamp: new Date().toISOString(),
+        marketData: {
+          symbol: mockMarketData.symbol,
+          currentPrice: mockMarketData.prices[mockMarketData.prices.length - 1],
+          priceChange: ((mockMarketData.prices[19] - mockMarketData.prices[18]) / mockMarketData.prices[18] * 100).toFixed(2),
+          volume: mockMarketData.volume[mockMarketData.volume.length - 1].toLocaleString()
+        },
+        traditionalSignal: {
+          action: traditionalSignal.action,
+          confidence: (traditionalSignal.confidence * 100).toFixed(1),
+          reasoning: traditionalSignal.reasoning
+        },
+        aiSignal: {
+          action: aiSignal.action,
+          confidence: (aiSignal.confidence * 100).toFixed(1),
+          reasoning: aiSignal.reasoning,
+          riskLevel: aiSignal.riskLevel,
+          positionSize: aiSignal.positionSize,
+          timeHorizon: aiSignal.timeHorizon,
+          marketCondition: aiSignal.marketCondition,
+          additionalFactors: aiSignal.metadata?.aiEnhancement || {}
+        },
+        comparison: {
+          actionMatch: traditionalSignal.action === aiSignal.action,
+          confidenceDiff: ((aiSignal.confidence - traditionalSignal.confidence) * 100).toFixed(1),
+          aiEnhancement: aiSignal.metadata?.aiEnhancement || {}
+        },
+        usage: aiSignal.metadata?.usage || {},
+        strategyStatus: aiStrategy.getStrategyStatus()
+      }
+
+      setAiTestResults(testResults)
+      
+      // 성공 메시지
+      showNotification('AI 매매 전략 테스트가 완료되었습니다!', 'success')
+
+    } catch (error) {
+      console.error('AI 전략 테스트 오류:', error)
+      setTestError(`테스트 실패: ${error.message}`)
+      showNotification('AI 전략 테스트 중 오류가 발생했습니다.', 'error')
+    } finally {
+      setIsTestingAI(false)
+    }
+  }
+
+  // OpenAI API 키 유효성 검증
+  const validateOpenAIKey = async () => {
+    if (!aiSettings.openai_api_key) {
+      setTestError('API 키를 먼저 입력해주세요.')
+      return
+    }
+
+    setIsTestingAI(true)
+    setTestError(null)
+
+    try {
+      const openaiService = OpenAIServiceFactory.getInstance(aiSettings.openai_api_key)
+      const validation = await openaiService.validateApiKey()
+      
+      if (validation.valid) {
+        showNotification('OpenAI API 키가 유효합니다!', 'success')
+        setTestError(null)
+      } else {
+        setTestError(`API 키 검증 실패: ${validation.error}`)
+        showNotification('OpenAI API 키가 유효하지 않습니다.', 'error')
+      }
+    } catch (error) {
+      setTestError(`검증 오류: ${error.message}`)
+      showNotification('API 키 검증 중 오류가 발생했습니다.', 'error')
+    } finally {
+      setIsTestingAI(false)
+    }
+  }
 
   return (
     <Box>
@@ -1272,6 +1404,243 @@ function UserProfile({ user, updateUserProfile }) {
                 AI 학습 테스트
               </Button>
             </Box>
+
+            {/* AI 전략 테스트 섹션 */}
+            {aiSettings.selected_strategy === 'ai_learning' && (
+              <Card sx={{ mb: 3 }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <SmartToy sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6">🤖 AI 매매 전략 실시간 테스트</Typography>
+                  </Box>
+                  
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    실제 OpenAI API를 사용하여 AI 매매 전략을 테스트해보세요. 
+                    전통적 지표와 AI 분석을 비교할 수 있습니다.
+                  </Typography>
+
+                  {/* API 키 검증 버튼 */}
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={validateOpenAIKey}
+                      disabled={isTestingAI || !aiSettings.openai_api_key}
+                      startIcon={<Verified />}
+                      sx={{ mr: 2 }}
+                    >
+                      API 키 검증
+                    </Button>
+                    
+                    <Button
+                      variant="contained"
+                      onClick={testAIStrategy}
+                      disabled={isTestingAI || !aiSettings.openai_api_key}
+                      startIcon={isTestingAI ? <CircularProgress size={20} /> : <PlayArrowIcon />}
+                      color="primary"
+                    >
+                      {isTestingAI ? 'AI 분석 중...' : 'AI 전략 테스트 실행'}
+                    </Button>
+                  </Box>
+
+                  {/* 오류 메시지 */}
+                  {testError && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      {testError}
+                    </Alert>
+                  )}
+
+                  {/* 테스트 결과 표시 */}
+                  {aiTestResults && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography variant="h6" sx={{ mb: 2, color: 'success.main' }}>
+                        ✅ AI 분석 완료 ({new Date(aiTestResults.timestamp).toLocaleString('ko-KR')})
+                      </Typography>
+
+                      {/* 시장 데이터 */}
+                      <Card variant="outlined" sx={{ mb: 2 }}>
+                        <CardContent>
+                          <Typography variant="subtitle1" sx={{ mb: 1 }}>📊 테스트 시장 데이터</Typography>
+                          <Grid container spacing={2}>
+                            <Grid item xs={6} sm={3}>
+                              <Typography variant="body2" color="text.secondary">종목</Typography>
+                              <Typography variant="body1">{aiTestResults.marketData.symbol}</Typography>
+                            </Grid>
+                            <Grid item xs={6} sm={3}>
+                              <Typography variant="body2" color="text.secondary">현재가</Typography>
+                              <Typography variant="body1">
+                                {aiTestResults.marketData.currentPrice.toLocaleString()}원
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={6} sm={3}>
+                              <Typography variant="body2" color="text.secondary">등락률</Typography>
+                              <Typography 
+                                variant="body1" 
+                                color={parseFloat(aiTestResults.marketData.priceChange) >= 0 ? 'success.main' : 'error.main'}
+                              >
+                                {aiTestResults.marketData.priceChange > 0 ? '+' : ''}{aiTestResults.marketData.priceChange}%
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={6} sm={3}>
+                              <Typography variant="body2" color="text.secondary">거래량</Typography>
+                              <Typography variant="body1">{aiTestResults.marketData.volume}</Typography>
+                            </Grid>
+                          </Grid>
+                        </CardContent>
+                      </Card>
+
+                      {/* 신호 비교 */}
+                      <Grid container spacing={2}>
+                        {/* 전통적 신호 */}
+                        <Grid item xs={12} md={6}>
+                          <Card variant="outlined">
+                            <CardContent>
+                              <Typography variant="subtitle1" sx={{ mb: 2 }}>📈 전통적 지표 분석</Typography>
+                              
+                              <Box sx={{ mb: 2 }}>
+                                <Chip 
+                                  label={aiTestResults.traditionalSignal.action === 'buy' ? '매수' : 
+                                        aiTestResults.traditionalSignal.action === 'sell' ? '매도' : '관망'}
+                                  color={aiTestResults.traditionalSignal.action === 'buy' ? 'success' : 
+                                         aiTestResults.traditionalSignal.action === 'sell' ? 'error' : 'default'}
+                                  sx={{ mr: 1 }}
+                                />
+                                <Chip 
+                                  label={`신뢰도 ${aiTestResults.traditionalSignal.confidence}%`}
+                                  variant="outlined"
+                                />
+                              </Box>
+                              
+                              <Typography variant="body2" color="text.secondary">
+                                {aiTestResults.traditionalSignal.reasoning}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+
+                        {/* AI 신호 */}
+                        <Grid item xs={12} md={6}>
+                          <Card variant="outlined" sx={{ border: '2px solid', borderColor: 'primary.main' }}>
+                            <CardContent>
+                              <Typography variant="subtitle1" sx={{ mb: 2, color: 'primary.main' }}>
+                                🤖 AI 고차원 분석
+                              </Typography>
+                              
+                              <Box sx={{ mb: 2 }}>
+                                <Chip 
+                                  label={aiTestResults.aiSignal.action === 'buy' ? '매수' : 
+                                        aiTestResults.aiSignal.action === 'sell' ? '매도' : '관망'}
+                                  color={aiTestResults.aiSignal.action === 'buy' ? 'success' : 
+                                         aiTestResults.aiSignal.action === 'sell' ? 'error' : 'default'}
+                                  sx={{ mr: 1 }}
+                                />
+                                <Chip 
+                                  label={`신뢰도 ${aiTestResults.aiSignal.confidence}%`}
+                                  variant="outlined"
+                                  sx={{ mr: 1 }}
+                                />
+                                <Chip 
+                                  label={`리스크 ${aiTestResults.aiSignal.riskLevel}`}
+                                  size="small"
+                                  color={aiTestResults.aiSignal.riskLevel === 'high' ? 'error' : 
+                                         aiTestResults.aiSignal.riskLevel === 'low' ? 'success' : 'warning'}
+                                />
+                              </Box>
+
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                {aiTestResults.aiSignal.reasoning.split('\n\n')[0]} {/* AI 분석 부분만 표시 */}
+                              </Typography>
+
+                              {/* AI 추가 정보 */}
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  포지션 크기: {(aiTestResults.aiSignal.positionSize * 100).toFixed(0)}% | 
+                                  시간 범위: {aiTestResults.aiSignal.timeHorizon} | 
+                                  시장 상황: {aiTestResults.aiSignal.marketCondition}
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      </Grid>
+
+                      {/* 비교 분석 */}
+                      <Card variant="outlined" sx={{ mt: 2 }}>
+                        <CardContent>
+                          <Typography variant="subtitle1" sx={{ mb: 2 }}>🔍 AI vs 전통적 분석 비교</Typography>
+                          
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2" color="text.secondary">신호 일치도</Typography>
+                              <Typography variant="body1">
+                                {aiTestResults.comparison.actionMatch ? '✅ 일치' : '❌ 불일치'}
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2" color="text.secondary">신뢰도 변화</Typography>
+                              <Typography 
+                                variant="body1"
+                                color={parseFloat(aiTestResults.comparison.confidenceDiff) >= 0 ? 'success.main' : 'error.main'}
+                              >
+                                {aiTestResults.comparison.confidenceDiff > 0 ? '+' : ''}{aiTestResults.comparison.confidenceDiff}%
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2" color="text.secondary">AI 모델</Typography>
+                              <Typography variant="body1">{aiTestResults.strategyStatus.openaiModel}</Typography>
+                            </Grid>
+                          </Grid>
+
+                          {/* AI 추가 고려사항 */}
+                          {aiTestResults.aiSignal.additionalFactors.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                AI 추가 고려사항:
+                              </Typography>
+                              {aiTestResults.aiSignal.additionalFactors.map((factor, index) => (
+                                <Chip 
+                                  key={index}
+                                  label={factor}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ mr: 1, mb: 1 }}
+                                />
+                              ))}
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* 사용량 정보 */}
+                      {aiTestResults.usage && (
+                        <Card variant="outlined" sx={{ mt: 2 }}>
+                          <CardContent>
+                            <Typography variant="subtitle1" sx={{ mb: 2 }}>💰 API 사용량 정보</Typography>
+                            <Grid container spacing={2}>
+                              <Grid item xs={6} sm={3}>
+                                <Typography variant="body2" color="text.secondary">예상 토큰</Typography>
+                                <Typography variant="body1">{aiTestResults.usage.estimatedTokens}</Typography>
+                              </Grid>
+                              <Grid item xs={6} sm={3}>
+                                <Typography variant="body2" color="text.secondary">예상 비용 (USD)</Typography>
+                                <Typography variant="body1">${aiTestResults.usage.estimatedCostUSD?.toFixed(4)}</Typography>
+                              </Grid>
+                              <Grid item xs={6} sm={3}>
+                                <Typography variant="body2" color="text.secondary">예상 비용 (KRW)</Typography>
+                                <Typography variant="body1">{aiTestResults.usage.estimatedCostKRW}원</Typography>
+                              </Grid>
+                              <Grid item xs={6} sm={3}>
+                                <Typography variant="body2" color="text.secondary">분석 횟수</Typography>
+                                <Typography variant="body1">{aiTestResults.strategyStatus.analysisCount}회</Typography>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </CardContent>
         </Card>
       )}
