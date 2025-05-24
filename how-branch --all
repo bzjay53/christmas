@@ -1,0 +1,10 @@
+* 2e079b32 - Example, 2025-05-24 : Netlify 재배포 트리거: 완성된 React UI 확인용 - 파란색 그라데이션 배경의 완성된 대시보드 - 모든 네비게이션 및 AI 기능 포함 - Material-UI 기반 세련된 디자인
+* 7b978100 - Example, 2025-05-24 : 완성된 대시보드 복원: 파란색 배경 + 네비게이션 + AI 기능 통합 - mobile-optimization 브랜치의 완성된 UI 컴포넌트들 복원 - 파란색 그라데이션 배경 (1e3c72  2a5298) 적용 - 상단 앱바, 사용자 메뉴, 네비게이션 시스템 추가 - Dashboard, Trading, Portfolio, UserProfile 페이지 라우팅 - 기존 AI 매매 엔진 기능과 완벽 통합 - 모바일 최적화 및 반응형 디자인 유지
+* b0518f58 - Example, 2025-05-24 :  Update project documentation: Phase 3.5 completion + conversation summary - Updated WBS with Phase 3.5 AI Trading Engine completion - Enhanced document map with latest achievements - Created conversation summary JSON for continuity - Marked AI integration and Netlify build fixes as complete
+* 7532bb96 - Example, 2025-05-24 :  Fix Netlify build: direct npx vite build + improved node_modules handling - Changed to npx vite build for direct execution - Simplified netlify.toml with essential settings only - Added Node.js entries to .gitignore - Tested locally: 12.13s build success - Should resolve permission denied vite error
+* 1d2370e0 - Example, 2025-05-24 :  Fix Netlify build issues: npm ci, Node.js 18.18.0, vite to devDependencies - Changed npm install to npm ci for stable builds - Specified exact Node.js version 18.18.0 - Moved vite to devDependencies - Added .node-version file - Regenerated package-lock.json - Local build test successful: 13.49s
+* 61d43ce8 - Example, 2025-05-24 :  Netlify 배포 오류 수정 - vite 권한 문제 해결 (npx vite 사용, Node.js 18.18.0 명시, npm ci 적용)
+* 57623ce0 - Example, 2025-05-24 :  Phase 3.5 AI 매매 엔진 개발 완료 - OpenAI API 연동, 실시간 AI vs 전통적 전략 비교, 하이브리드 시스템, 사용자 테스트 기능 구현
+* f386b171 - Example, 2025-05-24 :  Phase 3.5: Christmas AI 매매 전략 선택 시스템 구현 완료 - 기술적 지표 엔진, 전략 선택 UI, 성과 비교 대시보드 추가
+* 2f059172 - Example, 2025-05-24 : Phase 3.5: AI 자체학습 매매 시스템 구축 완료 - OpenAI API 기반 개별 맞춤형 전략, 학습 데이터 시스템, AI 성과 모니터링
+* 01012df9 - Example, 2025-05-24 : Fix: vite 의존성 문제 해결 - Netlify 빌드 에러 수정
