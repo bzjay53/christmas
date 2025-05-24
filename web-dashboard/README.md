@@ -1,5 +1,9 @@
 # 🎄 Christmas Trading Dashboard
 
+![Christmas Trading Dashboard](https://img.shields.io/badge/Christmas-Trading-red)
+![React](https://img.shields.io/badge/React-18.0-blue)
+![Material-UI](https://img.shields.io/badge/Material--UI-5.0-green)
+
 실시간 자동매매 시스템을 위한 React 기반 웹 대시보드입니다.
 
 ## ✨ 주요 기능
@@ -132,4 +136,24 @@ MIT License
 
 ---
 
-**🎄 Merry Christmas & Happy Trading! 🎄** 
+**🎄 Merry Christmas & Happy Trading! 🎄**
+
+## Build Status
+
+- ✅ Local build successful
+- 🔄 GitHub Actions deployment testing (2025-05-25)
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+This project is part of the Christmas automated trading system. 
