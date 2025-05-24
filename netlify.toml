@@ -1,21 +1,25 @@
 # Christmas Trading - Netlify 배포 설정
 [build]
-  # 빌드 명령어
-  command = "cd web-dashboard && npm install && npm run build"
+  # 빌드 명령어 (npm ci 사용으로 더 안정적인 설치)
+  command = "cd web-dashboard && npm ci && npm run build"
   
   # 빌드 결과물 디렉토리
   publish = "web-dashboard/dist"
 
-# 빌드 설정
+# 빌드 환경 설정
 [build.environment]
-  # Node.js 버전
-  NODE_VERSION = "18"
+  # Node.js 버전 (정확한 버전 명시)
+  NODE_VERSION = "18.18.0"
   
   # Vite 빌드 최적화
   NODE_OPTIONS = "--max_old_space_size=4096"
   
   # 빌드 타임아웃 (30분)
   BUILD_TIMEOUT = "1800"
+  
+  # 프로덕션 환경 변수
+  NODE_ENV = "production"
+  VITE_NODE_ENV = "production"
 
 # SPA 라우팅을 위한 리다이렉트 설정
 [[redirects]]
