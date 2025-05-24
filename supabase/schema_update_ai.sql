@@ -10,6 +10,10 @@ ALTER TABLE public.users ADD COLUMN IF NOT EXISTS ai_strategy_level TEXT DEFAULT
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS ai_risk_tolerance NUMERIC DEFAULT 0.5 CHECK (ai_risk_tolerance BETWEEN 0.1 AND 1.0);
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS ai_learning_data_consent BOOLEAN DEFAULT FALSE;
 
+-- 전략 선택 및 자동 전환 필드 추가
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS selected_strategy TEXT DEFAULT 'traditional' CHECK (selected_strategy IN ('traditional', 'ai_learning'));
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS strategy_auto_switch BOOLEAN DEFAULT FALSE;
+
 -- AI 학습 데이터 테이블 생성
 CREATE TABLE IF NOT EXISTS public.ai_learning_data (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -36,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.ai_learning_data (
   -- AI 모델 정보
   model_version TEXT DEFAULT 'v1.0',
   strategy_name TEXT DEFAULT 'christmas_ai_v1',
+  strategy_type TEXT DEFAULT 'traditional' CHECK (strategy_type IN ('traditional', 'ai_learning', 'hybrid')),
   
   -- 학습 메타데이터
   learning_phase TEXT DEFAULT 'training' CHECK (learning_phase IN ('training', 'validation', 'production')),
@@ -55,6 +60,7 @@ CREATE TABLE IF NOT EXISTS public.ai_strategy_performance (
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   strategy_name TEXT NOT NULL,
   strategy_version TEXT DEFAULT 'v1.0',
+  strategy_type TEXT DEFAULT 'traditional' CHECK (strategy_type IN ('traditional', 'ai_learning', 'hybrid')),
   
   -- 성과 지표
   total_trades INTEGER DEFAULT 0,
@@ -93,11 +99,14 @@ CREATE TABLE IF NOT EXISTS public.ai_strategy_performance (
 -- 인덱스 추가 (성능 최적화)
 CREATE INDEX IF NOT EXISTS idx_users_openai_api_key ON public.users(openai_api_key) WHERE openai_api_key IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_users_ai_learning_enabled ON public.users(ai_learning_enabled);
+CREATE INDEX IF NOT EXISTS idx_users_selected_strategy ON public.users(selected_strategy);
 CREATE INDEX IF NOT EXISTS idx_ai_learning_data_user_id ON public.ai_learning_data(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_learning_data_symbol ON public.ai_learning_data(symbol);
+CREATE INDEX IF NOT EXISTS idx_ai_learning_data_strategy_type ON public.ai_learning_data(strategy_type);
 CREATE INDEX IF NOT EXISTS idx_ai_learning_data_created_at ON public.ai_learning_data(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ai_strategy_performance_user_id ON public.ai_strategy_performance(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_strategy_performance_strategy ON public.ai_strategy_performance(strategy_name, strategy_version);
+CREATE INDEX IF NOT EXISTS idx_ai_strategy_performance_strategy_type ON public.ai_strategy_performance(strategy_type);
 
 -- RLS 정책 설정
 ALTER TABLE public.ai_learning_data ENABLE ROW LEVEL SECURITY;
@@ -122,7 +131,7 @@ GRANT ALL ON public.ai_strategy_performance TO authenticated;
 SELECT column_name, data_type, is_nullable, column_default 
 FROM information_schema.columns 
 WHERE table_name = 'users' 
-AND (column_name LIKE 'openai_%' OR column_name LIKE 'ai_%')
+AND (column_name LIKE 'openai_%' OR column_name LIKE 'ai_%' OR column_name LIKE '%strategy%')
 ORDER BY column_name;
 
 -- AI 테이블 확인
