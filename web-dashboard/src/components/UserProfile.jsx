@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Grid,
@@ -48,25 +48,40 @@ import {
   CreditCard,
   Payment
 } from '@mui/icons-material'
+import { supabaseHelpers } from '../lib/supabase'
 
-function UserProfile({ user }) {
+function UserProfile({ user, updateUserProfile }) {
   const [activeTab, setActiveTab] = useState(0)
   const [showApiKey, setShowApiKey] = useState(false)
   const [showSecretKey, setShowSecretKey] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [saveLoading, setSaveLoading] = useState(false)
+  const [loadingApiData, setLoadingApiData] = useState(true)
   const [confirmDialog, setConfirmDialog] = useState(false)
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
-  // 사용자 설정 상태
-  const [userSettings, setUserSettings] = useState({
-    // API 설정
-    kisApiKey: '**********************ABCD',
-    kisSecretKey: '**********************WXYZ',
-    kisAccountNumber: '12345678-01',
-    kisEnvironment: 'sandbox', // sandbox or production
+  // 사용자 API 설정 상태
+  const [apiSettings, setApiSettings] = useState({
+    // 한국투자증권 설정
+    kis_real_app_key: '',
+    kis_real_app_secret: '',
+    kis_real_account: '',
+    kis_demo_app_key: '',
+    kis_demo_app_secret: '',
+    kis_demo_account: '',
+    kis_mock_mode: true,
     
+    // 텔레그램 설정
+    telegram_chat_id: '',
+    telegram_username: '',
+    notification_telegram: false,
+    notification_email: true,
+    notification_push: true
+  })
+
+  // 사용자 설정 상태 (기존 코드 유지)
+  const [userSettings, setUserSettings] = useState({
     // 투자 설정
     maxInvestmentAmount: 10000000,
     riskLevel: 'medium',
@@ -74,13 +89,8 @@ function UserProfile({ user }) {
     stopLossPercentage: 5,
     takeProfitPercentage: 10,
     
-    // 알림 설정
-    telegramEnabled: true,
-    emailEnabled: true,
-    pushEnabled: false,
-    
     // 개인정보
-    username: user?.username || '',
+    username: user?.username || user?.firstName || '',
     email: user?.email || '',
     phone: '010-1234-5678',
     
@@ -103,6 +113,32 @@ function UserProfile({ user }) {
     ]
   })
 
+  // 컴포넌트 마운트 시 API 설정 로드
+  useEffect(() => {
+    loadApiSettings()
+  }, [user])
+
+  const loadApiSettings = async () => {
+    if (!user?.id) return
+    
+    try {
+      setLoadingApiData(true)
+      const apiData = await supabaseHelpers.getUserApiSettings(user.id)
+      
+      if (apiData) {
+        setApiSettings(prev => ({
+          ...prev,
+          ...apiData
+        }))
+      }
+    } catch (error) {
+      console.error('API 설정 로드 실패:', error)
+      setError('API 설정을 불러오는데 실패했습니다.')
+    } finally {
+      setLoadingApiData(false)
+    }
+  }
+
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue)
     setError('')
@@ -114,12 +150,47 @@ function UserProfile({ user }) {
     setError('')
     
     try {
-      // 저장 로직 구현 (API 호출)
-      await new Promise(resolve => setTimeout(resolve, 1500)) // 시뮬레이션
+      // API 키 저장
+      if (activeTab === 0) {
+        // 한국투자증권 API 키 저장
+        const kisData = {
+          realAppKey: apiSettings.kis_real_app_key,
+          realAppSecret: apiSettings.kis_real_app_secret,
+          realAccount: apiSettings.kis_real_account,
+          demoAppKey: apiSettings.kis_demo_app_key,
+          demoAppSecret: apiSettings.kis_demo_app_secret,
+          demoAccount: apiSettings.kis_demo_account,
+          mockMode: apiSettings.kis_mock_mode
+        }
+        
+        await supabaseHelpers.saveKISApiKeys(user.id, kisData)
+        
+        // 텔레그램 설정 저장
+        const telegramData = {
+          chatId: apiSettings.telegram_chat_id,
+          username: apiSettings.telegram_username,
+          enabled: apiSettings.notification_telegram
+        }
+        
+        await supabaseHelpers.saveTelegramSettings(user.id, telegramData)
+      } else {
+        // 다른 설정들 저장
+        await supabaseHelpers.updateUserProfile(user.id, {
+          first_name: userSettings.username.split(' ')[0] || userSettings.username,
+          last_name: userSettings.username.split(' ').slice(1).join(' ') || '',
+          notification_email: apiSettings.notification_email,
+          notification_push: apiSettings.notification_push
+        })
+      }
       
       setSuccess('설정이 성공적으로 저장되었습니다!')
       setEditMode(false)
+      
+      // API 설정 다시 로드 (마스킹된 값으로 업데이트)
+      await loadApiSettings()
+      
     } catch (err) {
+      console.error('설정 저장 실패:', err)
       setError('설정 저장 중 오류가 발생했습니다.')
     } finally {
       setSaveLoading(false)
@@ -261,13 +332,19 @@ function UserProfile({ user }) {
             </Alert>
 
             <Grid container spacing={3}>
+              {/* 실전투자 설정 */}
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+                  💰 실전투자 설정
+                </Typography>
+              </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="API Key"
+                  label="실전 API Key"
                   type={showApiKey ? 'text' : 'password'}
-                  value={showApiKey ? userSettings.kisApiKey : maskApiKey(userSettings.kisApiKey)}
-                  onChange={(e) => setUserSettings({...userSettings, kisApiKey: e.target.value})}
+                  value={showApiKey ? apiSettings.kis_real_app_key : maskApiKey(apiSettings.kis_real_app_key)}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_real_app_key: e.target.value})}
                   disabled={!editMode}
                   InputProps={{
                     endAdornment: (
@@ -284,10 +361,10 @@ function UserProfile({ user }) {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="Secret Key"
+                  label="실전 Secret Key"
                   type={showSecretKey ? 'text' : 'password'}
-                  value={showSecretKey ? userSettings.kisSecretKey : maskApiKey(userSettings.kisSecretKey)}
-                  onChange={(e) => setUserSettings({...userSettings, kisSecretKey: e.target.value})}
+                  value={showSecretKey ? apiSettings.kis_real_app_secret : maskApiKey(apiSettings.kis_real_app_secret)}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_real_app_secret: e.target.value})}
                   disabled={!editMode}
                   InputProps={{
                     endAdornment: (
@@ -304,26 +381,120 @@ function UserProfile({ user }) {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="계좌번호"
-                  value={userSettings.kisAccountNumber}
-                  onChange={(e) => setUserSettings({...userSettings, kisAccountNumber: e.target.value})}
+                  label="실전 계좌번호"
+                  value={apiSettings.kis_real_account}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_real_account: e.target.value})}
+                  disabled={!editMode}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              
+              {/* 모의투자 설정 */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle1" gutterBottom sx={{ color: 'warning.main', fontWeight: 'bold' }}>
+                  🎮 모의투자 설정
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="모의 API Key"
+                  type={showApiKey ? 'text' : 'password'}
+                  value={showApiKey ? apiSettings.kis_demo_app_key : maskApiKey(apiSettings.kis_demo_app_key)}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_demo_app_key: e.target.value})}
                   disabled={!editMode}
                   sx={{ mb: 2 }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="모의 Secret Key"
+                  type={showSecretKey ? 'text' : 'password'}
+                  value={showSecretKey ? apiSettings.kis_demo_app_secret : maskApiKey(apiSettings.kis_demo_app_secret)}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_demo_app_secret: e.target.value})}
+                  disabled={!editMode}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="모의 계좌번호"
+                  value={apiSettings.kis_demo_account}
+                  onChange={(e) => setApiSettings({...apiSettings, kis_demo_account: e.target.value})}
+                  disabled={!editMode}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              
+              {/* 운영 모드 선택 */}
+              <Grid item xs={12} md={6}>
                 <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>환경</InputLabel>
+                  <InputLabel>운영 모드</InputLabel>
                   <Select
-                    value={userSettings.kisEnvironment}
-                    label="환경"
-                    onChange={(e) => setUserSettings({...userSettings, kisEnvironment: e.target.value})}
+                    value={apiSettings.kis_mock_mode ? 'demo' : 'real'}
+                    label="운영 모드"
+                    onChange={(e) => setApiSettings({...apiSettings, kis_mock_mode: e.target.value === 'demo'})}
                     disabled={!editMode}
                   >
-                    <MenuItem value="sandbox">샌드박스 (테스트)</MenuItem>
-                    <MenuItem value="production">프로덕션 (실전)</MenuItem>
+                    <MenuItem value="demo">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography color="warning.main">🎮</Typography>
+                        <Typography>모의투자 모드 (안전)</Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="real">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography color="error">⚠️</Typography>
+                        <Typography>실전투자 모드 (실제 거래)</Typography>
+                      </Box>
+                    </MenuItem>
                   </Select>
                 </FormControl>
+              </Grid>
+            </Grid>
+
+            {/* 텔레그램 알림 설정 */}
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="h6" gutterBottom>
+              📱 텔레그램 알림 설정
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="텔레그램 채팅 ID"
+                  value={apiSettings.telegram_chat_id}
+                  onChange={(e) => setApiSettings({...apiSettings, telegram_chat_id: e.target.value})}
+                  disabled={!editMode}
+                  sx={{ mb: 2 }}
+                  helperText="@christmas_auto_bot에서 /start 명령으로 확인"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="텔레그램 사용자명 (선택)"
+                  value={apiSettings.telegram_username}
+                  onChange={(e) => setApiSettings({...apiSettings, telegram_username: e.target.value})}
+                  disabled={!editMode}
+                  sx={{ mb: 2 }}
+                  helperText="@username 형태"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={apiSettings.notification_telegram}
+                      onChange={(e) => setApiSettings({...apiSettings, notification_telegram: e.target.checked})}
+                      disabled={!editMode}
+                    />
+                  }
+                  label="텔레그램 알림 활성화"
+                />
               </Grid>
             </Grid>
 
@@ -332,7 +503,7 @@ function UserProfile({ user }) {
             <Box display="flex" alignItems="center" gap={2}>
               <CheckCircle color="success" />
               <Typography variant="body1">
-                API 연결 상태: <strong>정상</strong>
+                API 연결 상태: <strong>{loadingApiData ? '로드 중...' : apiSettings.kis_mock_mode ? '데모 모드' : '정상'}</strong>
               </Typography>
               <Button variant="outlined" size="small">
                 연결 테스트
@@ -461,8 +632,8 @@ function UserProfile({ user }) {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={userSettings.telegramEnabled}
-                      onChange={(e) => setUserSettings({...userSettings, telegramEnabled: e.target.checked})}
+                      checked={apiSettings.notification_telegram}
+                      onChange={(e) => setApiSettings({...apiSettings, notification_telegram: e.target.checked})}
                       disabled={!editMode}
                     />
                   }
@@ -473,8 +644,8 @@ function UserProfile({ user }) {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={userSettings.emailEnabled}
-                      onChange={(e) => setUserSettings({...userSettings, emailEnabled: e.target.checked})}
+                      checked={apiSettings.notification_email}
+                      onChange={(e) => setApiSettings({...apiSettings, notification_email: e.target.checked})}
                       disabled={!editMode}
                     />
                   }
@@ -485,8 +656,8 @@ function UserProfile({ user }) {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={userSettings.pushEnabled}
-                      onChange={(e) => setUserSettings({...userSettings, pushEnabled: e.target.checked})}
+                      checked={apiSettings.notification_push}
+                      onChange={(e) => setApiSettings({...apiSettings, notification_push: e.target.checked})}
                       disabled={!editMode}
                     />
                   }

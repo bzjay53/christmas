@@ -38,6 +38,15 @@ CREATE TABLE public.users (
   upbit_access_key TEXT,
   upbit_secret_key TEXT,
   
+  -- 한국투자증권 API 키
+  kis_real_app_key TEXT,
+  kis_real_app_secret TEXT,
+  kis_real_account TEXT,
+  kis_demo_app_key TEXT,
+  kis_demo_app_secret TEXT,
+  kis_demo_account TEXT,
+  kis_mock_mode BOOLEAN DEFAULT TRUE,  -- true: 모의투자, false: 실전투자
+  
   -- 알림 설정
   notification_email BOOLEAN DEFAULT TRUE,
   notification_telegram BOOLEAN DEFAULT FALSE,
