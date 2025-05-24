@@ -181,224 +181,279 @@
                     <h4>대시보드</h4>
                     <div>
                         <span class="badge bg-primary me-2">v1.0.0</span>
-                        <span class="text-muted">최근 업데이트: <span id="last-update-time">{{ last_update }}</span></span>
+                        <span class="text-muted">최근 업데이트: {{ last_update }}</span>
                     </div>
                 </div>
                 
-                <div id="dashboard-content"> 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="card stat-card profit-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h6 class="card-subtitle mb-2 text-muted">총 실현 수익</h6>
-                                            <h3 class="card-title text-success" id="total-profit">{{ total_profit }}원</h3>
-                                        </div>
-                                        <div class="bg-light rounded-circle p-3">
-                                            <i class="bi bi-cash-coin text-success fs-4"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="badge" id="profit-change-badge"><i class="bi bi-arrow-up"></i> <span id="profit-change">{{ profit_change }}</span>%</span>
-                                        <small class="text-muted ms-2">지난 주 대비</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card orders-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h6 class="card-subtitle mb-2 text-muted">오늘 주문</h6>
-                                            <h3 class="card-title" id="total-orders-today">{{ total_orders }}건</h3>
-                                        </div>
-                                        <div class="bg-light rounded-circle p-3">
-                                            <i class="bi bi-arrow-left-right text-primary fs-4"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="text-success"><i class="bi bi-check-circle"></i> <span id="success-rate-today">{{ success_rate }}</span>% 성공률</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card positions-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h6 class="card-subtitle mb-2 text-muted">현재 포지션</h6>
-                                            <h3 class="card-title" id="active-positions-count">{{ active_positions }}개</h3>
-                                        </div>
-                                        <div class="bg-light rounded-circle p-3">
-                                            <i class="bi bi-wallet2 text-info fs-4"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="text-muted"><i class="bi bi-clock"></i> <span id="avg-holding-time">{{ avg_holding_time }}</span> 평균 보유시간</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card alerts-card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <h6 class="card-subtitle mb-2 text-muted">오늘 알림</h6>
-                                            <h3 class="card-title" id="total-alerts-today">{{ total_alerts }}건</h3>
-                                        </div>
-                                        <div class="bg-light rounded-circle p-3">
-                                            <i class="bi bi-bell text-warning fs-4"></i>
-                                        </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="badge pill-danger me-1"><i class="bi bi-exclamation-octagon"></i> <span id="critical-alerts-count">{{ critical_alerts }}</span>개 중요</span>
-                                        <span class="badge pill-warning"><i class="bi bi-exclamation-triangle"></i> <span id="warning-alerts-count">{{ warning_alerts }}</span>개 경고</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-md-8">
-                            <div class="card">
-                                <div class="card-header">
-                                    성과 추이
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="performanceChart" height="150"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    전략 성과
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="strategyPerformanceChart" height="150"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    최근 주문
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
                                     <div>
-                                        <button class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createOrderModal">+ 새 주문 생성</button>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">모든 주문 보기</a>
+                                        <h6 class="card-subtitle mb-2 text-muted">총 실현 수익</h6>
+                                        <h3 class="card-title text-success">{{ total_profit }}원</h3>
+                                    </div>
+                                    <div class="bg-light rounded-circle p-3">
+                                        <i class="bi bi-cash-coin text-success fs-4"></i>
                                     </div>
                                 </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0" id="recent-orders-table">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>종목</th>
-                                                    <th>시간</th>
-                                                    <th>구분</th>
-                                                    <th>가격</th>
-                                                    <th>수량</th>
-                                                    <th>상태</th>
-                                                    <th>작업</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Orders will be populated by JavaScript -->
-                                                <tr><td colspan="7" class="text-center py-4">최근 주문 내역을 불러오는 중...</td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                <div class="mt-3">
+                                    <span class="badge pill-success">
+                                        <i class="bi bi-arrow-up"></i> {{ profit_change }}%
+                                    </span>
+                                    <small class="text-muted ms-2">지난 주 대비</small>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    현재 포지션
-                                    <a href="#" class="btn btn-sm btn-outline-primary">모든 포지션 보기</a>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover mb-0" id="current-positions-table">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>종목</th>
-                                                    <th>수량</th>
-                                                    <th>평단가</th>
-                                                    <th>현재가</th>
-                                                    <th>손익(%)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Positions will be populated by JavaScript -->
-                                                <tr><td colspan="5" class="text-center py-4">현재 포지션 정보를 불러오는 중...</td></tr>
-                                            </tbody>
-                                        </table>
+                    <div class="col-md-3">
+                        <div class="card orders-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-subtitle mb-2 text-muted">오늘 주문</h6>
+                                        <h3 class="card-title">{{ total_orders }}건</h3>
                                     </div>
+                                    <div class="bg-light rounded-circle p-3">
+                                        <i class="bi bi-arrow-left-right text-primary fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-success">
+                                        <i class="bi bi-check-circle"></i> {{ success_rate }}% 성공률
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card positions-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-subtitle mb-2 text-muted">현재 포지션</h6>
+                                        <h3 class="card-title">{{ active_positions }}개</h3>
+                                    </div>
+                                    <div class="bg-light rounded-circle p-3">
+                                        <i class="bi bi-wallet2 text-info fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ avg_holding_time }} 평균 보유시간
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card alerts-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="card-subtitle mb-2 text-muted">오늘 알림</h6>
+                                        <h3 class="card-title">{{ total_alerts }}건</h3>
+                                    </div>
+                                    <div class="bg-light rounded-circle p-3">
+                                        <i class="bi bi-bell text-primary fs-4"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <span class="badge pill-danger me-1">{{ critical_alerts }}개 중요</span>
+                                    <span class="badge pill-warning">{{ warning_alerts }}개 경고</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 새 주문 생성 Modal -->
-    <div class="modal fade" id="createOrderModal" tabindex="-1" aria-labelledby="createOrderModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createOrderModalLabel">새 주문 생성</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>성과 추이</span>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">일간</button>
+                                    <button type="button" class="btn btn-sm btn-primary">주간</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">월간</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                최근 주문
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-hover mb-0">
+                                    <tbody>
+                                        {% for order in recent_orders %}
+                                        <tr>
+                                            <td>
+                                                <div>{{ order.symbol }}</div>
+                                                <small class="text-muted">{{ order.time }}</small>
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="text-{{ 'success' if order.side == '매수' else 'danger' }}">{{ order.side }}</div>
+                                                <small>{{ order.price }}원</small>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer text-center">
+                                <a href="#" class="text-decoration-none">모든 주문 보기</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form id="createOrderForm">
-                        <div class="mb-3">
-                            <label for="orderSymbol" class="form-label">종목</label>
-                            <input type="text" class="form-control" id="orderSymbol" value="BTC/USDT" required>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                현재 포지션
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>종목</th>
+                                            <th>수량</th>
+                                            <th>진입가</th>
+                                            <th>현재가</th>
+                                            <th>손익</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for position in current_positions %}
+                                        <tr>
+                                            <td>{{ position.symbol }}</td>
+                                            <td>{{ position.quantity }}</td>
+                                            <td>{{ position.entry_price }}원</td>
+                                            <td>{{ position.current_price }}원</td>
+                                            <td class="text-{{ 'success' if position.profit > 0 else 'danger' }}">
+                                                {{ position.profit }}%
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="orderSide" class="form-label">구분</label>
-                            <select class="form-select" id="orderSide" required>
-                                <option value="buy" selected>매수 (BUY)</option>
-                                <option value="sell">매도 (SELL)</option>
-                            </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                전략 성과
+                            </div>
+                            <div class="card-body">
+                                <div id="strategyChart"></div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="orderQuantity" class="form-label">수량</label>
-                            <input type="number" class="form-control" id="orderQuantity" step="any" value="0.01" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="orderPrice" class="form-label">가격 (지정가, 비워두면 시장가)</label>
-                            <input type="number" class="form-control" id="orderPrice" step="any" placeholder="예: 60000.0">
-                        </div>
-                        <div class="mb-3">
-                            <label for="orderId" class="form-label">주문 ID (선택 사항)</label>
-                            <input type="text" class="form-control" id="orderId" placeholder="자동 생성됩니다">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="submit" class="btn btn-primary" form="createOrderForm">주문 생성</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/dashboard.js"></script> 
+    <script>
+        // 성과 차트 데이터
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ performance_dates|safe }},
+                datasets: [{
+                    label: '일일 수익',
+                    data: {{ daily_profits|safe }},
+                    backgroundColor: 'rgba(77, 196, 240, 0.2)',
+                    borderColor: 'rgba(77, 196, 240, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 전략 성과 차트
+        const options = {
+            series: {{ strategy_performance|safe }},
+            chart: {
+                type: 'bar',
+                height: 250,
+                stacked: true,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 2
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: {{ strategy_names|safe }},
+            },
+            yaxis: {
+                title: {
+                    text: '승률 (%)'
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + "%"
+                    }
+                }
+            },
+            colors: ['#4361ee', '#4895ef', '#e63946']
+        };
+
+        const strategyChart = new ApexCharts(document.querySelector("#strategyChart"), options);
+        strategyChart.render();
+    </script>
 </body>
 </html> 
