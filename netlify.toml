@@ -1,46 +1,136 @@
+# Christmas Trading - Netlify 배포 설정
 [build]
-  base = "web-dashboard"
-  publish = "dist"
-  command = "npm run build"
+  # 빌드 명령어
+  command = "cd web-dashboard && npm install && npm run build"
+  
+  # 빌드 결과물 디렉토리
+  publish = "web-dashboard/dist"
+  
+  # Node.js 버전
+  environment = { NODE_VERSION = "18" }
 
-[dev]
-  command = "python app/web/main.py"
-  port = 8000
-  targetPort = 8080
+# 빌드 설정
+[build.environment]
+  # Vite 빌드 최적화
+  NODE_OPTIONS = "--max_old_space_size=4096"
+  
+  # 빌드 타임아웃 (30분)
+  BUILD_TIMEOUT = "1800"
 
-[[plugins]]
-  package = "@netlify/plugin-functions-install-core"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/demo/*"
-  to = "/.netlify/functions/demo-trade/:splat"
-  status = 200
-
+# SPA 라우팅을 위한 리다이렉트 설정
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
-[build.environment]
-  NODE_VERSION = "18"
+# API 프록시 (필요시 Supabase Functions 연결)
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-project-ref.supabase.co/functions/v1/:splat"
+  status = 200
+  force = false
+  headers = {X-From = "Netlify"}
 
+# 보안 헤더 설정
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # HTTPS 강제
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # XSS 보호
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    
+    # CSP 설정
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.binance.com https://api.upbit.com; frame-src 'none';"
+    
+    # 참조자 정책
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # 권한 정책
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+
+# 정적 파일 캐싱 설정
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# 이미지 최적화
+[[headers]]
+  for = "*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# 404 페이지 설정
+[[redirects]]
+  from = "/404"
+  to = "/404.html"
+  status = 404
+
+# 개발 환경 설정 (Branch deploys)
+[context.deploy-preview]
+  command = "cd web-dashboard && npm install && npm run build"
+  
+[context.branch-deploy]
+  command = "cd web-dashboard && npm install && npm run build"
+
+# 프로덕션 전용 설정
+[context.production]
+  command = "cd web-dashboard && npm install && npm run build"
+  
+  [context.production.environment]
+    NODE_ENV = "production"
+    VITE_NODE_ENV = "production"
+
+# 플러그인 설정
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  
+  [plugins.inputs]
+    output_path = "lighthouse"
+
+# 양식 처리 (필요시)
+# [[forms]]
+#   name = "contact"
+#   action = "/thank-you/"
+#   
+# Edge Functions (필요시)
+# [[edge_functions]]
+#   function = "auth-check"
+#   path = "/admin/*"
+
+# Functions 설정 (Node.js Functions 사용시)
 [functions]
-  directory = "app/web/functions"
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[functions."api/*"]
-  included_files = ["app/web/**"]
-
-[context.production]
-  command = "npm run build"
-
-[context.deploy-preview]
-  command = "npm run build"
-
-[context.branch-deploy]
-  command = "npm run build" 
+# 환경별 설정
+[dev]
+  command = "cd web-dashboard && npm run dev"
+  port = 3000
+  publish = "web-dashboard/dist"
+  autoLaunch = false 

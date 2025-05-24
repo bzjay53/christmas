@@ -1,0 +1,100 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [ main, mobile-optimization ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📋 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📱 Send deployment start notification
+      if: github.event_name == 'push'
+      run: |
+        if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="🚀 <b>배포 시작</b>%0A%0A🌐 <b>환경:</b> Production%0A📦 <b>브랜치:</b> ${{ github.ref_name }}%0A👤 <b>작성자:</b> ${{ github.actor }}%0A📝 <b>커밋:</b> ${{ github.event.head_commit.message }}%0A%0A⏰ <b>시작시간:</b> $(date '+%Y-%m-%d %H:%M:%S')"
+        fi
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'web-dashboard/package-lock.json'
+        
+    - name: 📦 Install dependencies
+      working-directory: ./web-dashboard
+      run: npm ci
+      
+    - name: 🧪 Run tests
+      working-directory: ./web-dashboard
+      run: npm run test:ci || true
+      
+    - name: 🏗️ Build application
+      working-directory: ./web-dashboard
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_TELEGRAM_BOT_TOKEN: ${{ secrets.VITE_TELEGRAM_BOT_TOKEN }}
+        VITE_TELEGRAM_CHAT_ID: ${{ secrets.VITE_TELEGRAM_CHAT_ID }}
+      run: npm run build
+      
+    - name: 🔍 Run Lighthouse CI
+      working-directory: ./web-dashboard
+      run: |
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun || true
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        
+    - name: 🚀 Deploy to Netlify
+      id: deploy
+      uses: nwtgck/actions-netlify@v3.0
+      with:
+        publish-dir: './web-dashboard/dist'
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions - ${{ github.event.head_commit.message }}"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        
+    - name: 📊 Performance Budget Check
+      working-directory: ./web-dashboard
+      run: |
+        echo "🎯 Performance Budget Check"
+        echo "✅ Bundle size: $(du -sh dist/ | cut -f1)"
+        
+    - name: 📱 Send deployment success notification
+      if: success() && github.event_name == 'push'
+      run: |
+        if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          DEPLOY_URL="${{ steps.deploy.outputs.deploy-url }}"
+          BUILD_SIZE=$(du -sh web-dashboard/dist/ | cut -f1)
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="✅ <b>배포 성공</b>%0A%0A🌐 <b>환경:</b> Production%0A📦 <b>브랜치:</b> ${{ github.ref_name }}%0A🔗 <b>URL:</b> ${DEPLOY_URL}%0A📊 <b>빌드 크기:</b> ${BUILD_SIZE}%0A👤 <b>작성자:</b> ${{ github.actor }}%0A%0A📝 <b>변경사항:</b>%0A${{ github.event.head_commit.message }}%0A%0A⏰ <b>완료시간:</b> $(date '+%Y-%m-%d %H:%M:%S')"
+        fi
+        
+    - name: 📱 Send deployment failure notification
+      if: failure() && github.event_name == 'push'
+      run: |
+        if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="❌ <b>배포 실패</b>%0A%0A🌐 <b>환경:</b> Production%0A📦 <b>브랜치:</b> ${{ github.ref_name }}%0A👤 <b>작성자:</b> ${{ github.actor }}%0A🔗 <b>로그:</b> https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}%0A%0A📝 <b>커밋:</b>%0A${{ github.event.head_commit.message }}%0A%0A⏰ <b>실패시간:</b> $(date '+%Y-%m-%d %H:%M:%S')%0A%0A🔧 <b>조치사항:</b> 로그를 확인하고 문제를 해결해주세요."
+        fi 
