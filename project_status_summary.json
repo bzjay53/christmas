@@ -1,9 +1,20 @@
 {
   "project_name": "Christmas 자동매매 시스템",
   "last_updated": "2025-05-25",
-  "current_status": "프론트엔드 접속 문제 해결 완료 - 다음 단계 UI/UX 개선 준비",
+  "current_status": "GitHub → Netlify 자동 배포 문제 해결 완료 - UI/UX 개선 단계 진행 중",
   
   "major_achievements": {
+    "deployment_pipeline_fix": {
+      "status": "완료",
+      "description": "GitHub Actions → Netlify 자동 배포 파이프라인 문제 해결",
+      "technical_details": [
+        "GitHub Actions 워크플로우 경로 수정 (app/web/** → web-dashboard/**)",
+        "브랜치 트리거 추가 (deep-debugging-localhost-404-fix)",
+        "빌드 프로세스 working-directory 설정",
+        "publish-dir 경로 수정 (./web-dashboard/dist)",
+        "변경사항 GitHub 푸시 완료, 자동 배포 트리거됨"
+      ]
+    },
     "frontend_resolution": {
       "status": "완료",
       "description": "localhost:3000 404 오류 해결, Christmas Trading Dashboard 정상 접속 가능",
@@ -16,8 +27,13 @@
     },
     "git_management": {
       "current_branch": "deep-debugging-localhost-404-fix",
-      "last_commit": "✅ Frontend localhost 404 resolved - Christmas Trading Dashboard accessible",
-      "github_status": "푸시 완료, Netlify 자동 배포 트리거됨"
+      "last_commit": "Fix Netlify deployment workflow - Update paths and build process",
+      "github_status": "푸시 완료, Netlify 자동 배포 트리거됨",
+      "backup_branches": [
+        "netlify-deployment-fix-backup",
+        "frontend-localhost-404-fix-backup",
+        "frontend-backend-diagnosis-backup"
+      ]
     }
   },
 
@@ -25,7 +41,7 @@
     "frontend": {
       "status": "정상 동작",
       "url": "http://localhost:3000",
-      "server": "Vite 개발 서버 실행 중 (PID: 25140)",
+      "server": "Vite 개발 서버 실행 중",
       "description": "Christmas Trading Dashboard 정상 표시됨"
     },
     "backend": {
@@ -34,15 +50,27 @@
       "description": "FastAPI 백엔드 서버 실행 중"
     },
     "deployment": {
-      "netlify_status": "자동 배포 진행 중",
-      "url": "https://christmas-trading.netlify.app"
+      "netlify_status": "자동 배포 파이프라인 수정 완료",
+      "url": "https://christmas-trading.netlify.app",
+      "github_actions": "워크플로우 수정 및 푸시 완료"
     }
   },
 
   "immediate_next_tasks": {
-    "priority_1_ui_mobile": {
-      "title": "UI/UX 개선 및 모바일 최적화",
+    "priority_1_deployment_verification": {
+      "title": "Netlify 자동 배포 동작 확인",
       "urgency": "최고",
+      "duration": "30분-1시간",
+      "tasks": [
+        "GitHub Actions 워크플로우 실행 상태 확인",
+        "Netlify 빌드 로그 확인",
+        "배포된 사이트 정상 동작 테스트",
+        "main 브랜치 병합 후 production 배포 확인"
+      ]
+    },
+    "priority_2_ui_mobile": {
+      "title": "UI/UX 개선 및 모바일 최적화",
+      "urgency": "높음",
       "duration": "1-2일",
       "tasks": [
         "Material-UI breakpoints 설정 검토",
@@ -51,9 +79,9 @@
         "모바일 성능 최적화"
       ]
     },
-    "priority_2_functionality": {
+    "priority_3_functionality": {
       "title": "기능 개선 및 버그 수정",
-      "urgency": "높음",
+      "urgency": "중간",
       "duration": "1-2일", 
       "tasks": [
         "KIS API 키 입력 폼 동작 확인 및 수정",
@@ -63,83 +91,5 @@
         "사용자 피드백 반영"
       ]
     }
-  },
-
-  "technical_architecture": {
-    "frontend": {
-      "framework": "React + Vite",
-      "ui_library": "Material-UI",
-      "state_management": "Zustand",
-      "charts": "Recharts",
-      "auth": "Supabase (개발모드에서 우회됨)"
-    },
-    "backend": {
-      "framework": "FastAPI",
-      "database": "Supabase PostgreSQL",
-      "ai_integration": "OpenAI GPT-4",
-      "trading_api": "한국투자증권 KIS API"
-    },
-    "deployment": {
-      "frontend": "Netlify (자동 배포)",
-      "backend": "로컬 개발 서버",
-      "ci_cd": "GitHub Actions"
-    }
-  },
-
-  "key_documents": {
-    "wbs": "docs/18. christmas_wbs.md",
-    "document_map": "docs/00. document_map.md", 
-    "debug_guide": "docs/06. christmas_debug.md",
-    "architecture": "docs/09. christmas_project-structure.md",
-    "security": "docs/14. christmas_Security Guidelines.md",
-    "team_guide": "docs/16. Christmas_Team Collaboration Guide.md",
-    "rag_system": "docs/19. christmas_RAG.md",
-    "refactoring": "docs/20. christmas_Refactoring Governance.md",
-    "code_quality": "docs/21. 코드 품질 가이드라인.md"
-  },
-
-  "user_feedback_to_address": [
-    "API 입력 버튼이 동작하지 않음",
-    "모바일 화면 최적화 필요",
-    "사용자 경험 개선 요청",
-    "기능별 세부 개선 필요"
-  ],
-
-  "git_branch_strategy": {
-    "main": "안정된 메인 브랜치",
-    "frontend-localhost-404-fix-backup": "백업 브랜치",
-    "deep-debugging-localhost-404-fix": "현재 작업 브랜치 (문제 해결 완료)",
-    "next_branch_suggestion": "ui-mobile-optimization"
-  },
-
-  "development_environment": {
-    "os": "Windows 10.0.26100",
-    "shell": "PowerShell",
-    "workspace": "E:/study/Business/Develope/christmas",
-    "node_version": "18",
-    "package_manager": "npm"
-  },
-
-  "phase_completion": {
-    "phase_1": "100% 완료 - 기본 시스템 구축",
-    "phase_2": "85% 완료 - 고도화 및 상용화", 
-    "phase_3": "15% 진행 중 - UI/UX 개선 및 실제 적용",
-    "current_focus": "Phase 3 - 사용자 경험 개선"
-  },
-
-  "success_metrics": {
-    "frontend_accessibility": "✅ 해결완료",
-    "build_success": "✅ npm run build 성공",
-    "deployment_pipeline": "✅ GitHub → Netlify 연동",
-    "documentation": "✅ 31개 기술문서 완성",
-    "next_milestone": "모바일 최적화 및 기능 개선"
-  },
-
-  "notes_for_next_conversation": [
-    "사용자가 드디어 대시보드 화면을 확인했음",
-    "모바일 최적화와 API 버튼 기능 수정이 주요 요청사항",
-    "체계적인 문서 관리를 중요하게 생각함",
-    "Git 브랜치 전략을 통한 안전한 개발 진행 선호",
-    "PowerShell 환경에서 && 명령어 사용 금지 요청"
-  ]
+  }
 } 
