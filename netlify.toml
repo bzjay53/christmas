@@ -1,11 +1,14 @@
 [build]
   base = "web-dashboard"
-  command = "npm ci && npm run build"
+  command = "npm ci --force && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps"
+  NPM_FLAGS = "--legacy-peer-deps --force"
+  VITE_NODE_ENV = "production"
+  VITE_ENABLE_AUTH = "false"
+  VITE_BYPASS_AUTH = "true"
 
 # SPA 라우팅을 위한 리디렉트 설정
 [[redirects]]

@@ -63,6 +63,42 @@ function App() {
   useEffect(() => {
     let mounted = true
 
+    // 강제 개발 모드: 항상 테스트 사용자로 자동 로그인
+    console.log('🔧 강제 개발 모드: 테스트 사용자로 자동 로그인')
+    
+    const testUser = {
+      id: 'test-user-id',
+      email: 'test@christmas-trading.com',
+      firstName: 'Christmas',
+      lastName: 'Trader',
+      membershipType: 'premium',
+      isAdmin: false,
+      isAuthenticated: true,
+      profile: {
+        first_name: 'Christmas',
+        last_name: 'Trader',
+        membership_type: 'premium',
+        is_admin: false,
+        daily_trade_count: 0,
+        total_extension_days: 0,
+        personal_referral_code: 'TEST2024'
+      }
+    }
+    
+    setTimeout(() => {
+      if (mounted) {
+        setUser(testUser)
+        setLoading(false)
+        showNotification('🎄 개발 모드로 접속했습니다!', 'success')
+      }
+    }, 1000) // 1초 로딩 시뮬레이션
+    
+    return () => {
+      mounted = false
+    }
+
+    // 원래 Supabase 로직은 주석 처리
+    /*
     // 개발 환경에서는 테스트 사용자로 바로 로그인
     if (process.env.NODE_ENV === 'development') {
       console.log('🔧 개발 모드: 테스트 사용자로 자동 로그인')
@@ -151,6 +187,7 @@ function App() {
       mounted = false
       subscription?.unsubscribe()
     }
+    */
   }, [])
 
   // 사용자 세션 처리
