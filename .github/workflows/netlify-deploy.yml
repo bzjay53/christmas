@@ -8,6 +8,7 @@ on:
     paths:
       - 'web-dashboard/**'
       - 'netlify.toml'
+  workflow_dispatch:
 
 jobs:
   deploy:
