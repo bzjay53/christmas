@@ -59,50 +59,24 @@ function App() {
     severity: 'info'
   })
 
+  // 알림 표시 (useEffect보다 먼저 정의)
+  const showNotification = (message, severity = 'info') => {
+    console.log('🔔 알림:', message, severity)
+    setNotification({
+      open: true,
+      message,
+      severity
+    })
+  }
+
   // Supabase 인증 상태 모니터링
   useEffect(() => {
+    console.log('🎄 App.jsx useEffect 시작')
     let mounted = true
 
-    // 프로덕션/개발 모드 모두 지원: 테스트 사용자로 자동 로그인
-    console.log('🎄 Christmas Trading 시스템 초기화 중...')
-    
-    const testUser = {
-      id: 'test-user-id',
-      email: 'test@christmas-trading.com',
-      firstName: 'Christmas',
-      lastName: 'Trader',
-      membershipType: 'premium',
-      isAdmin: false,
-      isAuthenticated: true,
-      profile: {
-        first_name: 'Christmas',
-        last_name: 'Trader',
-        membership_type: 'premium',
-        is_admin: false,
-        daily_trade_count: 0,
-        total_extension_days: 0,
-        personal_referral_code: 'TEST2024'
-      }
-    }
-    
-    // 로딩 시간 단축: 500ms로 변경
-    setTimeout(() => {
-      if (mounted) {
-        setUser(testUser)
-        setLoading(false)
-        showNotification('🎄 Christmas Trading 시스템에 접속했습니다!', 'success')
-      }
-    }, 500) // 500ms로 단축
-    
-    return () => {
-      mounted = false
-    }
-
-    // 원래 Supabase 로직은 주석 처리
-    /*
-    // 개발 환경에서는 테스트 사용자로 바로 로그인
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 개발 모드: 테스트 사용자로 자동 로그인')
+    try {
+      // 디버깅: 즉시 로딩 완료 테스트
+      console.log('🔧 디버깅 모드: 즉시 로딩 완료 테스트')
       
       const testUser = {
         id: 'test-user-id',
@@ -123,72 +97,30 @@ function App() {
         }
       }
       
+      // 즉시 실행 (setTimeout 제거)
+      console.log('🔧 사용자 설정 및 로딩 완료 처리 중...')
+      setUser(testUser)
+      setLoading(false)
+      console.log('✅ 로딩 완료!')
+      
+      // 알림은 나중에 표시
       setTimeout(() => {
         if (mounted) {
-          setUser(testUser)
-          setLoading(false)
-          showNotification('🎄 개발 모드로 접속했습니다!', 'info')
+          console.log('🔔 알림 표시 시도')
+          showNotification('🎄 Christmas Trading 시스템에 접속했습니다!', 'success')
         }
-      }, 1000) // 1초 로딩 시뮬레이션
+      }, 1000)
       
-      return () => {
-        mounted = false
-      }
+    } catch (error) {
+      console.error('❌ useEffect 에러:', error)
+      setLoading(false)
+      showNotification('시스템 초기화 중 오류가 발생했습니다.', 'error')
     }
-
-    // 현재 세션 확인
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error('세션 확인 오류:', error)
-          setLoading(false)
-          return
-        }
-
-        if (session?.user && mounted) {
-          await handleUserSession(session.user)
-        } else if (mounted) {
-          setUser(null)
-          setLoading(false)
-        }
-      } catch (err) {
-        console.error('세션 체크 실패:', err)
-        if (mounted) {
-          setUser(null)
-          setLoading(false)
-        }
-      }
-    }
-
-    // 인증 상태 변화 감지
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email)
-      
-      if (!mounted) return
-
-      if (event === 'SIGNED_IN' && session?.user) {
-        await handleUserSession(session.user)
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null)
-        setLoading(false)
-        showNotification('로그아웃되었습니다.', 'info')
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        await handleUserSession(session.user)
-      } else {
-        setUser(null)
-        setLoading(false)
-      }
-    })
-
-    checkSession()
-
+    
     return () => {
+      console.log('🔧 useEffect cleanup')
       mounted = false
-      subscription?.unsubscribe()
     }
-    */
   }, [])
 
   // 사용자 세션 처리
@@ -308,15 +240,6 @@ function App() {
       showNotification('거래 권한 확인 중 오류가 발생했습니다.', 'error')
       return { canTrade: false, reason: '시스템 오류' }
     }
-  }
-
-  // 알림 표시
-  const showNotification = (message, severity = 'info') => {
-    setNotification({
-      open: true,
-      message,
-      severity
-    })
   }
 
   // 알림 닫기
