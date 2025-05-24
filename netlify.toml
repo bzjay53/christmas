@@ -5,12 +5,12 @@
   
   # 빌드 결과물 디렉토리
   publish = "web-dashboard/dist"
-  
-  # Node.js 버전
-  environment = { NODE_VERSION = "18" }
 
-# 빌드 설정
+# 빌드 환경 설정
 [build.environment]
+  # Node.js 버전
+  NODE_VERSION = "18"
+  
   # Vite 빌드 최적화
   NODE_OPTIONS = "--max_old_space_size=4096"
   
@@ -112,16 +112,6 @@
   
   [plugins.inputs]
     output_path = "lighthouse"
-
-# 양식 처리 (필요시)
-# [[forms]]
-#   name = "contact"
-#   action = "/thank-you/"
-#   
-# Edge Functions (필요시)
-# [[edge_functions]]
-#   function = "auth-check"
-#   path = "/admin/*"
 
 # Functions 설정 (Node.js Functions 사용시)
 [functions]
