@@ -46,7 +46,9 @@ import {
   Warning,
   CheckCircle,
   CreditCard,
-  Payment
+  Payment,
+  Psychology,
+  AutoAwesome
 } from '@mui/icons-material'
 import { supabaseHelpers } from '../lib/supabase'
 
@@ -113,6 +115,28 @@ function UserProfile({ user, updateUserProfile }) {
     ]
   })
 
+  // AI 설정 상태
+  const [aiSettings, setAiSettings] = useState({
+    openai_api_key: '',
+    openai_model: 'gpt-4o-mini',
+    ai_learning_enabled: false,
+    ai_strategy_level: 'basic',
+    ai_risk_tolerance: 0.5,
+    ai_learning_data_consent: false
+  })
+
+  // AI 학습 통계 상태
+  const [aiStats, setAiStats] = useState({
+    totalRecords: 0,
+    trainingRecords: 0,
+    validationRecords: 0,
+    productionRecords: 0,
+    successfulTrades: 0,
+    totalProfitLoss: 0,
+    avgConfidence: 0,
+    lastLearningDate: null
+  })
+
   // 컴포넌트 마운트 시 API 설정 로드
   useEffect(() => {
     loadApiSettings()
@@ -130,6 +154,23 @@ function UserProfile({ user, updateUserProfile }) {
           ...prev,
           ...apiData
         }))
+
+        // AI 설정 별도 로드
+        setAiSettings(prev => ({
+          ...prev,
+          openai_api_key: apiData.openai_api_key || '',
+          openai_model: apiData.openai_model || 'gpt-4o-mini',
+          ai_learning_enabled: apiData.ai_learning_enabled || false,
+          ai_strategy_level: apiData.ai_strategy_level || 'basic',
+          ai_risk_tolerance: apiData.ai_risk_tolerance || 0.5,
+          ai_learning_data_consent: apiData.ai_learning_data_consent || false
+        }))
+
+        // AI 학습 통계 로드
+        if (apiData.ai_learning_enabled) {
+          const stats = await supabaseHelpers.getAILearningStats(user.id)
+          setAiStats(stats)
+        }
       }
     } catch (error) {
       console.error('API 설정 로드 실패:', error)
@@ -173,6 +214,18 @@ function UserProfile({ user, updateUserProfile }) {
         }
         
         await supabaseHelpers.saveTelegramSettings(user.id, telegramData)
+      } else if (activeTab === 4) { // AI 설정 탭
+        // OpenAI API 설정 저장
+        const openaiData = {
+          apiKey: aiSettings.openai_api_key,
+          model: aiSettings.openai_model,
+          learningEnabled: aiSettings.ai_learning_enabled,
+          strategyLevel: aiSettings.ai_strategy_level,
+          riskTolerance: aiSettings.ai_risk_tolerance,
+          dataConsent: aiSettings.ai_learning_data_consent
+        }
+        
+        await supabaseHelpers.saveOpenAISettings(user.id, openaiData)
       } else {
         // 다른 설정들 저장
         await supabaseHelpers.updateUserProfile(user.id, {
@@ -186,7 +239,7 @@ function UserProfile({ user, updateUserProfile }) {
       setSuccess('설정이 성공적으로 저장되었습니다!')
       setEditMode(false)
       
-      // API 설정 다시 로드 (마스킹된 값으로 업데이트)
+      // API 설정 다시 로드
       await loadApiSettings()
       
     } catch (err) {
@@ -314,6 +367,7 @@ function UserProfile({ user, updateUserProfile }) {
           <Tab label="투자 설정" icon={<Settings />} />
           <Tab label="보안 설정" icon={<Security />} />
           <Tab label="결제 관리" icon={<Payment />} />
+          <Tab label="AI 자체학습" icon={<Psychology />} />
         </Tabs>
       </Card>
 
@@ -809,6 +863,241 @@ function UserProfile({ user, updateUserProfile }) {
             </Grid>
           )}
         </Grid>
+      )}
+
+      {/* AI 자체학습 탭 */}
+      {activeTab === 4 && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Psychology />
+              🤖 Christmas AI 자체학습 매매 시스템
+            </Typography>
+            
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2">
+                <strong>🎯 Christmas AI 전략:</strong> OpenAI API를 활용한 자체 학습형 매매 시스템입니다. 
+                고객의 개인 API 키로 개별 맞춤형 AI 전략을 구축합니다.
+              </Typography>
+            </Alert>
+
+            {/* OpenAI API 설정 */}
+            <Typography variant="subtitle1" gutterBottom sx={{ color: 'warning.main', fontWeight: 'bold', mt: 3 }}>
+              🔑 OpenAI API 설정
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  fullWidth
+                  label="OpenAI API Key"
+                  type={showApiKey ? 'text' : 'password'}
+                  value={aiSettings.openai_api_key}
+                  onChange={(e) => setAiSettings({...aiSettings, openai_api_key: e.target.value})}
+                  disabled={!editMode}
+                  placeholder="sk-proj-..."
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowApiKey(!showApiKey)}>
+                          {showApiKey ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: 2 }}
+                  helperText="OpenAI API 키를 입력하세요. 개인 키는 암호화되어 저장됩니다."
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>AI 모델</InputLabel>
+                  <Select
+                    value={aiSettings.openai_model}
+                    label="AI 모델"
+                    onChange={(e) => setAiSettings({...aiSettings, openai_model: e.target.value})}
+                    disabled={!editMode}
+                  >
+                    <MenuItem value="gpt-4o-mini">GPT-4o Mini (경제적)</MenuItem>
+                    <MenuItem value="gpt-4o">GPT-4o (고성능)</MenuItem>
+                    <MenuItem value="gpt-4-turbo">GPT-4 Turbo (균형)</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            {/* AI 학습 설정 */}
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="subtitle1" gutterBottom sx={{ color: 'success.main', fontWeight: 'bold' }}>
+              🧠 AI 학습 전략 설정
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel>전략 수준</InputLabel>
+                  <Select
+                    value={aiSettings.ai_strategy_level}
+                    label="전략 수준"
+                    onChange={(e) => setAiSettings({...aiSettings, ai_strategy_level: e.target.value})}
+                    disabled={!editMode}
+                  >
+                    <MenuItem value="basic">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography>🟢 Basic</Typography>
+                        <Typography variant="caption">- 기본 패턴 학습</Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="intermediate">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography>🟡 Intermediate</Typography>
+                        <Typography variant="caption">- 복합 지표 분석</Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="advanced">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography>🟠 Advanced</Typography>
+                        <Typography variant="caption">- 다중 시간프레임</Typography>
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="expert">
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography>🔴 Expert</Typography>
+                        <Typography variant="caption">- 심화 학습 전략</Typography>
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography gutterBottom>
+                  위험 허용도: {Math.round(aiSettings.ai_risk_tolerance * 100)}%
+                </Typography>
+                <Box sx={{ px: 2 }}>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1.0"
+                    step="0.1"
+                    value={aiSettings.ai_risk_tolerance}
+                    onChange={(e) => setAiSettings({...aiSettings, ai_risk_tolerance: parseFloat(e.target.value)})}
+                    disabled={!editMode}
+                    style={{ width: '100%' }}
+                  />
+                </Box>
+                <Box display="flex" justifyContent="space-between" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                  <span>보수적</span>
+                  <span>공격적</span>
+                </Box>
+              </Grid>
+            </Grid>
+
+            {/* AI 활성화 및 동의 설정 */}
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={aiSettings.ai_learning_enabled}
+                      onChange={(e) => setAiSettings({...aiSettings, ai_learning_enabled: e.target.checked})}
+                      disabled={!editMode}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">AI 자체학습 활성화</Typography>
+                      <Typography variant="caption" color="text.secondary">실시간 시장 데이터로 전략 학습</Typography>
+                    </Box>
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={aiSettings.ai_learning_data_consent}
+                      onChange={(e) => setAiSettings({...aiSettings, ai_learning_data_consent: e.target.checked})}
+                      disabled={!editMode}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">학습 데이터 수집 동의</Typography>
+                      <Typography variant="caption" color="text.secondary">익명화된 패턴 학습용 데이터 제공</Typography>
+                    </Box>
+                  }
+                />
+              </Grid>
+            </Grid>
+
+            {/* AI 학습 통계 */}
+            {aiSettings.ai_learning_enabled && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <Typography variant="subtitle1" gutterBottom sx={{ color: 'info.main', fontWeight: 'bold' }}>
+                  📊 AI 학습 현황
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} md={3}>
+                    <Card variant="outlined">
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="primary">{aiStats.totalRecords}</Typography>
+                        <Typography variant="caption">총 학습 데이터</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Card variant="outlined">
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="success.main">{aiStats.successfulTrades}</Typography>
+                        <Typography variant="caption">성공한 매매</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Card variant="outlined">
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color={aiStats.totalProfitLoss >= 0 ? 'success.main' : 'error.main'}>
+                          {aiStats.totalProfitLoss >= 0 ? '+' : ''}{Math.round(aiStats.totalProfitLoss).toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption">총 손익 (원)</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Card variant="outlined">
+                      <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="h4" color="info.main">
+                          {Math.round(aiStats.avgConfidence * 100)}%
+                        </Typography>
+                        <Typography variant="caption">평균 신뢰도</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </>
+            )}
+
+            {/* AI 시스템 상태 */}
+            <Divider sx={{ my: 3 }} />
+            <Box display="flex" alignItems="center" gap={2}>
+              {aiSettings.ai_learning_enabled && aiSettings.openai_api_key ? (
+                <CheckCircle color="success" />
+              ) : (
+                <Warning color="warning" />
+              )}
+              <Typography variant="body1">
+                AI 시스템 상태: <strong>
+                  {aiSettings.ai_learning_enabled && aiSettings.openai_api_key 
+                    ? '✅ 활성화됨' 
+                    : '⚠️ 설정 필요'
+                  }
+                </strong>
+              </Typography>
+              <Button variant="outlined" size="small" disabled={!aiSettings.ai_learning_enabled}>
+                AI 학습 테스트
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       {/* 확인 다이얼로그 */}
