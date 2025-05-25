@@ -13,7 +13,7 @@ const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 // 보안 미들웨어
 app.use(helmet({

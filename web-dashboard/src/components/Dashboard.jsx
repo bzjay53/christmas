@@ -77,6 +77,10 @@ function Dashboard({ user, onLogout, onShowNotification }) {
   const [dataError, setDataError] = useState(null)
   const [selectedView, setSelectedView] = useState('dashboard')
   
+  // 백엔드 연결 상태 모니터링
+  const [backendStatus, setBackendStatus] = useState('checking')
+  const [lastConnectionCheck, setLastConnectionCheck] = useState(new Date())
+  
   // Supabase 연동 데이터 상태
   const [userProfile, setUserProfile] = useState(null)
   const [tradeRecords, setTradeRecords] = useState([])
@@ -261,6 +265,30 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     return () => clearInterval(timer)
   }, [])
   
+  // 백엔드 연결 상태 주기적 체크
+  useEffect(() => {
+    const checkBackendConnection = async () => {
+      try {
+        const health = await apiService.getHealth()
+        setBackendStatus('connected')
+        setLastConnectionCheck(new Date())
+        console.log('✅ 백엔드 연결 정상:', health)
+      } catch (error) {
+        setBackendStatus('disconnected')
+        setLastConnectionCheck(new Date())
+        console.warn('⚠️ 백엔드 연결 실패:', error.message)
+      }
+    }
+    
+    // 즉시 체크
+    checkBackendConnection()
+    
+    // 30초마다 주기적 체크
+    const healthCheckTimer = setInterval(checkBackendConnection, 30000)
+    
+    return () => clearInterval(healthCheckTimer)
+  }, [])
+  
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
@@ -408,12 +436,17 @@ function Dashboard({ user, onLogout, onShowNotification }) {
             Christmas Trading Dashboard
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Badge badgeContent="✓" color="success">
+            <Badge badgeContent={backendStatus === 'connected' ? "✓" : "✕"} 
+                   color={backendStatus === 'connected' ? "success" : "error"}>
               <Chip 
-                label="시스템 정상"
+                label={backendStatus === 'connected' ? "백엔드 연결됨" : "백엔드 연결 끊김"}
                 size="small"
-                sx={{ color: 'white', borderColor: 'white' }}
+                sx={{ 
+                  color: 'white', 
+                  borderColor: backendStatus === 'connected' ? 'success.main' : 'error.main'
+                }}
                 variant="outlined"
+                color={backendStatus === 'connected' ? "success" : "error"}
               />
             </Badge>
             <Chip 

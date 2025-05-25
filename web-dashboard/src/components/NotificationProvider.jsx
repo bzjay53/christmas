@@ -35,7 +35,7 @@ export function NotificationProvider({ children }) {
       {children}
       <Snackbar
         open={notification.open}
-        autoHideDuration={4000}
+        autoHideDuration={2000}
         onClose={handleClose}
         TransitionComponent={SlideTransition}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

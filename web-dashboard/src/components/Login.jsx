@@ -81,9 +81,16 @@ function Login({ onLogin, onShowNotification }) {
         
         if (onShowNotification) {
           const message = isSignUp 
-            ? `🎉 회원가입 완료! 환영합니다, ${user.name}님!`
+            ? `🎉 회원가입 완료! 이메일 인증 후 로그인해주세요.`
             : `환영합니다, ${user.name}님! 🎉`
           onShowNotification(message, 'success')
+        }
+        
+        // 회원가입인 경우 이메일 인증 안내
+        if (isSignUp && onShowNotification) {
+          setTimeout(() => {
+            onShowNotification('📧 이메일 인증 링크를 발송했습니다. 받은편지함을 확인해주세요!', 'info')
+          }, 2500)
         }
       }
     } catch (error) {
@@ -251,6 +258,13 @@ function Login({ onLogin, onShowNotification }) {
               </Grid>
             </Paper>
 
+            {/* 안내 메시지 */}
+            {isSignUp && (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                📝 회원가입 시 이메일 인증이 필요합니다. 받은편지함을 확인해주세요!
+              </Alert>
+            )}
+            
             {/* 에러 메시지 */}
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
