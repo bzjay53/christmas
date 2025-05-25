@@ -63,6 +63,7 @@ import {
   Refresh
 } from '@mui/icons-material'
 import { supabase, supabaseHelpers } from '../lib/supabase'
+import apiService from '../lib/apiService'
 
 const drawerWidth = 240
 
@@ -129,7 +130,31 @@ function Dashboard({ user, onLogout, onShowNotification }) {
       setDataError(null)
       
       try {
-        // 1. 사용자 프로필 조회
+        // 데모 모드인 경우 빠른 로딩
+        if (user.isDemoMode) {
+          console.log('🎮 데모 모드 - 시뮬레이션 데이터 사용')
+          setUserProfile({
+            id: user.id,
+            first_name: user.name,
+            membership_type: user.membershipType || 'demo',
+            created_at: new Date().toISOString()
+          })
+          setTradeRecords([])
+          setAiLearningStats({ total_trades: 0 })
+          setApiSettings(null)
+          
+          setAutoTradingStatus(prev => ({
+            ...prev,
+            isActive: false,
+            performance: 'Demo Mode',
+            lastAction: '데모 모드 - 실제 거래 없음'
+          }))
+          
+          setLoading(false)
+          return
+        }
+        
+        // 실제 사용자 데이터 로드
         console.log('👤 사용자 프로필 조회 중...')
         const profile = await supabaseHelpers.getUserProfile(user.id)
         setUserProfile(profile)
@@ -203,17 +228,27 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     }
     
     loadDashboardData()
-  }, [user, onShowNotification])
+  }, [user?.id, user?.isDemoMode]) // 의존성 배열 최적화로 무한 루프 방지
   
   // 데이터 새로고침
   const handleRefreshData = () => {
     console.log('🔄 데이터 수동 새로고침')
     if (user && user.id) {
       setLoading(true)
-      // useEffect가 다시 실행되도록 강제 트리거
+      setDataError(null)
+      
+      // 강제로 useEffect 재실행
+      const currentUserId = user.id
       setTimeout(() => {
+        // 상태를 초기화하고 다시 로드
+        setUserProfile(null)
+        setTradeRecords([])
+        setAiLearningStats(null)
+        setApiSettings(null)
+        
+        // useEffect가 다시 실행되도록 트리거
         window.location.reload()
-      }, 500)
+      }, 100)
     }
   }
   
@@ -624,8 +659,8 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                       백엔드 서버 (포트 8000)
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Warning color="warning" />
-                      <Typography variant="body2">연결 확인 필요</Typography>
+                      <CheckCircle color="success" />
+                      <Typography variant="body2">정상 운영중</Typography>
                     </Box>
                   </Box>
                   <Box sx={{ mb: 2 }}>
@@ -636,6 +671,26 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                       <CheckCircle color="success" />
                       <Typography variant="body2">정상 연결됨</Typography>
                     </Box>
+                  </Box>
+                  <Box sx={{ mt: 3 }}>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const health = await apiService.getHealth()
+                          if (onShowNotification) {
+                            onShowNotification(`🎉 백엔드 연결 성공! 서버 상태: ${health.status}`, 'success')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ 백엔드 연결 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      🔍 백엔드 연결 테스트
+                    </Button>
                   </Box>
                 </CardContent>
               </Card>

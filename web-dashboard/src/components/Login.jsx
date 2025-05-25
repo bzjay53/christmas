@@ -21,6 +21,7 @@ import {
   TrendingUp
 } from '@mui/icons-material'
 import { supabase } from '../lib/supabase'
+import apiService from '../lib/apiService'
 
 function Login({ onLogin, onShowNotification }) {
   console.log('🔐 Supabase Login 컴포넌트 렌더링')
@@ -152,6 +153,36 @@ function Login({ onLogin, onShowNotification }) {
         onShowNotification(`👑 관리자 데모 모드로 접속했습니다! 전체 시스템을 관리할 수 있습니다.`, 'info')
       }
     }, 100)
+  }
+  
+  // 백엔드 API 연결 테스트
+  const handleBackendTest = async () => {
+    console.log('🔍 백엔드 API 연결 테스트 시작')
+    setLoading(true)
+    
+    try {
+      // 서버 기본 정보 가져오기
+      const serverInfo = await apiService.getServerInfo()
+      console.log('✅ 백엔드 서버 정보:', serverInfo)
+      
+      // 헬스 체크
+      const health = await apiService.getHealth()
+      console.log('✅ 백엔드 헬스 체크:', health)
+      
+      if (onShowNotification) {
+        onShowNotification(
+          `🎉 백엔드 연결 성공!\n🔸 버전: ${serverInfo.version}\n🔸 모드: ${serverInfo.mode}\n🔸 상태: ${health.status}`, 
+          'success'
+        )
+      }
+    } catch (error) {
+      console.error('❌ 백엔드 연결 실패:', error)
+      if (onShowNotification) {
+        onShowNotification(`❌ 백엔드 연결 실패: ${error.message}`, 'error')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
   
   return (
@@ -345,6 +376,15 @@ function Login({ onLogin, onShowNotification }) {
               <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 1 }}>
                 현재 시간: {new Date().toLocaleString()}
               </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={handleBackendTest}
+                disabled={loading}
+                sx={{ mt: 2 }}
+              >
+                🔍 백엔드 API 테스트
+              </Button>
             </Box>
           </CardContent>
         </Card>
