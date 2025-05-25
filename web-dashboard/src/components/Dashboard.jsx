@@ -60,7 +60,8 @@ import {
   ArrowDownward,
   Casino,
   Timeline,
-  Refresh
+  Refresh,
+  Payment
 } from '@mui/icons-material'
 import { supabase, supabaseHelpers } from '../lib/supabase'
 import apiService from '../lib/apiService'
