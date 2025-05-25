@@ -64,6 +64,7 @@ import {
 } from '@mui/icons-material'
 import { supabase, supabaseHelpers } from '../lib/supabase'
 import apiService from '../lib/apiService'
+import KISApiSettings from './KISApiSettings'
 
 const drawerWidth = 240
 
@@ -330,6 +331,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
       { text: '주문 내역', icon: <SwapHoriz />, active: selectedView === 'orders', view: 'orders' },
       { text: '포트폴리오', icon: <Wallet />, active: selectedView === 'portfolio', view: 'portfolio' },
       { text: '신호', icon: <Lightbulb />, active: selectedView === 'signals', view: 'signals' },
+      { text: 'KIS API 설정', icon: <Settings />, active: selectedView === 'kis-settings', view: 'kis-settings' },
       { text: '설정', icon: <Settings />, active: selectedView === 'settings', view: 'settings' },
       { text: '백테스트', icon: <Assignment />, active: selectedView === 'backtest', view: 'backtest' },
       { text: '알림', icon: <Notifications />, active: selectedView === 'notifications', view: 'notifications' },
@@ -516,6 +518,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                selectedView === 'system-config' ? '👑 시스템 설정' :
                selectedView === 'logs' ? '👑 로그 모니터링' :
                selectedView === 'server-status' ? '👑 서버 상태' :
+               selectedView === 'kis-settings' ? '📈 KIS API 설정' :
                selectedView}
             </Typography>
             {user?.isAdmin && (
@@ -672,7 +675,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           </Grid>
         )}
 
-        {selectedView === 'server-status' && user?.isAdmin && (
+                {selectedView === 'server-status' && user?.isAdmin && (
           <Grid container spacing={3} mb={4}>
             <Grid item xs={12} md={6}>
               <Card>
@@ -681,19 +684,24 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" gutterBottom>
                       프론트엔드 서버 (포트 3000)
-                    </Typography>
+                </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <CheckCircle color="success" />
                       <Typography variant="body2">정상 운영중</Typography>
-                    </Box>
+              </Box>
                   </Box>
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" gutterBottom>
                       백엔드 서버 (포트 8000)
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CheckCircle color="success" />
-                      <Typography variant="body2">정상 운영중</Typography>
+                      {backendStatus === 'connected' ? 
+                        <CheckCircle color="success" /> : 
+                        <Error color="error" />
+                      }
+                      <Typography variant="body2">
+                        {backendStatus === 'connected' ? '정상 운영중' : '연결 실패'}
+                      </Typography>
                     </Box>
                   </Box>
                   <Box sx={{ mb: 2 }}>
@@ -705,49 +713,186 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                       <Typography variant="body2">정상 연결됨</Typography>
                     </Box>
                   </Box>
-                  <Box sx={{ mt: 3 }}>
+                  <Box sx={{ mt: 3, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     <Button 
                       variant="outlined" 
                       size="small" 
                       onClick={async () => {
                         try {
                           const health = await apiService.getHealth()
+                          setBackendStatus('connected')
                           if (onShowNotification) {
-                            onShowNotification(`🎉 백엔드 연결 성공! 서버 상태: ${health.status}`, 'success')
+                            onShowNotification(`🎉 백엔드 연결 성공! 업타임: ${Math.floor(health.uptime)}초`, 'success')
                           }
                         } catch (error) {
+                          setBackendStatus('disconnected')
                           if (onShowNotification) {
                             onShowNotification(`❌ 백엔드 연결 실패: ${error.message}`, 'error')
                           }
                         }
                       }}
                     >
-                      🔍 백엔드 연결 테스트
+                      🔍 헬스 체크
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const info = await apiService.getServerInfo()
+                          if (onShowNotification) {
+                            onShowNotification(`📊 서버 정보: ${info.message} (v${info.version})`, 'info')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ 서버 정보 조회 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      📊 서버 정보
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const dbStatus = await apiService.get('/api/database-status')
+                          if (onShowNotification) {
+                            onShowNotification(`💾 DB 상태: ${dbStatus.status} (${dbStatus.database})`, 'success')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ DB 상태 확인 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      💾 DB 상태
                     </Button>
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={6}>
+                        <Grid item xs={12} md={6}>
               <Card>
                 <CardHeader title="시스템 메트릭" />
                 <CardContent>
                   <Typography variant="body2" gutterBottom>
                     📊 메모리 사용량: <strong>2.3GB / 8GB</strong>
-                  </Typography>
+              </Typography>
                   <LinearProgress variant="determinate" value={28.75} sx={{ mb: 2 }} />
                   <Typography variant="body2" gutterBottom>
                     💾 디스크 사용량: <strong>45GB / 100GB</strong>
-                  </Typography>
+              </Typography>
                   <LinearProgress variant="determinate" value={45} sx={{ mb: 2 }} />
                   <Typography variant="body2" gutterBottom>
                     🌐 네트워크: <strong>정상</strong>
                   </Typography>
                   <LinearProgress variant="determinate" value={85} color="success" />
+            </CardContent>
+          </Card>
+        </Grid>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="📈 KIS API 연동 테스트" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    🔧 한국투자증권 API 연동 상태를 확인하고 테스트할 수 있습니다.
+                  </Alert>
+                  
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const status = await apiService.get('/api/kis/status')
+                          if (onShowNotification) {
+                            onShowNotification(`📈 KIS API 상태: ${status.data.connected ? '연결됨' : '연결 실패'} (${status.data.mode})`, status.data.connected ? 'success' : 'error')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ KIS API 상태 확인 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      📡 KIS 연결 상태
+                    </Button>
+                    
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const price = await apiService.get('/api/kis/stock/005930/price')
+                          if (onShowNotification) {
+                            onShowNotification(`📊 삼성전자 현재가: ${price.data.output?.stck_prpr || 'N/A'}원`, 'success')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ 현재가 조회 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      📈 삼성전자 현재가
+                    </Button>
+                    
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      color="warning"
+                      onClick={async () => {
+                        try {
+                          const order = await apiService.post('/api/kis/test/mock-order')
+                          if (onShowNotification) {
+                            onShowNotification(`🎯 모의주문 테스트 완료: ${order.message}`, 'success')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ 모의주문 테스트 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      🎯 모의주문 테스트
+                    </Button>
+                    
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        try {
+                          const token = await apiService.post('/api/kis/token/test')
+                          if (onShowNotification) {
+                            onShowNotification(`🔑 토큰 테스트: ${token.data.hasToken ? '성공' : '실패'} (길이: ${token.data.tokenLength})`, token.data.hasToken ? 'success' : 'error')
+                          }
+                        } catch (error) {
+                          if (onShowNotification) {
+                            onShowNotification(`❌ 토큰 테스트 실패: ${error.message}`, 'error')
+                          }
+                        }
+                      }}
+                    >
+                      🔑 OAuth 토큰
+                    </Button>
+                  </Box>
+                  
+                  <Typography variant="body2" color="text.secondary">
+                    ⚠️ 실제 거래는 모의투자 충분한 테스트 후 진행하세요.<br />
+                    🎮 현재 모드: KIS 모의투자 (안전 모드)
+                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
           </Grid>
+        )}
+        
+        {/* KIS API 설정 컴포넌트 */}
+        {selectedView === 'kis-settings' && (
+          <KISApiSettings onShowNotification={onShowNotification} />
         )}
         
         {/* 기본 대시보드 컨텐츠 (관리자 전용 뷰가 아닐 때만 표시) */}

@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 
 // Route imports
 const authRoutes = require('./routes/auth');
+const kisApiRoutes = require('./routes/kisApi');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -105,6 +106,7 @@ app.get('/health', (req, res) => {
 
 // API 라우트
 app.use('/api/auth', authRoutes);
+app.use('/api/kis', kisApiRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/referrals', referralRoutes);
 // app.use('/api/coupons', couponRoutes);
@@ -138,7 +140,10 @@ app.use('*', (req, res) => {
       'GET /api/database-status',
       'POST /api/auth/login',
       'POST /api/auth/signup',
-      'GET /api/auth/me'
+      'GET /api/auth/me',
+      'GET /api/kis/status',
+      'GET /api/kis/stock/:stockCode/price',
+      'POST /api/kis/order'
     ]
   });
 });
