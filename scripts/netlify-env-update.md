@@ -1,9 +1,21 @@
 # Netlify 환경 변수 업데이트 실행 가이드
 
-## 🚨 즉시 실행 필요
+## 🚨 즉시 실행 필요 - SUPABASE URL 오류 수정
 
-현재 Netlify 프론트엔드가 `localhost:8000`을 바라보고 있어 "인증 실패" 오류가 발생합니다.
-아래 단계를 따라 환경 변수를 업데이트해주세요.
+현재 Netlify 프론트엔드가 **잘못된 Supabase URL**을 사용하고 있어 "인증 실패" 오류가 발생합니다.
+아래 단계를 따라 환경 변수를 **즉시** 업데이트해주세요.
+
+## 🔥 긴급 수정 사항
+
+### ❌ 현재 잘못된 URL
+```
+https://supabase.com/dashboard/project/qehzzsxzjijfzqkysazc/auth/v1/token
+```
+
+### ✅ 올바른 URL
+```
+https://qehzzsxzjijfzqkysazc.supabase.co
+```
 
 ## 📋 실행 단계
 
@@ -13,11 +25,13 @@
 3. **Site settings** 클릭
 4. 좌측 메뉴에서 **Environment variables** 클릭
 
-### 2단계: 기존 변수 수정
-다음 변수들을 찾아서 값을 변경하세요:
+### 2단계: 기존 변수 수정/추가
+다음 변수들을 **정확히** 입력하세요:
 
-| 변수명 | 변경할 값 |
+| 변수명 | 값 |
 |--------|-----------|
+| `VITE_SUPABASE_URL` | `https://qehzzsxzjijfzqkysazc.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE` |
 | `VITE_API_BASE_URL` | `http://31.220.83.213` |
 | `VITE_NODE_ENV` | `production` |
 
@@ -38,7 +52,7 @@ VITE_ENABLE_NOTIFICATIONS=true
 VITE_NOTIFICATION_TIMEOUT=3000
 ```
 
-### 4단계: 재배포 실행
+### 4단계: 즉시 재배포
 1. **Deploys** 탭으로 이동
 2. **Trigger deploy** 버튼 클릭
 3. **Deploy site** 선택
@@ -55,12 +69,13 @@ VITE_NOTIFICATION_TIMEOUT=3000
 1. F12 키로 개발자 도구 열기
 2. Network 탭 선택
 3. 로그인 시도
-4. API 요청이 `31.220.83.213`으로 전송되는지 확인
+4. API 요청이 `qehzzsxzjijfzqkysazc.supabase.co`로 전송되는지 확인
 
 ### 예상 결과
 - ✅ 로그인 성공
 - ✅ 대시보드 정상 로딩
 - ✅ "인증 실패" 오류 해결
+- ✅ CORS 오류 해결
 
 ## 🔧 문제 발생 시
 

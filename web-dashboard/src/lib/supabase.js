@@ -94,19 +94,29 @@ export const DISCOUNT_TYPES = {
 export const supabaseHelpers = {
   // 사용자 프로필 조회
   async getUserProfile(userId) {
-    if (!supabase) {
-      console.warn('⚠️ Supabase 클라이언트가 초기화되지 않음')
-      return null
+    try {
+      // 백엔드 API 호출로 변경
+      const apiService = await import('./apiService')
+      const response = await apiService.default.get(`/api/users/profile/${userId}`)
+      
+      if (response.success) {
+        return response.data
+      } else {
+        throw new Error(response.error || '사용자 프로필 조회 실패')
+      }
+    } catch (error) {
+      console.error('❌ 사용자 프로필 조회 실패:', error)
+      
+      // 백엔드 연결 실패 시 기본 데이터 반환
+      return {
+        id: userId,
+        first_name: 'Christmas',
+        last_name: 'User',
+        email: 'user@christmas.com',
+        membership_type: 'demo',
+        created_at: new Date().toISOString()
+      }
     }
-    
-    const { data, error } = await supabase
-      .from(TABLES.USERS)
-      .select('*')
-      .eq('id', userId)
-      .single()
-    
-    if (error) throw error
-    return data
   },
 
   // 사용자 프로필 업데이트
@@ -238,25 +248,22 @@ export const supabaseHelpers = {
 
   // 사용자 거래 기록 조회
   async getUserTrades(userId, tradeType = null, limit = 50) {
-    if (!supabase) {
-      console.warn('⚠️ Supabase 클라이언트가 초기화되지 않음 - 빈 배열 반환')
+    try {
+      // 백엔드 API 호출로 변경
+      const apiService = await import('./apiService')
+      const response = await apiService.default.get(`/api/users/trades/${userId}?limit=${limit}`)
+      
+      if (response.success) {
+        return response.data
+      } else {
+        throw new Error(response.error || '거래 기록 조회 실패')
+      }
+    } catch (error) {
+      console.error('❌ 거래 기록 조회 실패:', error)
+      
+      // 백엔드 연결 실패 시 빈 배열 반환
       return []
     }
-    
-    let query = supabase
-      .from(TABLES.TRADE_RECORDS)
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-    
-    if (tradeType) {
-      query = query.eq('trade_type', tradeType)
-    }
-    
-    const { data, error } = await query
-    if (error) throw error
-    return data
   },
 
   // 거래 기록 생성

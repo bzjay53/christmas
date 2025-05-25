@@ -303,8 +303,12 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     if (!user?.isDemoMode && backendStatus === 'connected') {
       console.log('🔌 WebSocket 연결 시작')
       
+      // 환경 변수에서 WebSocket URL 구성
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+      const wsUrl = apiBaseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
+      
       // WebSocket 연결
-      websocketClient.connect('ws://localhost:8000')
+      websocketClient.connect(wsUrl)
       
       // 이벤트 리스너 등록
       websocketClient.on('connected', () => {

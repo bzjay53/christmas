@@ -15,8 +15,14 @@ class WebSocketClient {
   }
 
   // WebSocket 연결
-  connect(url = 'ws://localhost:8000') {
+  connect(url) {
     try {
+      // URL이 제공되지 않은 경우 환경 변수에서 구성
+      if (!url) {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+        url = apiBaseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
+      }
+      
       console.log('🔌 WebSocket 연결 시도:', url)
       
       this.ws = new WebSocket(url)
