@@ -440,12 +440,6 @@ function Dashboard({ user, onLogout, onShowNotification }) {
             🎮 현재 데모 모드입니다. 실제 거래 데이터를 보려면 Supabase 계정으로 로그인하세요.
           </Alert>
         )}
-            <Chip label="v1.0.0" color="primary" size="small" />
-            <Typography variant="body2" color="text.secondary">
-              최근 업데이트: {currentTime.toLocaleDateString()}
-            </Typography>
-          </Box>
-        </Box>
         
         {/* 상단 통계 카드들 */}
         <Grid container spacing={3} mb={4}>
