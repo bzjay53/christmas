@@ -36,7 +36,7 @@ import {
   Info,
   Star,
   Diamond,
-  Crown,
+  WorkspacePremium,
   AutoAwesome
 } from '@mui/icons-material'
 
@@ -83,7 +83,7 @@ const PAYMENT_PLANS = [
     name: '엔터프라이즈 플랜',
     price: 199000,
     duration: '월간',
-    icon: <Crown sx={{ color: '#FFD700' }} />,
+    icon: <WorkspacePremium sx={{ color: '#FFD700' }} />,
     features: [
       '최고급 AI 매매 신호',
       '24/7 실시간 모니터링',
