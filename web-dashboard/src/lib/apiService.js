@@ -146,6 +146,61 @@ class ApiService {
       }
     })
   }
+
+  // KIS API 관련 메서드 추가
+  async getKisStatus() {
+    return this.get('/api/kis/status')
+  }
+
+  async testKisToken(appKey, appSecret, mockMode = true) {
+    return this.post('/api/kis/token/test', {
+      appKey,
+      appSecret,
+      mockMode
+    })
+  }
+
+  async getStockPrice(symbol = '005930', mockMode = true) {
+    return this.get(`/api/kis/stock/${symbol}/price?mock=${mockMode}`)
+  }
+
+  async testMockOrder(orderData = {}) {
+    return this.post('/api/kis/test/mock-order', orderData)
+  }
+
+  async getAccountBalance(mockMode = true) {
+    return this.get(`/api/kis/account/balance?mock=${mockMode}`)
+  }
+
+  async saveKisSettings(settings) {
+    return this.post('/api/kis/save-settings', settings)
+  }
+
+  async loadKisSettings() {
+    return this.get('/api/kis/load-settings')
+  }
+
+  // 텔레그램 API 관련 메서드 추가
+  async validateTelegramToken(botToken) {
+    return this.post('/api/telegram/validate-token', { botToken })
+  }
+
+  async sendTelegramTestMessage(botToken, chatId, customMessage = null) {
+    return this.post('/api/telegram/send-test-message', {
+      botToken,
+      chatId,
+      customMessage
+    })
+  }
+
+  async sendTradingAlert(botToken, chatId, alertType, data) {
+    return this.post('/api/telegram/send-trading-alert', {
+      botToken,
+      chatId,
+      alertType,
+      data
+    })
+  }
 }
 
 // 싱글톤 인스턴스
@@ -167,5 +222,17 @@ export const {
   getProfile,
   getAdminStats,
   getUserList,
-  getSystemLogs
+  getSystemLogs,
+  // KIS API 메서드들
+  getKisStatus,
+  testKisToken,
+  getStockPrice,
+  testMockOrder,
+  getAccountBalance,
+  saveKisSettings,
+  loadKisSettings,
+  // 텔레그램 API 메서드들
+  validateTelegramToken,
+  sendTelegramTestMessage,
+  sendTradingAlert
 } = apiService 

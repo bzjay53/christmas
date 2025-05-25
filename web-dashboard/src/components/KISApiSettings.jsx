@@ -219,22 +219,22 @@ function KISApiSettings({ onShowNotification }) {
   const testConnection = async () => {
     setTestLoading(true)
     try {
-      const response = await apiService.get('/api/kis/status')
+      const response = await apiService.getKisStatus()
       setTestResults(prev => ({
         ...prev,
-        connection: response.data
+        connection: response
       }))
       
       if (onShowNotification) {
         onShowNotification(
-          `📡 KIS API 연결 상태: ${response.data.connected ? '성공' : '실패'}`,
-          response.data.connected ? 'success' : 'error'
+          `📡 KIS API 연결 상태: ${response.success ? '성공' : '실패'}`,
+          response.success ? 'success' : 'error'
         )
       }
     } catch (error) {
       setTestResults(prev => ({
         ...prev,
-        connection: { connected: false, error: error.message }
+        connection: { success: false, error: error.message }
       }))
       
       if (onShowNotification) {
@@ -247,24 +247,35 @@ function KISApiSettings({ onShowNotification }) {
   
   // OAuth 토큰 테스트
   const testToken = async () => {
+    if (!settings.demoAppKey || !settings.demoAppSecret) {
+      if (onShowNotification) {
+        onShowNotification('❌ APP KEY와 APP SECRET을 먼저 입력해주세요.', 'error')
+      }
+      return
+    }
+    
     setTestLoading(true)
     try {
-      const response = await apiService.post('/api/kis/token/test')
+      const response = await apiService.testKisToken(
+        settings.demoAppKey,
+        settings.demoAppSecret,
+        settings.mockMode
+      )
       setTestResults(prev => ({
         ...prev,
-        token: response.data
+        token: response
       }))
       
       if (onShowNotification) {
         onShowNotification(
-          `🔑 토큰 테스트: ${response.data.hasToken ? '성공' : '실패'}`,
-          response.data.hasToken ? 'success' : 'error'
+          `🔑 토큰 테스트: ${response.success ? '성공' : '실패'}`,
+          response.success ? 'success' : 'error'
         )
       }
     } catch (error) {
       setTestResults(prev => ({
         ...prev,
-        token: { hasToken: false, error: error.message }
+        token: { success: false, error: error.message }
       }))
       
       if (onShowNotification) {
