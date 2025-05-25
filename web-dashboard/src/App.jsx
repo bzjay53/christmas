@@ -4,6 +4,7 @@ import { CssBaseline } from '@mui/material'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import { NotificationProvider, useNotification } from './components/NotificationProvider'
+import { supabase } from './lib/supabase'
 
 // Christmas 테마 (Enhanced)
 const christmasTheme = createTheme({
@@ -108,27 +109,54 @@ function AppContent() {
   
   const { showNotification } = useNotification()
   
-  // Phase 4-5-6: 통합 상태 관리
+  // Supabase 세션 관리 상태
   const [user, setUser] = useState(null)
   const [currentView, setCurrentView] = useState('welcome')
   const [loading, setLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState('시스템 초기화 중...')
+  const [session, setSession] = useState(null)
   
-  console.log('📊 현재 상태:', { user, currentView, loading })
+  console.log('📊 현재 상태:', { user, currentView, loading, session })
   
-  // Phase 2-3: 안전한 초기화 로직 (개선)
+  // Supabase 세션 관리 및 시스템 초기화
   useEffect(() => {
-    console.log('🚀 시스템 초기화 시작')
+    console.log('🚀 Supabase 세션 및 시스템 초기화 시작')
     let mounted = true
     
     const initializeSystem = async () => {
       try {
-        // 단계별 로딩 시뮬레이션 (개선된 메시지)
+        // 1. Supabase 세션 확인
+        setLoadingMessage('🔐 Supabase 세션 확인 중...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('❌ Supabase 세션 오류:', error)
+        } else if (session && session.user) {
+          console.log('✅ 기존 Supabase 세션 발견:', session.user)
+          
+          const userData = {
+            id: session.user.id,
+            name: session.user.user_metadata?.first_name || 'Christmas Trader',
+            email: session.user.email,
+            membershipType: session.user.user_metadata?.membership_type || 'free',
+            isAuthenticated: true,
+            joinDate: new Date(session.user.created_at).toLocaleDateString(),
+            supabaseUser: session.user
+          }
+          
+          if (mounted) {
+            setSession(session)
+            setUser(userData)
+            setCurrentView('dashboard')
+          }
+        }
+        
+        // 2. 단계별 시스템 초기화
         const steps = [
-          { message: '🎄 Christmas Trading 시스템 로드 중...', delay: 400 },
-          { message: '🎨 Material-UI 컴포넌트 초기화 중...', delay: 300 },
+          { message: '🎄 Christmas Trading 시스템 로드 중...', delay: 300 },
+          { message: '🎨 Material-UI 컴포넌트 초기화 중...', delay: 200 },
           { message: '🔔 알림 시스템 준비 중...', delay: 200 },
-          { message: '📊 포트폴리오 데이터 로드 중...', delay: 300 },
+          { message: '📊 포트폴리오 데이터 로드 중...', delay: 200 },
           { message: '✅ 시스템 준비 완료!', delay: 200 }
         ]
         
@@ -146,7 +174,11 @@ function AppContent() {
           
           // 초기화 완료 알림
           setTimeout(() => {
-            showNotification('🎉 Christmas Trading 시스템이 성공적으로 로드되었습니다!', 'success')
+            if (session && session.user) {
+              showNotification(`🎉 환영합니다! ${session.user.user_metadata?.first_name || 'Christmas Trader'}님`, 'success')
+            } else {
+              showNotification('🎉 Christmas Trading 시스템이 성공적으로 로드되었습니다!', 'success')
+            }
           }, 500)
         }
         
@@ -164,26 +196,68 @@ function AppContent() {
       }
     }
     
+    // Supabase 인증 상태 변화 리스너
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Supabase 인증 상태 변화:', event, session)
+        
+        if (event === 'SIGNED_IN' && session) {
+          const userData = {
+            id: session.user.id,
+            name: session.user.user_metadata?.first_name || 'Christmas Trader',
+            email: session.user.email,
+            membershipType: session.user.user_metadata?.membership_type || 'free',
+            isAuthenticated: true,
+            joinDate: new Date(session.user.created_at).toLocaleDateString(),
+            supabaseUser: session.user
+          }
+          
+          setSession(session)
+          setUser(userData)
+          setCurrentView('dashboard')
+        } else if (event === 'SIGNED_OUT') {
+          setSession(null)
+          setUser(null)
+          setCurrentView('welcome')
+        }
+      }
+    )
+    
     initializeSystem()
     
     return () => {
       console.log('🧹 useEffect cleanup')
       mounted = false
+      subscription.unsubscribe()
     }
   }, [showNotification])
   
-  // Phase 4-5-6: 로그인 핸들러 (개선)
+  // 로그인 핸들러 (Supabase 연동)
   const handleLogin = (userData) => {
     console.log('🔐 로그인 성공:', userData)
     setUser(userData)
     setCurrentView('dashboard')
   }
   
-  // Phase 4-5-6: 로그아웃 핸들러 (개선)
-  const handleLogout = () => {
-    console.log('🚪 로그아웃 성공')
-    setUser(null)
-    setCurrentView('welcome')
+  // 로그아웃 핸들러 (Supabase 연동)
+  const handleLogout = async () => {
+    console.log('🚪 로그아웃 시작')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ 로그아웃 오류:', error)
+        showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
+      } else {
+        console.log('✅ 로그아웃 성공')
+        setUser(null)
+        setCurrentView('welcome')
+        setSession(null)
+        showNotification('성공적으로 로그아웃되었습니다.', 'info')
+      }
+    } catch (error) {
+      console.error('❌ 로그아웃 예외:', error)
+      showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
+    }
   }
   
   // Phase 4-5-6: 로딩 화면 (Material-UI 스타일)

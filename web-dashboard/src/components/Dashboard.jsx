@@ -28,7 +28,9 @@ import {
   ListItemText,
   Badge,
   ButtonGroup,
-  CardHeader
+  CardHeader,
+  Alert,
+  Skeleton
 } from '@mui/material'
 import {
   AccountCircle,
@@ -57,31 +59,41 @@ import {
   ArrowUpward,
   ArrowDownward,
   Casino,
-  Timeline
+  Timeline,
+  Refresh
 } from '@mui/icons-material'
+import { supabase, supabaseHelpers } from '../lib/supabase'
 
 const drawerWidth = 240
 
 function Dashboard({ user, onLogout, onShowNotification }) {
-  console.log('📊 Enhanced Dashboard 컴포넌트 렌더링', user)
+  console.log('📊 Supabase Enhanced Dashboard 컴포넌트 렌더링', user)
   
   const [currentTime, setCurrentTime] = useState(new Date())
   const [mobileOpen, setMobileOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState('weekly')
+  const [loading, setLoading] = useState(true)
+  const [dataError, setDataError] = useState(null)
   
-  // 풍부한 포트폴리오 데이터
+  // Supabase 연동 데이터 상태
+  const [userProfile, setUserProfile] = useState(null)
+  const [tradeRecords, setTradeRecords] = useState([])
+  const [aiLearningStats, setAiLearningStats] = useState(null)
+  const [apiSettings, setApiSettings] = useState(null)
+  
+  // 풍부한 포트폴리오 데이터 (기본값 + 실제 데이터 병합)
   const [portfolioData, setPortfolioData] = useState({
-    totalProfit: 2847000,
-    profitChange: 12.5,
-    totalOrders: 47,
-    successRate: 87.2,
-    activePositions: 8,
-    avgHoldingTime: '4분 23초',
-    totalAlerts: 15,
-    criticalAlerts: 2,
-    warningAlerts: 6,
+    totalProfit: 0,
+    profitChange: 0,
+    totalOrders: 0,
+    successRate: 0,
+    activePositions: 0,
+    avgHoldingTime: '0분 0초',
+    totalAlerts: 0,
+    criticalAlerts: 0,
+    warningAlerts: 0,
     
-    // 현재 포지션 상세
+    // 현재 포지션 상세 (시뮬레이션 데이터)
     currentPositions: [
       { symbol: 'AAPL', quantity: 50, entryPrice: 182.30, currentPrice: 185.20, profit: 1.59 },
       { symbol: 'TSLA', quantity: 25, entryPrice: 251.80, currentPrice: 245.80, profit: -2.38 },
@@ -91,23 +103,118 @@ function Dashboard({ user, onLogout, onShowNotification }) {
       { symbol: 'AMZN', quantity: 35, entryPrice: 144.20, currentPrice: 148.90, profit: 3.26 }
     ],
     
-    // 최근 주문
-    recentOrders: [
-      { symbol: 'NVDA', side: '매수', price: 890.50, time: '14:23:12', profit: 8.53 },
-      { symbol: 'TSLA', side: '매도', price: 245.80, time: '14:18:45', profit: -2.38 },
-      { symbol: 'AAPL', side: '매수', price: 185.20, time: '14:15:22', profit: 1.59 },
-      { symbol: 'MSFT', side: '매수', price: 425.30, time: '14:09:33', profit: 3.66 },
-      { symbol: 'GOOGL', side: '매수', price: 142.10, time: '14:05:18', profit: 2.30 },
-      { symbol: 'AMZN', side: '매도', price: 148.90, time: '14:01:45', profit: 3.26 }
-    ]
+    // 최근 주문 (실제 데이터로 대체될 예정)
+    recentOrders: []
   })
   
   const [autoTradingStatus, setAutoTradingStatus] = useState({
-    isActive: true,
+    isActive: false,
     strategy: 'Christmas Special AI',
-    performance: 'Excellent',
-    lastAction: '5분 전 NVDA 매수'
+    performance: 'Initializing',
+    lastAction: '데이터 로딩 중...'
   })
+  
+  // Supabase 데이터 로드
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      if (!user || !user.id) {
+        console.log('❌ 사용자 정보 없음, 데이터 로드 건너뜀')
+        setLoading(false)
+        return
+      }
+      
+      console.log('🔄 Supabase 대시보드 데이터 로드 시작:', user.id)
+      setLoading(true)
+      setDataError(null)
+      
+      try {
+        // 1. 사용자 프로필 조회
+        console.log('👤 사용자 프로필 조회 중...')
+        const profile = await supabaseHelpers.getUserProfile(user.id)
+        setUserProfile(profile)
+        console.log('✅ 사용자 프로필 로드 완료:', profile)
+        
+        // 2. 거래 기록 조회
+        console.log('📈 거래 기록 조회 중...')
+        const trades = await supabaseHelpers.getUserTrades(user.id, null, 20)
+        setTradeRecords(trades)
+        console.log('✅ 거래 기록 로드 완료:', trades.length, '건')
+        
+        // 3. AI 학습 통계 조회
+        console.log('🤖 AI 학습 통계 조회 중...')
+        const aiStats = await supabaseHelpers.getAILearningStats(user.id)
+        setAiLearningStats(aiStats)
+        console.log('✅ AI 학습 통계 로드 완료:', aiStats)
+        
+        // 4. API 설정 조회
+        console.log('🔑 API 설정 조회 중...')
+        const apiConfig = await supabaseHelpers.getUserApiSettings(user.id)
+        setApiSettings(apiConfig)
+        console.log('✅ API 설정 로드 완료:', apiConfig)
+        
+        // 5. 포트폴리오 데이터 업데이트
+        if (trades && trades.length > 0) {
+          const totalProfit = trades.reduce((sum, trade) => sum + (trade.profit_amount || 0), 0)
+          const successfulTrades = trades.filter(trade => (trade.profit_amount || 0) > 0).length
+          const successRate = trades.length > 0 ? (successfulTrades / trades.length) * 100 : 0
+          
+          setPortfolioData(prev => ({
+            ...prev,
+            totalProfit: totalProfit,
+            profitChange: 12.5, // 임시값
+            totalOrders: trades.length,
+            successRate: successRate,
+            activePositions: trades.filter(trade => trade.status === 'active').length,
+            recentOrders: trades.slice(0, 6).map(trade => ({
+              symbol: trade.symbol,
+              side: trade.side === 'buy' ? '매수' : '매도',
+              price: trade.price,
+              time: new Date(trade.created_at).toLocaleTimeString(),
+              profit: ((trade.profit_amount || 0) / (trade.amount || 1)) * 100
+            }))
+          }))
+        }
+        
+        // 6. 자동매매 상태 업데이트
+        setAutoTradingStatus(prev => ({
+          ...prev,
+          isActive: apiConfig?.kis_api_key ? true : false,
+          performance: aiStats?.total_trades > 0 ? 'Active' : 'Standby',
+          lastAction: trades.length > 0 ? 
+            `${new Date(trades[0].created_at).toLocaleTimeString()} ${trades[0].symbol} ${trades[0].side === 'buy' ? '매수' : '매도'}` :
+            'API 설정 필요'
+        }))
+        
+        if (onShowNotification) {
+          onShowNotification(`📊 대시보드 데이터 로드 완료! (거래 ${trades.length}건)`, 'success')
+        }
+        
+      } catch (error) {
+        console.error('❌ 대시보드 데이터 로드 실패:', error)
+        setDataError(error.message)
+        
+        if (onShowNotification) {
+          onShowNotification(`데이터 로드 실패: ${error.message}`, 'error')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadDashboardData()
+  }, [user, onShowNotification])
+  
+  // 데이터 새로고침
+  const handleRefreshData = () => {
+    console.log('🔄 데이터 수동 새로고침')
+    if (user && user.id) {
+      setLoading(true)
+      // useEffect가 다시 실행되도록 강제 트리거
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+    }
+  }
   
   // 실시간 시간 업데이트
   useEffect(() => {
@@ -288,9 +395,51 @@ function Dashboard({ user, onLogout, onShowNotification }) {
         <Toolbar />
         
         {/* 페이지 헤더 */}
-        <Box sx={{ display: 'flex', justifyContent: 'between', alignItems: 'center', mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4" fontWeight="bold">대시보드</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={handleRefreshData}
+              disabled={loading}
+              size="small"
+            >
+              {loading ? '로딩 중...' : '새로고침'}
+            </Button>
+            {userProfile && (
+              <Chip 
+                label={`${userProfile.membership_type || 'free'} 회원`}
+                color="primary"
+                size="small"
+              />
+            )}
+          </Box>
+        </Box>
+
+        {/* 데이터 로딩 상태 */}
+        {loading && (
+          <Box sx={{ mb: 3 }}>
+            <LinearProgress />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Supabase에서 데이터를 불러오는 중...
+            </Typography>
+          </Box>
+        )}
+
+        {/* 에러 상태 */}
+        {dataError && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            데이터 로드 중 오류가 발생했습니다: {dataError}
+          </Alert>
+        )}
+
+        {/* 데이터 없음 상태 (데모 모드) */}
+        {!loading && user?.isDemoMode && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            🎮 현재 데모 모드입니다. 실제 거래 데이터를 보려면 Supabase 계정으로 로그인하세요.
+          </Alert>
+        )}
             <Chip label="v1.0.0" color="primary" size="small" />
             <Typography variant="body2" color="text.secondary">
               최근 업데이트: {currentTime.toLocaleDateString()}

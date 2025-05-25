@@ -11,7 +11,8 @@ import {
   Paper,
   Grid,
   Chip,
-  Divider
+  Divider,
+  Alert
 } from '@mui/material'
 import {
   AccountCircle,
@@ -19,39 +20,102 @@ import {
   Speed,
   TrendingUp
 } from '@mui/icons-material'
+import { supabase } from '../lib/supabase'
 
 function Login({ onLogin, onShowNotification }) {
-  console.log('🔐 Material-UI Login 컴포넌트 렌더링')
+  console.log('🔐 Supabase Login 컴포넌트 렌더링')
   
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   
-  const handleLogin = async () => {
-    console.log('🔑 Material-UI 로그인 버튼 클릭')
+  const handleAuth = async () => {
+    console.log(`🔑 Supabase ${isSignUp ? '회원가입' : '로그인'} 시작`)
     setLoading(true)
+    setError('')
     
-    // 로딩 시뮬레이션
-    setTimeout(() => {
-      const testUser = {
-        id: 'test-user',
-        name: 'Christmas Trader',
-        email: email || 'test@christmas.com',
-        membershipType: 'premium',
-        isAuthenticated: true,
-        joinDate: '2024-12-01',
-        totalProfit: 1250000,
-        winRate: 78.5
+    try {
+      let result
+      if (isSignUp) {
+        // 회원가입
+        result = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: email.split('@')[0],
+              last_name: 'User',
+              membership_type: 'free'
+            }
+          }
+        })
+      } else {
+        // 로그인
+        result = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
       }
       
-      onLogin(testUser)
+      if (result.error) {
+        throw result.error
+      }
       
-      // 성공 알림
+      if (result.data.user) {
+        console.log('✅ Supabase 인증 성공:', result.data.user)
+        
+        const user = {
+          id: result.data.user.id,
+          name: result.data.user.user_metadata?.first_name || 'Christmas Trader',
+          email: result.data.user.email,
+          membershipType: result.data.user.user_metadata?.membership_type || 'free',
+          isAuthenticated: true,
+          joinDate: new Date(result.data.user.created_at).toLocaleDateString(),
+          supabaseUser: result.data.user
+        }
+        
+        onLogin(user)
+        
+        if (onShowNotification) {
+          const message = isSignUp 
+            ? `🎉 회원가입 완료! 환영합니다, ${user.name}님!`
+            : `환영합니다, ${user.name}님! 🎉`
+          onShowNotification(message, 'success')
+        }
+      }
+    } catch (error) {
+      console.error('❌ Supabase 인증 실패:', error)
+      setError(error.message)
+      
       if (onShowNotification) {
-        onShowNotification(`환영합니다, ${testUser.name}님! 🎉`, 'success')
+        onShowNotification(`인증 실패: ${error.message}`, 'error')
       }
-      
+    } finally {
       setLoading(false)
-    }, 1500)
+    }
+  }
+  
+  const handleDemoLogin = () => {
+    console.log('🎮 데모 모드 로그인')
+    const testUser = {
+      id: 'demo-user',
+      name: 'Demo Trader',
+      email: 'demo@christmas.com',
+      membershipType: 'premium',
+      isAuthenticated: true,
+      joinDate: '2024-12-01',
+      totalProfit: 1250000,
+      winRate: 78.5,
+      isDemoMode: true
+    }
+    
+    onLogin(testUser)
+    
+    if (onShowNotification) {
+      onShowNotification(`🎮 데모 모드로 접속했습니다!`, 'info')
+    }
   }
   
   return (
@@ -120,20 +184,40 @@ function Login({ onLogin, onShowNotification }) {
               </Grid>
             </Paper>
 
-            {/* 로그인 폼 */}
-            <Box component="form" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+            {/* 에러 메시지 */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
+
+            {/* 인증 폼 */}
+            <Box component="form" onSubmit={(e) => { e.preventDefault(); handleAuth(); }}>
               <TextField
                 fullWidth
                 label="이메일 주소"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
                 variant="outlined"
                 InputProps={{
                   startAdornment: <AccountCircle sx={{ mr: 1, color: 'action.active' }} />
                 }}
-                placeholder="demo@christmas.com"
+                placeholder="user@example.com"
+                required
+              />
+              
+              <TextField
+                fullWidth
+                label="비밀번호"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                sx={{ mb: 3 }}
+                variant="outlined"
+                placeholder="비밀번호를 입력하세요"
+                required
               />
               
               <Button
@@ -141,10 +225,10 @@ function Login({ onLogin, onShowNotification }) {
                 fullWidth
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={loading || !email || !password}
                 sx={{
                   py: 1.5,
-                  mb: 3,
+                  mb: 2,
                   borderRadius: 2,
                   background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
                   '&:hover': {
@@ -152,7 +236,27 @@ function Login({ onLogin, onShowNotification }) {
                   }
                 }}
               >
-                {loading ? '접속 중...' : '🚀 시스템 접속하기'}
+                {loading ? '처리중...' : (isSignUp ? '🚀 회원가입' : '🔑 로그인')}
+              </Button>
+              
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={() => setIsSignUp(!isSignUp)}
+                sx={{ mb: 2 }}
+              >
+                {isSignUp ? '로그인으로 전환' : '회원가입으로 전환'}
+              </Button>
+              
+              <Button
+                fullWidth
+                variant="text"
+                size="large"
+                onClick={handleDemoLogin}
+                sx={{ mb: 2 }}
+              >
+                🎮 데모 모드로 체험하기
               </Button>
             </Box>
 
@@ -165,7 +269,7 @@ function Login({ onLogin, onShowNotification }) {
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <Chip 
-                  label="✅ Phase 4-5-6 통합" 
+                  label="✅ Supabase 연동" 
                   color="success" 
                   size="small" 
                 />
@@ -180,7 +284,7 @@ function Login({ onLogin, onShowNotification }) {
                   size="small" 
                 />
                 <Chip 
-                  label="🔧 No Supabase" 
+                  label="🐳 Docker 배포" 
                   color="info" 
                   size="small" 
                 />
