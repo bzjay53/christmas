@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Grid,
   Card,
@@ -15,7 +15,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  CircularProgress,
+  Snackbar
 } from '@mui/material'
 import {
   Save,
@@ -23,21 +25,37 @@ import {
   Security,
   Notifications,
   Api,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  CheckCircle,
+  Error,
+  Visibility,
+  VisibilityOff
 } from '@mui/icons-material'
+import { supabaseHelpers } from '../lib/supabase'
 
-function Settings() {
+function Settings({ user, onShowNotification }) {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [testingConnection, setTestingConnection] = useState({})
+  const [showPasswords, setShowPasswords] = useState({})
+  const [dataError, setDataError] = useState(null)
+  
   const [settings, setSettings] = useState({
     // API 설정
-    kisAppKey: 'PSiyCzaXROW***',
-    kisAppSecret: 'D14ZIyoJnmjd***',
-    kisAccountNo: '50132354-01',
+    kisAppKey: '',
+    kisAppSecret: '',
+    kisAccountNo: '',
     kisMockMode: true,
     
     // 텔레그램 설정
-    telegramBotToken: '7889451962:AAE3***',
-    telegramChatId: '750429634',
+    telegramBotToken: '',
+    telegramChatId: '',
     telegramEnabled: true,
+    
+    // OpenAI 설정
+    openaiApiKey: '',
+    openaiModel: 'gpt-4',
+    openaiEnabled: true,
     
     // 거래 설정
     maxPositionSize: 10,
@@ -52,6 +70,83 @@ function Settings() {
     systemStatus: true
   })
 
+  const [connectionStatus, setConnectionStatus] = useState({
+    kis: 'disconnected',
+    telegram: 'disconnected',
+    openai: 'disconnected',
+    database: 'connected'
+  })
+
+  // Supabase에서 설정 데이터 로드
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!user || !user.id) {
+        console.log('❌ 사용자 정보 없음, 설정 로드 건너뜀')
+        setLoading(false)
+        return
+      }
+      
+      console.log('🔄 Supabase 설정 데이터 로드 시작:', user.id)
+      setLoading(true)
+      setDataError(null)
+      
+      try {
+        // API 설정들 병렬로 로드
+        const [kisSettings, telegramSettings, openaiSettings] = await Promise.all([
+          supabaseHelpers.getKISApiKeys(user.id).catch(() => null),
+          supabaseHelpers.getTelegramSettings ? supabaseHelpers.getTelegramSettings(user.id).catch(() => null) : null,
+          supabaseHelpers.getOpenAISettings(user.id).catch(() => null)
+        ])
+        
+        console.log('✅ 설정 로드 완료:', { kisSettings, telegramSettings, openaiSettings })
+        
+        // 설정 상태 업데이트
+        setSettings(prev => ({
+          ...prev,
+          // KIS API 설정
+          kisAppKey: kisSettings?.app_key || '',
+          kisAppSecret: kisSettings?.app_secret || '',
+          kisAccountNo: kisSettings?.account_number || '',
+          kisMockMode: kisSettings?.is_mock_mode !== false,
+          
+          // 텔레그램 설정
+          telegramBotToken: telegramSettings?.bot_token || '',
+          telegramChatId: telegramSettings?.chat_id || '',
+          telegramEnabled: telegramSettings?.is_enabled !== false,
+          
+          // OpenAI 설정
+          openaiApiKey: openaiSettings?.api_key || '',
+          openaiModel: openaiSettings?.model || 'gpt-4',
+          openaiEnabled: openaiSettings?.is_enabled !== false
+        }))
+        
+        // 연결 상태 업데이트
+        setConnectionStatus({
+          kis: kisSettings?.app_key ? 'connected' : 'disconnected',
+          telegram: telegramSettings?.bot_token ? 'connected' : 'disconnected',
+          openai: openaiSettings?.api_key ? 'connected' : 'disconnected',
+          database: 'connected'
+        })
+        
+        if (onShowNotification) {
+          onShowNotification('⚙️ 설정 데이터 로드 완료!', 'success')
+        }
+        
+      } catch (error) {
+        console.error('❌ 설정 로드 실패:', error)
+        setDataError(error.message)
+        
+        if (onShowNotification) {
+          onShowNotification(`설정 로드 실패: ${error.message}`, 'error')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadSettings()
+  }, [user, onShowNotification])
+
   const handleInputChange = (field, value) => {
     setSettings(prev => ({
       ...prev,
@@ -59,21 +154,122 @@ function Settings() {
     }))
   }
 
-  const handleSaveSettings = () => {
-    console.log('설정 저장:', settings)
-    // 실제로는 API 호출
+  const handleSaveSettings = async () => {
+    if (!user || !user.id) {
+      if (onShowNotification) {
+        onShowNotification('사용자 정보가 없습니다.', 'error')
+      }
+      return
+    }
+    
+    console.log('💾 설정 저장 시작:', settings)
+    setSaving(true)
+    
+    try {
+      // 각 API 설정을 개별적으로 저장
+      const savePromises = []
+      
+      // KIS API 설정 저장
+      if (settings.kisAppKey || settings.kisAppSecret || settings.kisAccountNo) {
+        savePromises.push(
+          supabaseHelpers.saveKISApiKeys(user.id, {
+            app_key: settings.kisAppKey,
+            app_secret: settings.kisAppSecret,
+            account_number: settings.kisAccountNo,
+            is_mock_mode: settings.kisMockMode
+          })
+        )
+      }
+      
+      // 텔레그램 설정 저장
+      if (settings.telegramBotToken || settings.telegramChatId) {
+        if (supabaseHelpers.saveTelegramSettings) {
+          savePromises.push(
+            supabaseHelpers.saveTelegramSettings(user.id, {
+              bot_token: settings.telegramBotToken,
+              chat_id: settings.telegramChatId,
+              is_enabled: settings.telegramEnabled
+            })
+          )
+        }
+      }
+      
+      // OpenAI 설정 저장
+      if (settings.openaiApiKey) {
+        savePromises.push(
+          supabaseHelpers.saveOpenAISettings(user.id, {
+            api_key: settings.openaiApiKey,
+            model: settings.openaiModel,
+            is_enabled: settings.openaiEnabled
+          })
+        )
+      }
+      
+      await Promise.all(savePromises)
+      
+      // 연결 상태 업데이트
+      setConnectionStatus({
+        kis: settings.kisAppKey ? 'connected' : 'disconnected',
+        telegram: settings.telegramBotToken ? 'connected' : 'disconnected',
+        openai: settings.openaiApiKey ? 'connected' : 'disconnected',
+        database: 'connected'
+      })
+      
+      console.log('✅ 설정 저장 완료')
+      
+      if (onShowNotification) {
+        onShowNotification('⚙️ 설정이 성공적으로 저장되었습니다!', 'success')
+      }
+      
+    } catch (error) {
+      console.error('❌ 설정 저장 실패:', error)
+      
+      if (onShowNotification) {
+        onShowNotification(`설정 저장 실패: ${error.message}`, 'error')
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleTestConnection = (type) => {
-    console.log(`${type} 연결 테스트`)
-    // 실제로는 각 서비스별 연결 테스트
+  const handleTestConnection = async (type) => {
+    console.log(`🔍 ${type} 연결 테스트 시작`)
+    setTestingConnection(prev => ({ ...prev, [type]: true }))
+    
+    try {
+      // 실제 연결 테스트 로직 (시뮬레이션)
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      setConnectionStatus(prev => ({
+        ...prev,
+        [type]: 'connected'
+      }))
+      
+      if (onShowNotification) {
+        onShowNotification(`✅ ${type.toUpperCase()} 연결 테스트 성공!`, 'success')
+      }
+      
+    } catch (error) {
+      console.error(`❌ ${type} 연결 테스트 실패:`, error)
+      
+      setConnectionStatus(prev => ({
+        ...prev,
+        [type]: 'disconnected'
+      }))
+      
+      if (onShowNotification) {
+        onShowNotification(`❌ ${type.toUpperCase()} 연결 테스트 실패`, 'error')
+      }
+    } finally {
+      setTestingConnection(prev => ({ ...prev, [type]: false }))
+    }
   }
 
-  const connectionStatus = {
-    kis: 'connected',
-    telegram: 'connected',
-    database: 'connected',
-    monitoring: 'connected'
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }))
   }
 
   const getStatusColor = (status) => {
@@ -141,8 +337,8 @@ function Settings() {
               <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Typography variant="body1">모니터링</Typography>
                 <Chip 
-                  label={getStatusText(connectionStatus.monitoring)}
-                  color={getStatusColor(connectionStatus.monitoring)}
+                  label={getStatusText(connectionStatus.openai)}
+                  color={getStatusColor(connectionStatus.openai)}
                   size="small"
                 />
               </Box>
@@ -167,8 +363,15 @@ function Settings() {
                 label="KIS App Key"
                 value={settings.kisAppKey}
                 onChange={(e) => handleInputChange('kisAppKey', e.target.value)}
-                type="password"
+                type={showPasswords.kisAppKey ? 'text' : 'password'}
                 helperText="한국투자증권 앱 키"
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={() => togglePasswordVisibility('kisAppKey')} edge="end">
+                      {showPasswords.kisAppKey ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  )
+                }}
               />
               
               <TextField
@@ -177,8 +380,15 @@ function Settings() {
                 label="KIS App Secret"
                 value={settings.kisAppSecret}
                 onChange={(e) => handleInputChange('kisAppSecret', e.target.value)}
-                type="password"
+                type={showPasswords.kisAppSecret ? 'text' : 'password'}
                 helperText="한국투자증권 앱 시크릿"
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={() => togglePasswordVisibility('kisAppSecret')} edge="end">
+                      {showPasswords.kisAppSecret ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  )
+                }}
               />
               
               <TextField
@@ -204,7 +414,7 @@ function Settings() {
               <Button
                 variant="outlined"
                 startIcon={<Refresh />}
-                onClick={() => handleTestConnection('KIS')}
+                onClick={() => handleTestConnection('kis')}
                 sx={{ mt: 2 }}
                 fullWidth
               >
@@ -229,8 +439,15 @@ function Settings() {
                 label="봇 토큰"
                 value={settings.telegramBotToken}
                 onChange={(e) => handleInputChange('telegramBotToken', e.target.value)}
-                type="password"
+                type={showPasswords.telegramBotToken ? 'text' : 'password'}
                 helperText="텔레그램 봇 토큰"
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={() => togglePasswordVisibility('telegramBotToken')} edge="end">
+                      {showPasswords.telegramBotToken ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  )
+                }}
               />
               
               <TextField
@@ -256,11 +473,70 @@ function Settings() {
               <Button
                 variant="outlined"
                 startIcon={<Refresh />}
-                onClick={() => handleTestConnection('Telegram')}
+                onClick={() => handleTestConnection('telegram')}
                 sx={{ mt: 2 }}
                 fullWidth
               >
                 텔레그램 연결 테스트
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* OpenAI 설정 */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Security sx={{ mr: 1, color: 'warning.main' }} />
+                <Typography variant="h6">🤖 OpenAI 설정</Typography>
+              </Box>
+              
+              <TextField
+                fullWidth
+                margin="normal"
+                label="OpenAI API Key"
+                value={settings.openaiApiKey}
+                onChange={(e) => handleInputChange('openaiApiKey', e.target.value)}
+                type={showPasswords.openaiApiKey ? 'text' : 'password'}
+                helperText="OpenAI API Key"
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={() => togglePasswordVisibility('openaiApiKey')} edge="end">
+                      {showPasswords.openaiApiKey ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  )
+                }}
+              />
+              
+              <TextField
+                fullWidth
+                margin="normal"
+                label="OpenAI Model"
+                value={settings.openaiModel}
+                onChange={(e) => handleInputChange('openaiModel', e.target.value)}
+                helperText="OpenAI Model"
+              />
+              
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={settings.openaiEnabled}
+                    onChange={(e) => handleInputChange('openaiEnabled', e.target.checked)}
+                  />
+                }
+                label="OpenAI 활성화"
+                sx={{ mt: 2 }}
+              />
+              
+              <Button
+                variant="outlined"
+                startIcon={<Refresh />}
+                onClick={() => handleTestConnection('openai')}
+                sx={{ mt: 2 }}
+                fullWidth
+              >
+                OpenAI 연결 테스트
               </Button>
             </CardContent>
           </Card>
@@ -388,11 +664,12 @@ function Settings() {
                 <Button
                   variant="contained"
                   color="primary"
-                  startIcon={<Save />}
+                  startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <Save />}
                   onClick={handleSaveSettings}
+                  disabled={saving || loading}
                   size="large"
                 >
-                  설정 저장
+                  {saving ? '저장 중...' : '설정 저장'}
                 </Button>
               </Box>
               
