@@ -7,6 +7,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const WebSocketServer = require('./websocket');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -14,7 +16,12 @@ const kisApiRoutes = require('./routes/kisApi');
 const telegramRoutes = require('./routes/telegram');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 8000;
+
+// WebSocket 서버 초기화
+const wsServer = new WebSocketServer(server);
+console.log('🔌 WebSocket 서버가 HTTP 서버에 통합되었습니다.');
 
 // 보안 미들웨어
 app.use(helmet({
@@ -132,6 +139,22 @@ app.get('/api/database-status', (req, res) => {
   });
 });
 
+// WebSocket 상태 확인
+app.get('/api/websocket-status', (req, res) => {
+  const wsStatus = wsServer.getServerStatus();
+  res.json({
+    message: '🔌 WebSocket 서버 상태',
+    status: 'active',
+    ...wsStatus,
+    features: [
+      '실시간 거래 신호',
+      '가격 업데이트',
+      '시스템 알림',
+      '하트비트 모니터링'
+    ]
+  });
+});
+
 // 404 핸들러
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -198,14 +221,15 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 서버 시작
-const server = app.listen(PORT, () => {
+// 서버 시작 (WebSocket과 함께)
+server.listen(PORT, () => {
   console.log(`
 🎄 Christmas Trading Backend Server
 🚀 서버가 포트 ${PORT}에서 실행 중입니다.
 🌍 환경: ${process.env.NODE_ENV || 'development'}
 📊 데이터베이스: Supabase PostgreSQL (연결됨)
 🔗 클라이언트 URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}
+🔌 WebSocket: 활성화됨 (실시간 알림)
 ⏰ 시작 시간: ${new Date().toISOString()}
 🔧 테스트 URL: http://localhost:${PORT}
   `);

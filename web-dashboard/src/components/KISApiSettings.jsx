@@ -90,8 +90,9 @@ function KISApiSettings({ onShowNotification }) {
     loadSavedSettings()
   }, [])
   
-  const loadSavedSettings = () => {
+  const loadSavedSettings = async () => {
     try {
+      // 로컬스토리지에서 기본 설정 로드
       const saved = localStorage.getItem('kisApiSettings')
       if (saved) {
         const parsedSettings = JSON.parse(saved)
@@ -100,8 +101,28 @@ function KISApiSettings({ onShowNotification }) {
           ...parsedSettings,
           // 보안상 시크릿 키는 로컬스토리지에서 로드하지 않음
           demoAppSecret: '',
-          realAppSecret: ''
+          realAppSecret: '',
+          telegramBotToken: ''
         }))
+      }
+      
+      // 백엔드에서 암호화된 설정 로드 시도
+      try {
+        const response = await apiService.get('/api/kis/load-settings')
+        if (response.success && response.data) {
+          setSettings(prev => ({
+            ...prev,
+            ...response.data,
+            // 시크릿 키는 마스킹되어 표시
+            demoAppSecret: response.data.demoAppSecret ? '••••••••••••••••' : '',
+            realAppSecret: response.data.realAppSecret ? '••••••••••••••••' : '',
+            telegramBotToken: response.data.telegramBotToken ? '••••••••••••••••' : ''
+          }))
+          
+          console.log('✅ 백엔드에서 설정을 성공적으로 로드했습니다.')
+        }
+      } catch (apiError) {
+        console.warn('백엔드 설정 로드 실패, 로컬 설정만 사용:', apiError)
       }
     } catch (error) {
       console.error('설정 로드 실패:', error)
@@ -122,18 +143,44 @@ function KISApiSettings({ onShowNotification }) {
     }))
   }
   
-  const saveSettings = () => {
+  const saveSettings = async () => {
     try {
+      // 로컬스토리지에는 공개 키와 기본 설정만 저장
       const settingsToSave = {
         ...settings,
         // 보안상 시크릿 키는 저장하지 않음
         demoAppSecret: '',
-        realAppSecret: ''
+        realAppSecret: '',
+        telegramBotToken: ''
       }
       localStorage.setItem('kisApiSettings', JSON.stringify(settingsToSave))
       
-      if (onShowNotification) {
-        onShowNotification('✅ KIS API 설정이 저장되었습니다.', 'success')
+      // 백엔드에 실제 API 키 저장 (암호화되어 저장)
+      try {
+        const response = await apiService.post('/api/kis/save-settings', {
+          mockMode: settings.mockMode,
+          demoAppKey: settings.demoAppKey,
+          demoAppSecret: settings.demoAppSecret,
+          realAppKey: settings.realAppKey,
+          realAppSecret: settings.realAppSecret,
+          accountNumber: settings.accountNumber,
+          telegramBotToken: settings.telegramBotToken,
+          telegramChatId: settings.telegramChatId,
+          enableTelegramNotifications: settings.enableTelegramNotifications
+        })
+        
+        if (response.success) {
+          if (onShowNotification) {
+            onShowNotification('✅ KIS API 설정이 안전하게 저장되었습니다.', 'success')
+          }
+        } else {
+          throw new Error(response.message || '백엔드 저장 실패')
+        }
+      } catch (apiError) {
+        console.warn('백엔드 저장 실패, 로컬 저장만 완료:', apiError)
+        if (onShowNotification) {
+          onShowNotification('⚠️ 설정이 로컬에만 저장되었습니다. 백엔드 연결을 확인해주세요.', 'warning')
+        }
       }
     } catch (error) {
       console.error('설정 저장 실패:', error)

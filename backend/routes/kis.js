@@ -261,4 +261,138 @@ router.post('/test/connection', async (req, res) => {
   }
 });
 
+// KIS API 설정 저장 (암호화)
+router.post('/save-settings', async (req, res) => {
+  try {
+    const {
+      mockMode,
+      demoAppKey,
+      demoAppSecret,
+      realAppKey,
+      realAppSecret,
+      accountNumber,
+      telegramBotToken,
+      telegramChatId,
+      enableTelegramNotifications
+    } = req.body;
+    
+    // 간단한 암호화 (실제 운영에서는 더 강력한 암호화 사용)
+    const crypto = require('crypto');
+    const algorithm = 'aes-256-cbc';
+    const key = process.env.JWT_SECRET || 'christmas-trading-secret-key';
+    const keyHash = crypto.createHash('sha256').update(key).digest();
+    
+    const encrypt = (text) => {
+      if (!text) return '';
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipher(algorithm, keyHash);
+      let encrypted = cipher.update(text, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      return iv.toString('hex') + ':' + encrypted;
+    };
+    
+    const encryptedSettings = {
+      mockMode,
+      demoAppKey,
+      demoAppSecret: encrypt(demoAppSecret),
+      realAppKey,
+      realAppSecret: encrypt(realAppSecret),
+      accountNumber,
+      telegramBotToken: encrypt(telegramBotToken),
+      telegramChatId,
+      enableTelegramNotifications,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // 파일 시스템에 저장 (실제 운영에서는 데이터베이스 사용)
+    const fs = require('fs');
+    const path = require('path');
+    const settingsPath = path.join(__dirname, '../data/kis-settings.json');
+    
+    // data 디렉토리가 없으면 생성
+    const dataDir = path.dirname(settingsPath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(settingsPath, JSON.stringify(encryptedSettings, null, 2));
+    
+    res.json({
+      success: true,
+      message: 'KIS API 설정이 안전하게 저장되었습니다.',
+      savedAt: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('KIS 설정 저장 실패:', error);
+    res.status(500).json({
+      success: false,
+      message: '설정 저장 중 오류가 발생했습니다.',
+      error: error.message
+    });
+  }
+});
+
+// KIS API 설정 로드 (복호화)
+router.get('/load-settings', async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const settingsPath = path.join(__dirname, '../data/kis-settings.json');
+    
+    if (!fs.existsSync(settingsPath)) {
+      return res.json({
+        success: true,
+        message: '저장된 설정이 없습니다.',
+        data: null
+      });
+    }
+    
+    const encryptedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    
+    // 복호화 함수
+    const crypto = require('crypto');
+    const algorithm = 'aes-256-cbc';
+    const key = process.env.JWT_SECRET || 'christmas-trading-secret-key';
+    const keyHash = crypto.createHash('sha256').update(key).digest();
+    
+    const decrypt = (encryptedText) => {
+      if (!encryptedText) return '';
+      try {
+        const parts = encryptedText.split(':');
+        const iv = Buffer.from(parts[0], 'hex');
+        const encrypted = parts[1];
+        const decipher = crypto.createDecipher(algorithm, keyHash);
+        let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+        return decrypted;
+      } catch (error) {
+        console.error('복호화 실패:', error);
+        return '';
+      }
+    };
+    
+    const decryptedSettings = {
+      ...encryptedSettings,
+      demoAppSecret: encryptedSettings.demoAppSecret ? true : false, // 존재 여부만 반환
+      realAppSecret: encryptedSettings.realAppSecret ? true : false, // 존재 여부만 반환
+      telegramBotToken: encryptedSettings.telegramBotToken ? true : false // 존재 여부만 반환
+    };
+    
+    res.json({
+      success: true,
+      message: '설정을 성공적으로 로드했습니다.',
+      data: decryptedSettings
+    });
+    
+  } catch (error) {
+    console.error('KIS 설정 로드 실패:', error);
+    res.status(500).json({
+      success: false,
+      message: '설정 로드 중 오류가 발생했습니다.',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 

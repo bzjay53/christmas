@@ -64,6 +64,7 @@ import {
 } from '@mui/icons-material'
 import { supabase, supabaseHelpers } from '../lib/supabase'
 import apiService from '../lib/apiService'
+import websocketClient from '../lib/websocket'
 import KISApiSettings from './KISApiSettings'
 import PaymentService from './PaymentService'
 
@@ -82,6 +83,11 @@ function Dashboard({ user, onLogout, onShowNotification }) {
   // 백엔드 연결 상태 모니터링
   const [backendStatus, setBackendStatus] = useState('checking')
   const [lastConnectionCheck, setLastConnectionCheck] = useState(new Date())
+  
+  // WebSocket 실시간 알림 상태
+  const [wsStatus, setWsStatus] = useState('disconnected')
+  const [realtimeAlerts, setRealtimeAlerts] = useState([])
+  const [lastTradingSignal, setLastTradingSignal] = useState(null)
   
   // Supabase 연동 데이터 상태
   const [userProfile, setUserProfile] = useState(null)
@@ -290,6 +296,68 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     
     return () => clearInterval(healthCheckTimer)
   }, [])
+  
+  // WebSocket 실시간 알림 시스템 초기화
+  useEffect(() => {
+    if (!user?.isDemoMode && backendStatus === 'connected') {
+      console.log('🔌 WebSocket 연결 시작')
+      
+      // WebSocket 연결
+      websocketClient.connect('ws://localhost:8000')
+      
+      // 이벤트 리스너 등록
+      websocketClient.on('connected', () => {
+        setWsStatus('connected')
+        console.log('✅ WebSocket 연결 성공')
+        if (onShowNotification) {
+          onShowNotification('🔔 실시간 알림이 활성화되었습니다!', 'success')
+        }
+      })
+      
+      websocketClient.on('disconnected', () => {
+        setWsStatus('disconnected')
+        console.log('❌ WebSocket 연결 끊김')
+      })
+      
+      websocketClient.on('tradingSignal', (signal) => {
+        setLastTradingSignal(signal)
+        setRealtimeAlerts(prev => [...prev, {
+          id: Date.now(),
+          type: 'trading_signal',
+          message: `📈 ${signal.symbol} ${signal.action} 신호 (${signal.confidence}% 신뢰도)`,
+          timestamp: new Date().toISOString()
+        }])
+        
+        if (onShowNotification) {
+          onShowNotification(`🎯 거래 신호: ${signal.symbol} ${signal.action}`, 'info')
+        }
+      })
+      
+      websocketClient.on('priceUpdate', (update) => {
+        // 실시간 가격 업데이트 처리
+        console.log('💰 실시간 가격 업데이트:', update)
+      })
+      
+      websocketClient.on('systemAlert', (alert) => {
+        setRealtimeAlerts(prev => [...prev, {
+          id: Date.now(),
+          type: 'system_alert',
+          message: alert.message,
+          timestamp: new Date().toISOString()
+        }])
+        
+        if (onShowNotification) {
+          onShowNotification(`🔔 시스템 알림: ${alert.message}`, alert.level || 'info')
+        }
+      })
+      
+      // 컴포넌트 언마운트 시 연결 해제
+      return () => {
+        console.log('🔌 WebSocket 연결 해제')
+        websocketClient.disconnect()
+      }
+    }
+  }, [backendStatus, user?.isDemoMode])
   
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)

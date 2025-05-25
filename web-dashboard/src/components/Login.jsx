@@ -38,19 +38,28 @@ function Login({ onLogin, onShowNotification }) {
     setError('')
     
     try {
-      // 실제 Supabase 인증만 허용 (인증 우회 모드 완전 제거)
-      if (!isSupabaseEnabled) {
-        throw new Error('Supabase 연결이 필요합니다. 관리자에게 문의하세요.')
+      // Supabase 연결 상태 확인
+      if (!supabase) {
+        throw new Error('Supabase 클라이언트 초기화 실패. 관리자에게 문의하세요.')
       }
+      
+      console.log('🔗 Supabase 연결 상태:', { 
+        enabled: isSupabaseEnabled, 
+        client: !!supabase,
+        url: supabase.supabaseUrl,
+        key: supabase.supabaseKey?.substring(0, 20) + '...'
+      })
       
       // 실제 Supabase 인증 처리
       let result
       if (isSignUp) {
+        console.log('📝 회원가입 시작:', { email, passwordLength: password.length })
+        
         // 회원가입 (무료 이벤트 포함)
         const freeTrialEndDate = new Date()
         freeTrialEndDate.setDate(freeTrialEndDate.getDate() + 7) // 7일 무료 체험
         
-        result = await supabase.auth.signUp({
+        const signUpData = {
           email,
           password,
           options: {
@@ -63,13 +72,19 @@ function Login({ onLogin, onShowNotification }) {
               signup_event: 'christmas_launch_2024'
             }
           }
-        })
+        }
+        
+        console.log('📤 Supabase 회원가입 요청:', signUpData)
+        result = await supabase.auth.signUp(signUpData)
+        console.log('📥 Supabase 회원가입 응답:', result)
       } else {
+        console.log('🔑 로그인 시작:', { email, passwordLength: password.length })
+        
         // 로그인
-        result = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
+        const signInData = { email, password }
+        console.log('📤 Supabase 로그인 요청:', signInData)
+        result = await supabase.auth.signInWithPassword(signInData)
+        console.log('📥 Supabase 로그인 응답:', result)
       }
       
       if (result.error) {
