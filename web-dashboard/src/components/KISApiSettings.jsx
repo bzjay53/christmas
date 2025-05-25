@@ -59,7 +59,8 @@ function KISApiSettings({ onShowNotification }) {
   const [testLoading, setTestLoading] = useState(false)
   const [showSecrets, setShowSecrets] = useState({
     demoSecret: false,
-    realSecret: false
+    realSecret: false,
+    telegramToken: false
   })
   
   // KIS API 설정 상태
@@ -69,7 +70,11 @@ function KISApiSettings({ onShowNotification }) {
     demoAppSecret: '',
     realAppKey: '',
     realAppSecret: '',
-    accountNumber: ''
+    accountNumber: '',
+    // 텔레그램 봇 설정 추가
+    telegramBotToken: '',
+    telegramChatId: '',
+    enableTelegramNotifications: false
   })
   
   // 테스트 결과 상태
@@ -145,7 +150,10 @@ function KISApiSettings({ onShowNotification }) {
       demoAppSecret: '',
       realAppKey: '',
       realAppSecret: '',
-      accountNumber: ''
+      accountNumber: '',
+      telegramBotToken: '',
+      telegramChatId: '',
+      enableTelegramNotifications: false
     })
     setTestResults({
       connection: null,
@@ -366,6 +374,7 @@ function KISApiSettings({ onShowNotification }) {
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="API 키 설정" />
             <Tab label="연결 테스트" />
+            <Tab label="텔레그램 봇" />
             <Tab label="도움말" />
           </Tabs>
         </Box>
@@ -542,8 +551,158 @@ function KISApiSettings({ onShowNotification }) {
           </Box>
         </TabPanel>
         
-        {/* 도움말 탭 */}
+        {/* 텔레그램 봇 설정 탭 */}
         <TabPanel value={tabValue} index={2}>
+          <Alert severity="info" sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              🤖 텔레그램 봇 알림 설정
+            </Typography>
+            <Typography variant="body2">
+              거래 신호, 수익/손실, 시스템 상태를 텔레그램으로 실시간 알림받을 수 있습니다.
+            </Typography>
+          </Alert>
+          
+          <Grid container spacing={3}>
+            {/* 텔레그램 알림 활성화 */}
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={settings.enableTelegramNotifications}
+                    onChange={(e) => handleInputChange('enableTelegramNotifications', e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2">
+                      📱 텔레그램 알림 활성화
+                    </Typography>
+                    <Chip 
+                      label={settings.enableTelegramNotifications ? '활성' : '비활성'} 
+                      size="small" 
+                      color={settings.enableTelegramNotifications ? 'success' : 'default'}
+                    />
+                  </Box>
+                }
+              />
+            </Grid>
+            
+            {/* 봇 토큰 설정 */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="텔레그램 봇 토큰"
+                placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+                value={settings.telegramBotToken}
+                onChange={(e) => handleInputChange('telegramBotToken', e.target.value)}
+                type={showSecrets.telegramToken ? 'text' : 'password'}
+                helperText="@BotFather에서 발급받은 봇 토큰을 입력하세요"
+                disabled={!settings.enableTelegramNotifications}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => toggleSecretVisibility('telegramToken')}
+                        edge="end"
+                        disabled={!settings.enableTelegramNotifications}
+                      >
+                        {showSecrets.telegramToken ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+            
+            {/* 채팅 ID 설정 */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="텔레그램 채팅 ID"
+                placeholder="123456789 또는 -123456789"
+                value={settings.telegramChatId}
+                onChange={(e) => handleInputChange('telegramChatId', e.target.value)}
+                helperText="개인 채팅 ID 또는 그룹 채팅 ID를 입력하세요"
+                disabled={!settings.enableTelegramNotifications}
+              />
+            </Grid>
+            
+            {/* 텔레그램 봇 설정 가이드 */}
+            <Grid item xs={12}>
+              <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  📋 텔레그램 봇 설정 방법
+                </Typography>
+                <Typography variant="body2" component="div">
+                  <strong>1단계: 봇 생성</strong><br />
+                  • 텔레그램에서 @BotFather 검색<br />
+                  • /newbot 명령어로 새 봇 생성<br />
+                  • 봇 이름과 사용자명 설정<br />
+                  • 발급받은 토큰을 위에 입력<br /><br />
+                  
+                  <strong>2단계: 채팅 ID 확인</strong><br />
+                  • 생성한 봇과 대화 시작<br />
+                  • /start 메시지 전송<br />
+                  • @userinfobot에서 본인 ID 확인<br />
+                  • 확인한 ID를 위에 입력<br /><br />
+                  
+                  <strong>3단계: 테스트</strong><br />
+                  • 설정 저장 후 테스트 메시지 전송<br />
+                  • 알림이 정상적으로 수신되는지 확인
+                </Typography>
+              </Box>
+            </Grid>
+            
+            {/* 테스트 버튼 */}
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                startIcon={<Refresh />}
+                onClick={async () => {
+                  if (!settings.telegramBotToken || !settings.telegramChatId) {
+                    if (onShowNotification) {
+                      onShowNotification('❌ 봇 토큰과 채팅 ID를 먼저 입력해주세요.', 'error')
+                    }
+                    return
+                  }
+                  
+                  setTestLoading(true)
+                  try {
+                    const response = await apiService.post('/api/telegram/send-test-message', {
+                      botToken: settings.telegramBotToken,
+                      chatId: settings.telegramChatId
+                    })
+                    
+                    if (response.success) {
+                      if (onShowNotification) {
+                        onShowNotification('🎉 텔레그램 테스트 메시지가 성공적으로 전송되었습니다!', 'success')
+                      }
+                    } else {
+                      if (onShowNotification) {
+                        onShowNotification(`❌ 메시지 전송 실패: ${response.message}`, 'error')
+                      }
+                    }
+                  } catch (error) {
+                    console.error('텔레그램 테스트 실패:', error)
+                    if (onShowNotification) {
+                      onShowNotification(`❌ 텔레그램 테스트 실패: ${error.message}`, 'error')
+                    }
+                  } finally {
+                    setTestLoading(false)
+                  }
+                }}
+                disabled={!settings.enableTelegramNotifications || !settings.telegramBotToken || !settings.telegramChatId || testLoading}
+                fullWidth
+              >
+                {testLoading ? '전송 중...' : '📱 테스트 메시지 전송'}
+              </Button>
+            </Grid>
+          </Grid>
+        </TabPanel>
+        
+        {/* 도움말 탭 */}
+        <TabPanel value={tabValue} index={3}>
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="h6" gutterBottom>
               📚 KIS API 키 발급 방법

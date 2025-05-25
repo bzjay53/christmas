@@ -10,9 +10,8 @@ const hasValidSupabaseConfig = import.meta.env.VITE_SUPABASE_URL &&
                                import.meta.env.VITE_SUPABASE_ANON_KEY &&
                                import.meta.env.VITE_SUPABASE_ANON_KEY !== 'demo-anon-key'
 
-// 인증 우회 모드 (Supabase는 사용하되 강제 로그인은 하지 않음)
-const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true' || 
-                   import.meta.env.VITE_ENABLE_AUTH === 'false'
+// 인증 우회 모드 (보안 강화 - 기본적으로 비활성화)
+const bypassAuth = false // 보안을 위해 강제로 비활성화
 
 console.log('🔧 Supabase 설정:', { 
   url: supabaseUrl, 

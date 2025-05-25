@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 // Route imports
 const authRoutes = require('./routes/auth');
 const kisApiRoutes = require('./routes/kisApi');
+const telegramRoutes = require('./routes/telegram');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -74,6 +75,8 @@ app.get('/', (req, res) => {
     mode: 'production',
     endpoints: {
       auth: '/api/auth',
+      kis: '/api/kis',
+      telegram: '/api/telegram',
       users: '/api/users',
       referrals: '/api/referrals',
       coupons: '/api/coupons',
@@ -107,6 +110,7 @@ app.get('/health', (req, res) => {
 // API 라우트
 app.use('/api/auth', authRoutes);
 app.use('/api/kis', kisApiRoutes);
+app.use('/api/telegram', telegramRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/referrals', referralRoutes);
 // app.use('/api/coupons', couponRoutes);

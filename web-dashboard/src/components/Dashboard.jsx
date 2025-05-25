@@ -1144,7 +1144,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                   borderColor: 'grey.400'
                 }}>
                   <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                    https://christmas-trading.com/signup?ref=CHR1STMS
+                    https://bzjay53.github.io/christmas/signup?ref=CHR1STMS
                   </Typography>
                 </Box>
                 
@@ -1154,7 +1154,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                     color="success" 
                     size="small"
                     onClick={() => {
-                      navigator.clipboard.writeText('https://christmas-trading.com/signup?ref=CHR1STMS')
+                      navigator.clipboard.writeText('https://bzjay53.github.io/christmas/signup?ref=CHR1STMS')
                       onShowNotification('초대 링크가 복사되었습니다! 📋', 'success')
                     }}
                   >
@@ -1165,7 +1165,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                     color="success" 
                     size="small"
                     onClick={() => {
-                      const text = `🎄 Christmas Trading에서 자동매매를 시작해보세요!\n\n💝 특별 혜택: 7일 무료 체험\n🔗 가입링크: https://christmas-trading.com/signup?ref=CHR1STMS`
+                      const text = `🎄 Christmas Trading에서 자동매매를 시작해보세요!\n\n💝 특별 혜택: 7일 무료 체험\n🔗 가입링크: https://bzjay53.github.io/christmas/signup?ref=CHR1STMS`
                       navigator.clipboard.writeText(text)
                       onShowNotification('카카오톡용 메시지가 복사되었습니다! 💬', 'success')
                     }}
