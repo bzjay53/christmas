@@ -41,6 +41,20 @@ class ApiService {
       return data
     } catch (error) {
       console.error(`❌ API 요청 실패 (${url}):`, error)
+      
+      // 네트워크 오류 상세 처리
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        const detailedError = new Error(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${this.baseURL})`)
+        detailedError.code = 'NETWORK_ERROR'
+        throw detailedError
+      }
+      
+      if (error.code === 'ECONNREFUSED') {
+        const detailedError = new Error(`백엔드 서버가 응답하지 않습니다. 포트 8000에서 서버를 시작해주세요.`)
+        detailedError.code = 'CONNECTION_REFUSED'
+        throw detailedError
+      }
+      
       throw error
     }
   }

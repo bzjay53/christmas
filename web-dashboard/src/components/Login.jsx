@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Card,
@@ -31,6 +31,76 @@ function Login({ onLogin, onShowNotification }) {
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  
+  // URL에서 이메일 인증 토큰 처리
+  useEffect(() => {
+    const handleEmailConfirmation = async () => {
+      const urlParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = urlParams.get('access_token')
+      const type = urlParams.get('type')
+      
+      if (accessToken && type === 'signup') {
+        console.log('📧 이메일 인증 토큰 감지:', { accessToken: accessToken.substring(0, 20) + '...', type })
+        setLoading(true)
+        setError('')
+        
+        try {
+          // Supabase 세션 설정
+          console.log('🔄 Supabase 세션 설정 중...')
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: urlParams.get('refresh_token')
+          })
+          
+          if (error) {
+            console.error('❌ 세션 설정 실패:', error)
+            throw error
+          }
+          
+          console.log('✅ 세션 설정 성공:', data)
+          
+          if (data.user) {
+            console.log('✅ 이메일 인증 완료:', data.user)
+            
+            // URL 정리 (먼저 실행)
+            window.history.replaceState({}, document.title, window.location.pathname)
+            
+            // 사용자 데이터 생성
+            const user = {
+              id: data.user.id,
+              name: data.user.user_metadata?.first_name || 'Christmas Trader',
+              email: data.user.email,
+              membershipType: data.user.user_metadata?.membership_type || 'free',
+              isAuthenticated: true,
+              joinDate: new Date(data.user.created_at).toLocaleDateString(),
+              supabaseUser: data.user,
+              emailVerified: true // 이메일 인증을 통해 로그인했으므로 true
+            }
+            
+            console.log('🎯 이메일 인증 사용자 데이터 전달:', user)
+            
+            // 즉시 로그인 처리 (App.jsx의 onAuthStateChange는 중복 방지 로직으로 처리됨)
+            onLogin(user)
+            
+            if (onShowNotification) {
+              onShowNotification(`🎉 이메일 인증이 완료되었습니다! 환영합니다, ${user.name}님!`, 'success')
+            }
+          }
+        } catch (error) {
+          console.error('❌ 이메일 인증 처리 실패:', error)
+          setError(`이메일 인증 처리 실패: ${error.message}`)
+          
+          if (onShowNotification) {
+            onShowNotification(`❌ 이메일 인증 처리 실패: ${error.message}`, 'error')
+          }
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+    
+    handleEmailConfirmation()
+  }, [])
   
   const handleAuth = async () => {
     console.log(`🔑 ${isSignUp ? '회원가입' : '로그인'} 시작`)
@@ -122,10 +192,24 @@ function Login({ onLogin, onShowNotification }) {
       }
     } catch (error) {
       console.error('❌ Supabase 인증 실패:', error)
-      setError(error.message)
+      
+      // 에러 메시지 개선
+      let errorMessage = error.message
+      
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = '네트워크 연결을 확인해주세요. 백엔드 서버가 실행 중인지 확인하세요.'
+      } else if (error.message.includes('Invalid login credentials')) {
+        errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다.'
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = '이메일 인증이 필요합니다. 받은편지함을 확인해주세요.'
+      } else if (error.message.includes('User already registered')) {
+        errorMessage = '이미 가입된 이메일입니다. 로그인을 시도해주세요.'
+      }
+      
+      setError(errorMessage)
       
       if (onShowNotification) {
-        onShowNotification(`인증 실패: ${error.message}`, 'error')
+        onShowNotification(`인증 실패: ${errorMessage}`, 'error')
       }
     } finally {
       setLoading(false)
@@ -288,7 +372,15 @@ function Login({ onLogin, onShowNotification }) {
             {/* 안내 메시지 */}
             {isSignUp && (
               <Alert severity="info" sx={{ mb: 3 }}>
-                📝 회원가입 시 이메일 인증이 필요합니다. 받은편지함을 확인해주세요!
+                📝 회원가입 시 이메일 인증이 필요합니다. 받은편지함을 확인해주세요!<br />
+                ✅ 이메일 인증 후 자동으로 로그인됩니다.
+              </Alert>
+            )}
+            
+            {/* 이메일 인증 처리 중 메시지 */}
+            {window.location.hash.includes('access_token') && (
+              <Alert severity="success" sx={{ mb: 3 }}>
+                📧 이메일 인증을 처리하고 있습니다... 잠시만 기다려주세요!
               </Alert>
             )}
             

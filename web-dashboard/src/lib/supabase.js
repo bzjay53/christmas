@@ -32,7 +32,8 @@ export const supabase = createClient(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      redirectTo: import.meta.env.VITE_APP_URL || 'http://localhost:3000'
     },
     realtime: {
       params: {

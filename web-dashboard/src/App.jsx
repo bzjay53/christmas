@@ -237,6 +237,12 @@ function AppContent() {
           console.log('🔄 Supabase 인증 상태 변화:', event, session)
           
           if (event === 'SIGNED_IN' && session) {
+            // 이미 사용자가 설정되어 있으면 중복 처리 방지
+            if (user && user.id === session.user.id) {
+              console.log('🔄 이미 로그인된 사용자 - 중복 처리 방지')
+              return
+            }
+            
             const userData = {
               id: session.user.id,
               name: session.user.user_metadata?.first_name || 'Christmas Trader',
@@ -247,10 +253,12 @@ function AppContent() {
               supabaseUser: session.user
             }
             
+            console.log('🔄 App.jsx에서 인증 상태 변화 처리:', userData)
             setSession(session)
             setUser(userData)
             setCurrentView('dashboard')
           } else if (event === 'SIGNED_OUT') {
+            console.log('🚪 App.jsx에서 로그아웃 처리')
             setSession(null)
             setUser(null)
             setCurrentView('welcome')
@@ -273,9 +281,22 @@ function AppContent() {
   
   // 로그인 핸들러 (Supabase 연동)
   const handleLogin = (userData) => {
-    console.log('🔐 로그인 성공:', userData)
+    console.log('🔐 handleLogin 호출됨:', userData)
+    
+    // 중복 로그인 방지
+    if (user && user.id === userData.id) {
+      console.log('🔄 이미 로그인된 사용자 - 중복 방지')
+      return
+    }
+    
+    console.log('✅ 새로운 사용자 로그인 처리')
     setUser(userData)
     setCurrentView('dashboard')
+    
+    // 성공 알림 (이메일 인증이 아닌 경우에만)
+    if (!userData.emailVerified) {
+      showNotification(`환영합니다, ${userData.name}님! 🎉`, 'success')
+    }
   }
   
   // 로그아웃 핸들러 (Supabase 연동)
@@ -349,7 +370,10 @@ function AppContent() {
   }
   
   // Phase 4-5-6: 조건부 렌더링 (통합 완료)
-  if (currentView === 'dashboard' && user) {
+  console.log('🎯 렌더링 결정:', { currentView, user: !!user, userId: user?.id })
+  
+  if (currentView === 'dashboard' && user && user.isAuthenticated) {
+    console.log('📊 Dashboard 렌더링')
     return (
       <Dashboard 
         user={user} 
@@ -359,6 +383,7 @@ function AppContent() {
     )
   }
   
+  console.log('🔐 Login 렌더링')
   return (
     <Login 
       onLogin={handleLogin}
