@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import {
   Box,
   Container,
@@ -74,6 +74,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
   const [selectedPeriod, setSelectedPeriod] = useState('weekly')
   const [loading, setLoading] = useState(true)
   const [dataError, setDataError] = useState(null)
+  const [selectedView, setSelectedView] = useState('dashboard')
   
   // Supabase 연동 데이터 상태
   const [userProfile, setUserProfile] = useState(null)
@@ -258,18 +259,36 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     return `${sign}${value.toFixed(2)}%`
   }
   
-  // 사이드바 메뉴 아이템들
-  const menuItems = [
-    { text: '대시보드', icon: <DashboardIcon />, active: true },
-    { text: '성과 분석', icon: <BarChart /> },
-    { text: '주문 내역', icon: <SwapHoriz /> },
-    { text: '포트폴리오', icon: <Wallet /> },
-    { text: '신호', icon: <Lightbulb /> },
-    { text: '설정', icon: <Settings /> },
-    { text: '백테스트', icon: <Assignment /> },
-    { text: '알림', icon: <Notifications /> },
-    { text: '도움말', icon: <Help /> }
-  ]
+  // 사이드바 메뉴 아이템들 (권한에 따라 다름)
+  const getMenuItems = () => {
+    const baseItems = [
+      { text: '대시보드', icon: <DashboardIcon />, active: selectedView === 'dashboard', view: 'dashboard' },
+      { text: '성과 분석', icon: <BarChart />, active: selectedView === 'analytics', view: 'analytics' },
+      { text: '주문 내역', icon: <SwapHoriz />, active: selectedView === 'orders', view: 'orders' },
+      { text: '포트폴리오', icon: <Wallet />, active: selectedView === 'portfolio', view: 'portfolio' },
+      { text: '신호', icon: <Lightbulb />, active: selectedView === 'signals', view: 'signals' },
+      { text: '설정', icon: <Settings />, active: selectedView === 'settings', view: 'settings' },
+      { text: '백테스트', icon: <Assignment />, active: selectedView === 'backtest', view: 'backtest' },
+      { text: '알림', icon: <Notifications />, active: selectedView === 'notifications', view: 'notifications' },
+      { text: '도움말', icon: <Help />, active: selectedView === 'help', view: 'help' }
+    ]
+    
+    // 관리자 전용 메뉴 추가
+    if (user?.isAdmin || user?.permissions?.includes('admin')) {
+      const adminItems = [
+        { text: '--- 관리자 전용 ---', icon: null, divider: true },
+        { text: '사용자 관리', icon: <AccountCircle />, active: selectedView === 'user-management', view: 'user-management', admin: true },
+        { text: '시스템 설정', icon: <Settings />, active: selectedView === 'system-config', view: 'system-config', admin: true },
+        { text: '로그 모니터링', icon: <Assessment />, active: selectedView === 'logs', view: 'logs', admin: true },
+        { text: '서버 상태', icon: <AutoAwesome />, active: selectedView === 'server-status', view: 'server-status', admin: true }
+      ]
+      return [...baseItems, ...adminItems]
+    }
+    
+    return baseItems
+  }
+  
+  const menuItems = getMenuItems()
   
   // 사이드바 컴포넌트
   const drawer = (
@@ -282,24 +301,50 @@ function Dashboard({ user, onLogout, onShowNotification }) {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item, index) => (
-          <ListItem 
-            button 
-            key={item.text}
-            sx={{ 
-              bgcolor: item.active ? 'primary.light' : 'transparent',
-              '&:hover': { bgcolor: 'primary.lighter' }
-            }}
-          >
-            <ListItemIcon sx={{ color: item.active ? 'primary.main' : 'text.secondary' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText 
-              primary={item.text} 
-              sx={{ color: item.active ? 'primary.main' : 'text.primary' }}
-            />
-          </ListItem>
-        ))}
+        {menuItems.map((item, index) => {
+          // 구분선 처리
+          if (item.divider) {
+            return (
+              <Fragment key={index}>
+                <Divider sx={{ my: 1 }} />
+                <ListItem sx={{ justifyContent: 'center' }}>
+                  <Typography variant="caption" color="warning.main" fontWeight="bold">
+                    {item.text}
+                  </Typography>
+                </ListItem>
+              </Fragment>
+            )
+          }
+          
+          return (
+            <ListItem 
+              button 
+              key={item.text}
+              onClick={() => item.view && setSelectedView(item.view)}
+              sx={{ 
+                bgcolor: item.active ? (item.admin ? 'warning.light' : 'primary.light') : 'transparent',
+                '&:hover': { bgcolor: item.admin ? 'warning.lighter' : 'primary.lighter' },
+                borderLeft: item.admin ? '3px solid orange' : 'none'
+              }}
+            >
+              <ListItemIcon sx={{ 
+                color: item.active ? (item.admin ? 'warning.main' : 'primary.main') : 'text.secondary' 
+              }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.text} 
+                sx={{ 
+                  color: item.active ? (item.admin ? 'warning.main' : 'primary.main') : 'text.primary',
+                  fontWeight: item.admin ? 'bold' : 'normal'
+                }}
+              />
+              {item.admin && (
+                <Chip label="👑" size="small" color="warning" />
+              )}
+            </ListItem>
+          )
+        })}
       </List>
     </Box>
   )
@@ -396,7 +441,21 @@ function Dashboard({ user, onLogout, onShowNotification }) {
         
         {/* 페이지 헤더 */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold">대시보드</Typography>
+          <Box>
+            <Typography variant="h4" fontWeight="bold">
+              {selectedView === 'dashboard' ? '대시보드' :
+               selectedView === 'user-management' ? '👑 사용자 관리' :
+               selectedView === 'system-config' ? '👑 시스템 설정' :
+               selectedView === 'logs' ? '👑 로그 모니터링' :
+               selectedView === 'server-status' ? '👑 서버 상태' :
+               selectedView}
+            </Typography>
+            {user?.isAdmin && (
+              <Typography variant="subtitle2" color="warning.main" fontWeight="bold">
+                👑 관리자 모드 활성화됨
+              </Typography>
+            )}
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button
               variant="outlined"
@@ -409,8 +468,22 @@ function Dashboard({ user, onLogout, onShowNotification }) {
             </Button>
             {userProfile && (
               <Chip 
-                label={`${userProfile.membership_type || 'free'} 회원`}
+                label={`${userProfile.membership_type || user?.membershipType || 'free'} 회원`}
                 color="primary"
+                size="small"
+              />
+            )}
+            {user?.isDemoMode && (
+              <Chip 
+                label="🎮 데모 모드"
+                color="secondary"
+                size="small"
+              />
+            )}
+            {user?.isAdmin && (
+              <Chip 
+                label="👑 관리자"
+                color="warning"
                 size="small"
               />
             )}
@@ -440,9 +513,160 @@ function Dashboard({ user, onLogout, onShowNotification }) {
             🎮 현재 데모 모드입니다. 실제 거래 데이터를 보려면 Supabase 계정으로 로그인하세요.
           </Alert>
         )}
+
+        {/* 관리자 전용 컨텐츠 */}
+        {selectedView === 'user-management' && user?.isAdmin && (
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="👑 사용자 관리" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    관리자 전용 기능: 시스템 사용자들을 관리할 수 있습니다.
+                  </Alert>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Button variant="contained" startIcon={<AccountCircle />}>
+                      사용자 추가
+                    </Button>
+                    <Button variant="outlined" startIcon={<Settings />}>
+                      권한 관리
+                    </Button>
+                    <Button variant="outlined" startIcon={<Assessment />}>
+                      사용자 통계
+                    </Button>
+                  </Box>
+                  <Typography variant="body1">
+                    📊 전체 사용자: <strong>1,247명</strong><br />
+                    🎮 데모 사용자: <strong>892명</strong><br />
+                    💰 프리미엄 사용자: <strong>324명</strong><br />
+                    👑 관리자: <strong>3명</strong>
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {selectedView === 'system-config' && user?.isAdmin && (
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="👑 시스템 설정" />
+                <CardContent>
+                  <Alert severity="warning" sx={{ mb: 3 }}>
+                    주의: 시스템 설정 변경은 전체 서비스에 영향을 줄 수 있습니다.
+                  </Alert>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    <Button variant="contained" startIcon={<AutoAwesome />} color="warning">
+                      AI 모델 설정
+                    </Button>
+                    <Button variant="outlined" startIcon={<Settings />}>
+                      거래 설정
+                    </Button>
+                    <Button variant="outlined" startIcon={<Notifications />}>
+                      알림 설정
+                    </Button>
+                  </Box>
+                  <Typography variant="body1">
+                    🤖 AI 모델: <strong>GPT-4o-mini (활성)</strong><br />
+                    📈 거래 세션: <strong>24/7 운영</strong><br />
+                    🔔 알림 시스템: <strong>정상</strong><br />
+                    🛡️ 보안 상태: <strong>최고 보안</strong>
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {selectedView === 'logs' && user?.isAdmin && (
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="👑 로그 모니터링" />
+                <CardContent>
+                  <Alert severity="success" sx={{ mb: 3 }}>
+                    시스템 로그를 실시간으로 모니터링합니다.
+                  </Alert>
+                  <Box sx={{ bgcolor: 'grey.900', color: 'white', p: 2, borderRadius: 1, fontFamily: 'monospace' }}>
+                    <Typography variant="caption" component="pre">
+{`[2024-12-25 13:01:45] INFO: 사용자 로그인 - demo@christmas.com
+[2024-12-25 13:01:46] INFO: 대시보드 데이터 로드 완료
+[2024-12-25 13:01:47] INFO: AI 분석 시작 - AAPL
+[2024-12-25 13:01:48] SUCCESS: 매수 신호 생성 - AAPL $185.20
+[2024-12-25 13:01:49] INFO: 관리자 접근 - admin@christmas.com
+[2024-12-25 13:01:50] INFO: 시스템 상태 정상`}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {selectedView === 'server-status' && user?.isAdmin && (
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardHeader title="👑 서버 상태" />
+                <CardContent>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      프론트엔드 서버 (포트 3000)
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CheckCircle color="success" />
+                      <Typography variant="body2">정상 운영중</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      백엔드 서버 (포트 8000)
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Warning color="warning" />
+                      <Typography variant="body2">연결 확인 필요</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      Supabase 데이터베이스
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CheckCircle color="success" />
+                      <Typography variant="body2">정상 연결됨</Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card>
+                <CardHeader title="시스템 메트릭" />
+                <CardContent>
+                  <Typography variant="body2" gutterBottom>
+                    📊 메모리 사용량: <strong>2.3GB / 8GB</strong>
+                  </Typography>
+                  <LinearProgress variant="determinate" value={28.75} sx={{ mb: 2 }} />
+                  <Typography variant="body2" gutterBottom>
+                    💾 디스크 사용량: <strong>45GB / 100GB</strong>
+                  </Typography>
+                  <LinearProgress variant="determinate" value={45} sx={{ mb: 2 }} />
+                  <Typography variant="body2" gutterBottom>
+                    🌐 네트워크: <strong>정상</strong>
+                  </Typography>
+                  <LinearProgress variant="determinate" value={85} color="success" />
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
         
-        {/* 상단 통계 카드들 */}
-        <Grid container spacing={3} mb={4}>
+        {/* 기본 대시보드 컨텐츠 (관리자 전용 뷰가 아닐 때만 표시) */}
+        {selectedView === 'dashboard' && (
+          <>
+            {/* 상단 통계 카드들 */}
+            <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ borderLeft: '4px solid #4cc9f0' }}>
               <CardContent>
@@ -719,12 +943,15 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           </Grid>
         </Grid>
         
-        {/* 시스템 정보 푸터 */}
-        <Paper sx={{ p: 2, mt: 4, bgcolor: 'info.lighter' }}>
-          <Typography variant="body2" color="info.main" textAlign="center">
-            ✅ Enhanced UI/UX | 🎨 Material-UI | 📊 풍부한 대시보드 | 🔔 알림 시스템 | 📈 차트 통합 준비
-          </Typography>
-        </Paper>
+            {/* 시스템 정보 푸터 */}
+            <Paper sx={{ p: 2, mt: 4, bgcolor: 'info.lighter' }}>
+              <Typography variant="body2" color="info.main" textAlign="center">
+                ✅ Enhanced UI/UX | 🎨 Material-UI | 📊 풍부한 대시보드 | 🔔 알림 시스템 | 📈 차트 통합 준비
+                {user?.isAdmin && " | 👑 관리자 기능"}
+              </Typography>
+            </Paper>
+          </>
+        )}
       </Box>
     </Box>
   )

@@ -98,24 +98,60 @@ function Login({ onLogin, onShowNotification }) {
   }
   
   const handleDemoLogin = () => {
-    console.log('🎮 데모 모드 로그인')
+    console.log('🎮 데모 모드 로그인 시작')
+    
+    // 즉시 처리되도록 개선
     const testUser = {
-      id: 'demo-user',
-      name: 'Demo Trader',
+      id: 'demo-user-' + Date.now(),
+      name: 'Christmas Demo Trader',
       email: 'demo@christmas.com',
       membershipType: 'premium',
       isAuthenticated: true,
-      joinDate: '2024-12-01',
+      joinDate: '2024-12-25',
       totalProfit: 1250000,
       winRate: 78.5,
-      isDemoMode: true
+      isDemoMode: true,
+      permissions: ['view', 'trade', 'settings']
     }
     
-    onLogin(testUser)
+    console.log('✅ 데모 사용자 생성:', testUser)
     
-    if (onShowNotification) {
-      onShowNotification(`🎮 데모 모드로 접속했습니다!`, 'info')
+    // 즉시 로그인 처리
+    setTimeout(() => {
+      onLogin(testUser)
+      
+      if (onShowNotification) {
+        onShowNotification(`🎮 데모 모드로 접속했습니다! 모든 기능을 체험해보세요.`, 'success')
+      }
+    }, 100) // 100ms 지연으로 UI 응답성 확보
+  }
+
+  const handleAdminDemoLogin = () => {
+    console.log('👑 관리자 데모 모드 로그인 시작')
+    
+    const adminUser = {
+      id: 'admin-demo-' + Date.now(),
+      name: 'Christmas Admin',
+      email: 'admin@christmas.com',
+      membershipType: 'lifetime',
+      isAuthenticated: true,
+      joinDate: '2024-01-01',
+      totalProfit: 15750000,
+      winRate: 92.3,
+      isDemoMode: true,
+      isAdmin: true,
+      permissions: ['view', 'trade', 'settings', 'admin', 'user_management', 'system_config']
     }
+    
+    console.log('✅ 관리자 사용자 생성:', adminUser)
+    
+    setTimeout(() => {
+      onLogin(adminUser)
+      
+      if (onShowNotification) {
+        onShowNotification(`👑 관리자 데모 모드로 접속했습니다! 전체 시스템을 관리할 수 있습니다.`, 'info')
+      }
+    }, 100)
   }
   
   return (
@@ -254,9 +290,26 @@ function Login({ onLogin, onShowNotification }) {
                 variant="text"
                 size="large"
                 onClick={handleDemoLogin}
-                sx={{ mb: 2 }}
+                sx={{ mb: 1 }}
               >
                 🎮 데모 모드로 체험하기
+              </Button>
+              
+              <Button
+                fullWidth
+                variant="text"
+                size="small"
+                onClick={handleAdminDemoLogin}
+                sx={{ 
+                  mb: 2,
+                  color: 'warning.main',
+                  fontSize: '0.8rem',
+                  '&:hover': {
+                    bgcolor: 'warning.lighter'
+                  }
+                }}
+              >
+                👑 관리자 데모 모드 (고급 기능)
               </Button>
             </Box>
 
