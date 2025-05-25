@@ -4,7 +4,7 @@ import { CssBaseline } from '@mui/material'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import { NotificationProvider, useNotification } from './components/NotificationProvider'
-import { supabase } from './lib/supabase'
+import { supabase, isSupabaseEnabled, isAuthBypass, isDemoMode } from './lib/supabase'
 
 // Christmas 테마 (Enhanced)
 const christmasTheme = createTheme({
@@ -120,53 +120,71 @@ function AppContent() {
   
   // Supabase 세션 관리 및 시스템 초기화
   useEffect(() => {
-    console.log('🚀 Supabase 세션 및 시스템 초기화 시작')
+    console.log('🚀 시스템 초기화 시작')
     let mounted = true
     
     const initializeSystem = async () => {
       try {
-        // 1. Supabase 세션 확인
-        setLoadingMessage('🔐 Supabase 세션 확인 중...')
-        const { data: { session }, error } = await supabase.auth.getSession()
+        setLoadingMessage('🔐 인증 시스템 확인 중...')
         
-        if (error) {
-          console.error('❌ Supabase 세션 오류:', error)
-        } else if (session && session.user) {
-          console.log('✅ 기존 Supabase 세션 발견:', session.user)
-          
-          const userData = {
-            id: session.user.id,
-            name: session.user.user_metadata?.first_name || 'Christmas Trader',
-            email: session.user.email,
-            membershipType: session.user.user_metadata?.membership_type || 'free',
-            isAuthenticated: true,
-            joinDate: new Date(session.user.created_at).toLocaleDateString(),
-            supabaseUser: session.user
+        // 1. 인증 시스템 초기화 (환경 설정에 따라 처리)
+        const initializeAuth = async () => {
+          // 인증 우회 모드인 경우 세션 체크 건너뛰기
+          if (isAuthBypass) {
+            console.log('🚀 인증 우회 모드 - 로그인 화면으로 이동')
+            return null
           }
           
-          if (mounted) {
-            setSession(session)
-            setUser(userData)
-            setCurrentView('dashboard')
+          // Supabase가 비활성화된 경우
+          if (!isSupabaseEnabled || !supabase) {
+            console.log('🎮 Supabase 비활성화 - 데모 모드로 실행')
+            return null
+          }
+          
+          try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 3000) // 3초 타임아웃
+            
+            const { data: { session }, error } = await supabase.auth.getSession()
+            clearTimeout(timeoutId)
+            
+            if (error) {
+              console.warn('⚠️ Supabase 연결 실패:', error.message)
+              return null
+            }
+            
+            if (session && session.user) {
+              console.log('✅ 기존 Supabase 세션 발견:', session.user)
+              
+              const userData = {
+                id: session.user.id,
+                name: session.user.user_metadata?.first_name || 'Christmas Trader',
+                email: session.user.email,
+                membershipType: session.user.user_metadata?.membership_type || 'free',
+                isAuthenticated: true,
+                joinDate: new Date(session.user.created_at).toLocaleDateString(),
+                supabaseUser: session.user
+              }
+              
+              if (mounted) {
+                setSession(session)
+                setUser(userData)
+                setCurrentView('dashboard')
+              }
+              return session
+            }
+            return null
+          } catch (error) {
+            console.warn('⚠️ Supabase 초기화 실패:', error.message)
+            return null
           }
         }
         
-        // 2. 단계별 시스템 초기화
-        const steps = [
-          { message: '🎄 Christmas Trading 시스템 로드 중...', delay: 300 },
-          { message: '🎨 Material-UI 컴포넌트 초기화 중...', delay: 200 },
-          { message: '🔔 알림 시스템 준비 중...', delay: 200 },
-          { message: '📊 포트폴리오 데이터 로드 중...', delay: 200 },
-          { message: '✅ 시스템 준비 완료!', delay: 200 }
-        ]
+        const session = await initializeAuth()
         
-        for (const step of steps) {
-          if (!mounted) return
-          
-          setLoadingMessage(step.message)
-          console.log('📝', step.message)
-          await new Promise(resolve => setTimeout(resolve, step.delay))
-        }
+        // 2. 시스템 초기화 (빠른 버전)
+        setLoadingMessage('🎄 Christmas Trading 시스템 로드 중...')
+        await new Promise(resolve => setTimeout(resolve, 500))
         
         if (mounted) {
           console.log('✅ 초기화 완료')
@@ -185,50 +203,52 @@ function AppContent() {
       } catch (error) {
         console.error('❌ 초기화 에러:', error)
         if (mounted) {
-          setLoadingMessage('❌ 시스템 오류가 발생했습니다.')
-          showNotification('시스템 초기화 중 오류가 발생했습니다.', 'error')
-          
-          // 3초 후 로딩 해제 (안전장치)
-          setTimeout(() => {
-            if (mounted) setLoading(false)
-          }, 3000)
+          console.log('🚨 오류 발생, 로그인 화면으로 이동')
+          setLoading(false) // 즉시 로딩 해제
+          showNotification('시스템이 데모 모드로 시작됩니다.', 'info')
         }
       }
     }
     
-    // Supabase 인증 상태 변화 리스너
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔄 Supabase 인증 상태 변화:', event, session)
-        
-        if (event === 'SIGNED_IN' && session) {
-          const userData = {
-            id: session.user.id,
-            name: session.user.user_metadata?.first_name || 'Christmas Trader',
-            email: session.user.email,
-            membershipType: session.user.user_metadata?.membership_type || 'free',
-            isAuthenticated: true,
-            joinDate: new Date(session.user.created_at).toLocaleDateString(),
-            supabaseUser: session.user
-          }
+    // Supabase 인증 상태 변화 리스너 (활성화된 경우에만)
+    let subscription = null
+    if (isSupabaseEnabled && supabase) {
+      const { data } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log('🔄 Supabase 인증 상태 변화:', event, session)
           
-          setSession(session)
-          setUser(userData)
-          setCurrentView('dashboard')
-        } else if (event === 'SIGNED_OUT') {
-          setSession(null)
-          setUser(null)
-          setCurrentView('welcome')
+          if (event === 'SIGNED_IN' && session) {
+            const userData = {
+              id: session.user.id,
+              name: session.user.user_metadata?.first_name || 'Christmas Trader',
+              email: session.user.email,
+              membershipType: session.user.user_metadata?.membership_type || 'free',
+              isAuthenticated: true,
+              joinDate: new Date(session.user.created_at).toLocaleDateString(),
+              supabaseUser: session.user
+            }
+            
+            setSession(session)
+            setUser(userData)
+            setCurrentView('dashboard')
+          } else if (event === 'SIGNED_OUT') {
+            setSession(null)
+            setUser(null)
+            setCurrentView('welcome')
+          }
         }
-      }
-    )
+      )
+      subscription = data
+    }
     
     initializeSystem()
     
     return () => {
       console.log('🧹 useEffect cleanup')
       mounted = false
-      subscription.unsubscribe()
+      if (subscription && subscription.subscription) {
+        subscription.subscription.unsubscribe()
+      }
     }
   }, [showNotification])
   
@@ -243,20 +263,29 @@ function AppContent() {
   const handleLogout = async () => {
     console.log('🚪 로그아웃 시작')
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('❌ 로그아웃 오류:', error)
-        showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
-      } else {
-        console.log('✅ 로그아웃 성공')
-        setUser(null)
-        setCurrentView('welcome')
-        setSession(null)
-        showNotification('성공적으로 로그아웃되었습니다.', 'info')
+      if (isSupabaseEnabled && supabase) {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+          console.error('❌ 로그아웃 오류:', error)
+          showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
+          return
+        }
+        console.log('✅ Supabase 로그아웃 성공')
       }
+      
+      // 로컬 상태 정리
+      setUser(null)
+      setCurrentView('welcome')
+      setSession(null)
+      showNotification('성공적으로 로그아웃되었습니다.', 'info')
+      
     } catch (error) {
       console.error('❌ 로그아웃 예외:', error)
-      showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
+      // 에러가 발생해도 로컬 상태는 정리
+      setUser(null)
+      setCurrentView('welcome')
+      setSession(null)
+      showNotification('로그아웃되었습니다.', 'info')
     }
   }
   

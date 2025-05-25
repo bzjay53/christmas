@@ -1,11 +1,28 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase 설정
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo-supabase-url.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-anon-key'
 
-// Supabase 클라이언트 생성
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// 환경 변수 체크
+const hasValidSupabaseConfig = import.meta.env.VITE_SUPABASE_URL && 
+                               import.meta.env.VITE_SUPABASE_URL !== 'https://your-project-ref.supabase.co' &&
+                               import.meta.env.VITE_SUPABASE_ANON_KEY &&
+                               import.meta.env.VITE_SUPABASE_ANON_KEY !== 'demo-anon-key'
+
+// 인증 우회 모드 (Supabase는 사용하되 강제 로그인은 하지 않음)
+const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true' || 
+                   import.meta.env.VITE_ENABLE_AUTH === 'false'
+
+console.log('🔧 Supabase 설정:', { 
+  url: supabaseUrl, 
+  hasValidConfig: hasValidSupabaseConfig,
+  bypassAuth,
+  enableDemo: import.meta.env.VITE_ENABLE_DEMO_MODE === 'true'
+})
+
+// Supabase 클라이언트 생성 (유효한 설정이 있으면 항상 생성)
+export const supabase = hasValidSupabaseConfig ? createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -16,7 +33,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       eventsPerSecond: 10
     }
   }
-})
+}) : null
+
+// 설정 플래그들 export
+export const isSupabaseEnabled = hasValidSupabaseConfig
+export const isAuthBypass = bypassAuth
+export const isDemoMode = import.meta.env.VITE_ENABLE_DEMO_MODE === 'true'
 
 // 데이터베이스 테이블 타입 정의
 export const TABLES = {
@@ -64,6 +86,11 @@ export const DISCOUNT_TYPES = {
 export const supabaseHelpers = {
   // 사용자 프로필 조회
   async getUserProfile(userId) {
+    if (!supabase) {
+      console.warn('⚠️ Supabase 클라이언트가 초기화되지 않음')
+      return null
+    }
+    
     const { data, error } = await supabase
       .from(TABLES.USERS)
       .select('*')
@@ -203,6 +230,11 @@ export const supabaseHelpers = {
 
   // 사용자 거래 기록 조회
   async getUserTrades(userId, tradeType = null, limit = 50) {
+    if (!supabase) {
+      console.warn('⚠️ Supabase 클라이언트가 초기화되지 않음 - 빈 배열 반환')
+      return []
+    }
+    
     let query = supabase
       .from(TABLES.TRADE_RECORDS)
       .select('*')
@@ -652,6 +684,25 @@ export const supabaseHelpers = {
 
   // AI 학습 통계 조회 (전략별 분리)
   async getAILearningStats(userId, strategyType = null) {
+    if (!supabase) {
+      console.warn('⚠️ Supabase 클라이언트가 초기화되지 않음 - 기본 통계 반환')
+      return {
+        totalRecords: 0,
+        trainingRecords: 0,
+        validationRecords: 0,
+        productionRecords: 0,
+        successfulTrades: 0,
+        totalProfitLoss: 0,
+        avgConfidence: 0,
+        lastLearningDate: null,
+        byStrategy: {
+          traditional: 0,
+          ai_learning: 0,
+          hybrid: 0
+        }
+      }
+    }
+    
     let query = supabase
       .from(TABLES.AI_LEARNING_DATA)
       .select(`
