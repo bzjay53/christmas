@@ -2,7 +2,7 @@
 param([string]$Action = "help")
 
 $SERVER_IP = "31.220.83.213"
-$SERVER_USER = "christmas"
+$SERVER_USER = "root"
 
 function Log-Info($msg) { Write-Host "[INFO] $msg" -ForegroundColor Blue }
 function Log-Success($msg) { Write-Host "[SUCCESS] $msg" -ForegroundColor Green }
@@ -27,11 +27,11 @@ if ($Action -eq "dry-run") {
     
     # Setup project
     Log-Info "Setting up project..."
-    ssh "$SERVER_USER@$SERVER_IP" "mkdir -p /home/christmas/christmas-trading; cd /home/christmas/christmas-trading; git clone https://github.com/bzjay53/christmas.git . || git pull origin main"
+    ssh "$SERVER_USER@$SERVER_IP" "mkdir -p /root/christmas-trading; cd /root/christmas-trading; git clone https://github.com/bzjay53/christmas.git . || git pull origin main"
     
     # Validate Docker Compose
     Log-Info "Validating Docker Compose configuration..."
-    ssh "$SERVER_USER@$SERVER_IP" "cd /home/christmas/christmas-trading; docker-compose config"
+    ssh "$SERVER_USER@$SERVER_IP" "cd /root/christmas-trading; docker-compose config"
     
     Log-Success "Dry Run completed successfully!"
 }
@@ -47,11 +47,11 @@ elseif ($Action -eq "deploy") {
     
     # Setup project
     Log-Info "Setting up project..."
-    ssh "$SERVER_USER@$SERVER_IP" "mkdir -p /home/christmas/christmas-trading; cd /home/christmas/christmas-trading; git clone https://github.com/bzjay53/christmas.git . || git pull origin main; cp env.example .env; mkdir -p nginx/ssl nginx/logs monitoring/grafana"
+    ssh "$SERVER_USER@$SERVER_IP" "mkdir -p /root/christmas-trading; cd /root/christmas-trading; git clone https://github.com/bzjay53/christmas.git . || git pull origin main; mkdir -p nginx/ssl nginx/logs monitoring/grafana"
     
     # Deploy Docker services
     Log-Info "Deploying Docker services..."
-    ssh "$SERVER_USER@$SERVER_IP" "cd /home/christmas/christmas-trading; docker-compose down; docker-compose build; docker-compose up -d"
+    ssh "$SERVER_USER@$SERVER_IP" "cd /root/christmas-trading; docker-compose down; docker-compose build; docker-compose up -d"
     
     # Health check
     Log-Info "Running health check..."
