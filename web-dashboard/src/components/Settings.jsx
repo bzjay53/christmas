@@ -17,7 +17,12 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   CircularProgress,
-  Snackbar
+  Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Slider
 } from '@mui/material'
 import {
   Save,
@@ -62,6 +67,11 @@ function Settings({ user, onShowNotification }) {
     maxDailyLoss: 3,
     minProfitRate: 0.5,
     stopLossRate: 1.0,
+    
+    // 투자 성향 설정 (NEW)
+    investmentStyle: 'neutral', // 'aggressive', 'neutral', 'defensive'
+    riskLevel: 5, // 1-10 스케일
+    investmentAmount: 1000000, // 기본 투자 금액
     
     // 알림 설정
     tradeNotifications: true,
@@ -538,6 +548,70 @@ function Settings({ user, onShowNotification }) {
               >
                 OpenAI 연결 테스트
               </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* 투자 성향 설정 (NEW) */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <TrendingUp sx={{ mr: 1, color: 'success.main' }} />
+                <Typography variant="h6">💡 투자 성향 설정</Typography>
+              </Box>
+              
+              <FormControl fullWidth margin="normal">
+                <InputLabel>투자 스타일</InputLabel>
+                <Select
+                  value={settings.investmentStyle}
+                  onChange={(e) => handleInputChange('investmentStyle', e.target.value)}
+                  label="투자 스타일"
+                >
+                  <MenuItem value="defensive">🛡️ 방어적 투자 (안전 우선)</MenuItem>
+                  <MenuItem value="neutral">⚖️ 중립적 투자 (균형 유지)</MenuItem>
+                  <MenuItem value="aggressive">⚡ 공격적 투자 (수익 우선)</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <Box mt={3}>
+                <Typography gutterBottom>위험 감수 수준: {settings.riskLevel}/10</Typography>
+                <Slider
+                  value={settings.riskLevel}
+                  onChange={(e, newValue) => handleInputChange('riskLevel', newValue)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  marks={[
+                    { value: 1, label: '매우 보수적' },
+                    { value: 5, label: '중간' },
+                    { value: 10, label: '매우 공격적' }
+                  ]}
+                  color={settings.riskLevel <= 3 ? 'success' : settings.riskLevel <= 7 ? 'warning' : 'error'}
+                />
+              </Box>
+              
+              <TextField
+                fullWidth
+                margin="normal"
+                label="기본 투자 금액 (KRW)"
+                type="number"
+                value={settings.investmentAmount}
+                onChange={(e) => handleInputChange('investmentAmount', e.target.value)}
+                helperText="단위 거래당 기본 투자 금액"
+                InputProps={{
+                  startAdornment: '₩'
+                }}
+              />
+              
+              <Alert 
+                severity={settings.investmentStyle === 'aggressive' ? 'warning' : 'info'} 
+                sx={{ mt: 2 }}
+              >
+                {settings.investmentStyle === 'aggressive' && '⚡ 공격적 투자: 높은 수익을 추구하지만 위험도 높습니다.'}
+                {settings.investmentStyle === 'neutral' && '⚖️ 중립적 투자: 위험과 수익의 균형을 맞춥니다.'}
+                {settings.investmentStyle === 'defensive' && '🛡️ 방어적 투자: 안전성을 우선시하며 보수적으로 투자합니다.'}
+              </Alert>
             </CardContent>
           </Card>
         </Grid>
