@@ -69,7 +69,10 @@ function Login({ onLogin, onShowNotification }) {
       // 실제 Supabase 인증 처리
       let result
       if (isSignUp) {
-        // 회원가입
+        // 회원가입 (무료 이벤트 포함)
+        const freeTrialEndDate = new Date()
+        freeTrialEndDate.setDate(freeTrialEndDate.getDate() + 7) // 7일 무료 체험
+        
         result = await supabase.auth.signUp({
           email,
           password,
@@ -77,7 +80,10 @@ function Login({ onLogin, onShowNotification }) {
             data: {
               first_name: email.split('@')[0],
               last_name: 'User',
-              membership_type: 'free'
+              membership_type: 'free',
+              free_trial_end_date: freeTrialEndDate.toISOString(),
+              is_free_trial: true,
+              signup_event: 'christmas_launch_2024'
             }
           }
         })
@@ -110,7 +116,7 @@ function Login({ onLogin, onShowNotification }) {
         
         if (onShowNotification) {
           const message = isSignUp 
-            ? `🎉 회원가입 완료! 이메일 인증 후 로그인해주세요.`
+            ? `🎉 회원가입 완료! 7일 무료 체험 혜택이 제공됩니다. 이메일 인증 후 로그인해주세요!`
             : `환영합니다, ${user.name}님! 🎉`
           onShowNotification(message, 'success')
         }

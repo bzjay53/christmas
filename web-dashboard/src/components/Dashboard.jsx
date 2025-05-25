@@ -965,6 +965,131 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           </Grid>
         </Grid>
         
+        {/* 친구 초대 및 이벤트 섹션 */}
+        <Grid container spacing={3} mb={4}>
+          <Grid item xs={12} md={6}>
+            <Card sx={{ border: '2px solid', borderColor: 'success.main' }}>
+              <CardHeader 
+                title="🎁 친구 초대하기" 
+                subheader="친구를 초대하고 무료 이용 기간을 늘려보세요!"
+                sx={{ bgcolor: 'success.lighter' }}
+              />
+              <CardContent>
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    <strong>🎉 특별 이벤트:</strong> 친구 1명 초대 시 일주일 무료 연장! (최대 3개월)
+                  </Typography>
+                </Alert>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" color="success.main" gutterBottom>
+                    내 초대 코드: <strong>CHR1STMS</strong>
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    아래 링크를 친구에게 공유해보세요
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: 'grey.100', 
+                  borderRadius: 1, 
+                  mb: 2,
+                  border: '1px dashed',
+                  borderColor: 'grey.400'
+                }}>
+                  <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                    https://christmas-trading.com/signup?ref=CHR1STMS
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <Button 
+                    variant="contained" 
+                    color="success" 
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://christmas-trading.com/signup?ref=CHR1STMS')
+                      onShowNotification('초대 링크가 복사되었습니다! 📋', 'success')
+                    }}
+                  >
+                    링크 복사
+                  </Button>
+                  <Button 
+                    variant="outlined" 
+                    color="success" 
+                    size="small"
+                    onClick={() => {
+                      const text = `🎄 Christmas Trading에서 자동매매를 시작해보세요!\n\n💝 특별 혜택: 7일 무료 체험\n🔗 가입링크: https://christmas-trading.com/signup?ref=CHR1STMS`
+                      navigator.clipboard.writeText(text)
+                      onShowNotification('카카오톡용 메시지가 복사되었습니다! 💬', 'success')
+                    }}
+                  >
+                    카톡 공유
+                  </Button>
+                </Box>
+                
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    📊 초대 현황: <strong>2명</strong> 초대 완료<br />
+                    🎁 획득 혜택: <strong>14일</strong> 무료 연장
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Card sx={{ border: '2px solid', borderColor: 'warning.main' }}>
+              <CardHeader 
+                title="🎫 쿠폰 & 이벤트" 
+                subheader="사용 가능한 쿠폰과 진행 중인 이벤트"
+                sx={{ bgcolor: 'warning.lighter' }}
+              />
+              <CardContent>
+                <Box sx={{ mb: 2 }}>
+                  <Chip 
+                    label="🎄 크리스마스 런칭 이벤트"
+                    color="warning"
+                    variant="outlined"
+                    sx={{ mb: 1, mr: 1 }}
+                  />
+                  <Chip 
+                    label="🎁 신규 가입 7일 무료"
+                    color="success"
+                    variant="outlined"
+                    sx={{ mb: 1 }}
+                  />
+                </Box>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>사용 가능한 쿠폰:</strong>
+                  </Typography>
+                  <Box sx={{ p: 1.5, bgcolor: 'warning.lighter', borderRadius: 1, mb: 1 }}>
+                    <Typography variant="body2">
+                      🎟️ <strong>WELCOME30</strong> - 첫 결제 30% 할인
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      2025.01.31까지 | 1회 사용 가능
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Button 
+                  variant="contained" 
+                  color="warning" 
+                  size="small"
+                  fullWidth
+                  onClick={() => onShowNotification('쿠폰 관리 페이지로 이동합니다! 🎫', 'info')}
+                >
+                  모든 쿠폰 보기
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
         {/* 포지션 및 전략 성과 섹션 */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
@@ -1013,19 +1138,69 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           
           <Grid item xs={12} md={6}>
             <Card>
-              <CardHeader title="전략 성과" />
+              <CardHeader title="🎯 자동매매 전략 설정" />
               <CardContent>
-                <Box sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box textAlign="center">
-                    <BarChart sx={{ fontSize: 80, color: 'secondary.main', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      📊 전략별 성과 분석
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      ApexCharts 막대 그래프 예정
-                    </Typography>
-                  </Box>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    투자 성향에 맞는 전략을 선택하세요. 언제든지 변경 가능합니다.
+                  </Typography>
+                </Alert>
+                
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    현재 활성 전략: <Chip label="🛡️ 방어형" color="primary" size="small" />
+                  </Typography>
                 </Box>
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Box sx={{ p: 2, border: '2px solid', borderColor: 'error.main', borderRadius: 1, bgcolor: 'error.lighter' }}>
+                      <Typography variant="h6" color="error.main" gutterBottom>
+                        ⚔️ 공격형 전략
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        • 높은 수익률 추구 (목표: 월 15-25%)<br />
+                        • 큰 투자 금액 (잔고의 70-90%)<br />
+                        • 적극적 리스크 감수
+                      </Typography>
+                      <Button variant="outlined" color="error" size="small" fullWidth>
+                        공격형 선택
+                      </Button>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ p: 2, border: '2px solid', borderColor: 'warning.main', borderRadius: 1, bgcolor: 'warning.lighter' }}>
+                      <Typography variant="h6" color="warning.main" gutterBottom>
+                        ⚖️ 중립형 전략
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        • 안정적 수익률 (목표: 월 8-15%)<br />
+                        • 중간 투자 금액 (잔고의 40-60%)<br />
+                        • 균형잡힌 리스크 관리
+                      </Typography>
+                      <Button variant="outlined" color="warning" size="small" fullWidth>
+                        중립형 선택
+                      </Button>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ p: 2, border: '2px solid', borderColor: 'success.main', borderRadius: 1, bgcolor: 'success.lighter' }}>
+                      <Typography variant="h6" color="success.main" gutterBottom>
+                        🛡️ 방어형 전략
+                      </Typography>
+                      <Typography variant="body2" gutterBottom>
+                        • 안전한 수익률 (목표: 월 3-8%)<br />
+                        • 작은 투자 금액 (잔고의 10-30%)<br />
+                        • 보수적 리스크 관리
+                      </Typography>
+                      <Button variant="contained" color="success" size="small" fullWidth>
+                        ✅ 현재 적용됨
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
               </CardContent>
             </Card>
           </Grid>

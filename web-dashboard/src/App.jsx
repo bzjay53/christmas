@@ -142,6 +142,12 @@ function AppContent() {
           }
           
           try {
+            // supabase.auth가 존재하는지 확인
+            if (!supabase?.auth) {
+              console.warn('⚠️ Supabase auth 객체가 없습니다.')
+              return null
+            }
+            
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 3000) // 3초 타임아웃
             
@@ -191,31 +197,41 @@ function AppContent() {
           setLoading(false)
           
           // 초기화 완료 알림 (한번만 표시)
+          const welcomeKey = `welcomeShown_${Date.now().toString().slice(-6)}`
           if (!sessionStorage.getItem('welcomeShown')) {
             setTimeout(() => {
               if (session && session.user) {
                 showNotification(`🎉 환영합니다! ${session.user.user_metadata?.first_name || 'Christmas Trader'}님`, 'success')
               } else {
-                showNotification('🎉 Christmas Trading 시스템이 성공적으로 로드되었습니다!', 'success')
+                showNotification('🎉 Christmas Trading 시스템 로드 완료!', 'success')
               }
               sessionStorage.setItem('welcomeShown', 'true')
-            }, 500)
+            }, 800)
           }
         }
         
       } catch (error) {
         console.error('❌ 초기화 에러:', error)
         if (mounted) {
-          console.log('🚨 오류 발생, 로그인 화면으로 이동')
+          console.log('🚨 오류 발생, 데모 모드로 시작')
           setLoading(false) // 즉시 로딩 해제
-          showNotification('시스템이 데모 모드로 시작됩니다.', 'info')
+          showNotification('데모 모드로 시작됩니다.', 'info')
         }
+      } finally {
+        // 안전장치: 3초 후 강제로 로딩 해제
+        setTimeout(() => {
+          if (mounted && loading) {
+            console.log('⏰ 타임아웃: 강제 로딩 해제')
+            setLoading(false)
+            showNotification('시스템이 준비되었습니다.', 'info')
+          }
+        }, 3000)
       }
     }
     
     // Supabase 인증 상태 변화 리스너 (활성화된 경우에만)
     let subscription = null
-    if (isSupabaseEnabled && supabase) {
+    if (isSupabaseEnabled && supabase?.auth) {
       const { data } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           console.log('🔄 Supabase 인증 상태 변화:', event, session)
@@ -266,7 +282,7 @@ function AppContent() {
   const handleLogout = async () => {
     console.log('🚪 로그아웃 시작')
     try {
-      if (isSupabaseEnabled && supabase) {
+      if (isSupabaseEnabled && supabase?.auth) {
         const { error } = await supabase.auth.signOut()
         if (error) {
           console.error('❌ 로그아웃 오류:', error)
