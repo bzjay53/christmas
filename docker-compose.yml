@@ -1,124 +1,181 @@
 version: '3.8'
 
-services:
-  # TimescaleDB: 시계열 데이터베이스
-  timescaledb:
-    image: timescale/timescaledb:latest-pg14
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=christmas
-      - POSTGRES_PASSWORD=christmas
-      - POSTGRES_DB=christmas
-    volumes:
-      - timescale_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U christmas"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # Redis: 캐싱 및 메시지 브로커
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # API 서비스: FastAPI 애플리케이션
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    depends_on:
-      - timescaledb
-      - redis
-    environment:
-      - CHRISTMAS_ENV=development
-      - CHRISTMAS_DB_HOST=timescaledb
-      - CHRISTMAS_DB_PORT=5432
-      - CHRISTMAS_DB_USER=christmas
-      - CHRISTMAS_DB_PASSWORD=christmas
-      - CHRISTMAS_DB_NAME=christmas
-      - CHRISTMAS_REDIS_HOST=redis
-      - CHRISTMAS_REDIS_PORT=6379
-    volumes:
-      - ./app:/app/app
-      - ./config:/app/config
-    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
-
-  # 데이터 수집 서비스
-  ingestion:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - timescaledb
-      - redis
-    environment:
-      - CHRISTMAS_ENV=development
-      - CHRISTMAS_DB_HOST=timescaledb
-      - CHRISTMAS_DB_PORT=5432
-      - CHRISTMAS_DB_USER=christmas
-      - CHRISTMAS_DB_PASSWORD=christmas
-      - CHRISTMAS_DB_NAME=christmas
-      - CHRISTMAS_REDIS_HOST=redis
-      - CHRISTMAS_REDIS_PORT=6379
-    volumes:
-      - ./app:/app/app
-      - ./config:/app/config
-    command: python -m app.ingestion.main
-
-  # 텔레그램 봇 서비스
-  telegram_bot:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - redis
-    environment:
-      - CHRISTMAS_ENV=development
-      - CHRISTMAS_REDIS_HOST=redis
-      - CHRISTMAS_REDIS_PORT=6379
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-dummy_token}
-    volumes:
-      - ./app:/app/app
-      - ./config:/app/config
-    command: python -m app.notification.telegram_bot
-  
-  # 웹 인터페이스 서비스: Flask 애플리케이션
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
-    depends_on:
-      - api
-      - redis
-    environment:
-      - CHRISTMAS_ENV=development
-      - CHRISTMAS_REDIS_HOST=redis
-      - CHRISTMAS_REDIS_PORT=6379
-      - FLASK_APP=app.web.main
-      - FLASK_DEBUG=True
-      - FLASK_PORT=5000
-      - FLASK_HOST=0.0.0.0
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev_secret_key}
-    volumes:
-      - ./app:/app/app
-      - ./config:/app/config
-    command: python -m app.web.run
+networks:
+  christmas-network:
+    driver: bridge
 
 volumes:
-  timescale_data:
-  redis_data: 
+  postgres_data:
+  redis_data:
+  wordpress_data:
+  n8n_data:
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15-alpine
+    container_name: christmas-postgres
+    environment:
+      POSTGRES_DB: christmas_db
+      POSTGRES_USER: christmas_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-christmas_secure_password_2024}
+      POSTGRES_MULTIPLE_DATABASES: wordpress_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U christmas_user -d christmas_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    container_name: christmas-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Christmas Trading 백엔드
+  christmas-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: christmas-backend
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      DATABASE_URL: postgresql://christmas_user:${POSTGRES_PASSWORD:-christmas_secure_password_2024}@postgres:5432/christmas_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-christmas_jwt_secret_2024}
+      KIS_API_KEY: ${KIS_API_KEY}
+      KIS_API_SECRET: ${KIS_API_SECRET}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # WordPress 블로그
+  wordpress:
+    image: wordpress:latest
+    container_name: christmas-wordpress
+    environment:
+      WORDPRESS_DB_HOST: postgres:5432
+      WORDPRESS_DB_USER: christmas_user
+      WORDPRESS_DB_PASSWORD: ${POSTGRES_PASSWORD:-christmas_secure_password_2024}
+      WORDPRESS_DB_NAME: wordpress_db
+      WORDPRESS_TABLE_PREFIX: wp_
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - christmas-network
+    restart: unless-stopped
+
+  # n8n 자동화 서비스
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: christmas-n8n
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: true
+      N8N_BASIC_AUTH_USER: ${N8N_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD:-n8n_secure_password_2024}
+      WEBHOOK_URL: https://n8n.${DOMAIN:-localhost}/
+      GENERIC_TIMEZONE: Asia/Seoul
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n_db
+      DB_POSTGRESDB_USER: christmas_user
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-christmas_secure_password_2024}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - christmas-network
+    restart: unless-stopped
+
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    container_name: christmas-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - christmas-backend
+      - wordpress
+      - n8n
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus 모니터링
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: christmas-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  # Grafana 대시보드
+  grafana:
+    image: grafana/grafana:latest
+    container_name: christmas-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-grafana_secure_password_2024}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - ./monitoring/grafana:/var/lib/grafana
+    networks:
+      - christmas-network
+    restart: unless-stopped 

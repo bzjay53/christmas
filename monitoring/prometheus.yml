@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus 자체 모니터링
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Christmas Trading 백엔드 모니터링
+  - job_name: 'christmas-backend'
+    static_configs:
+      - targets: ['christmas-backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Nginx 모니터링
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['christmas-nginx:80']
+    metrics_path: '/nginx_status'
+    scrape_interval: 30s
+
+  # PostgreSQL 모니터링 (postgres_exporter 필요)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # Redis 모니터링 (redis_exporter 필요)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # Node Exporter (시스템 메트릭)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s 

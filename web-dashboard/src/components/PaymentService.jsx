@@ -40,78 +40,76 @@ import {
   AutoAwesome
 } from '@mui/icons-material'
 
-// Link.com 결제 플랜 정의
+// 토스페이먼츠 결제 플랜 정의 (새로운 요금제)
 const PAYMENT_PLANS = [
   {
-    id: 'basic',
-    name: '베이직 플랜',
-    price: 29000,
+    id: 'subscription',
+    name: '구독제 플랜',
+    price: 14900,
     duration: '월간',
     icon: <Star color="primary" />,
     features: [
-      '기본 AI 매매 신호',
-      '일일 시장 분석 리포트',
-      '텔레그램 알림 (기본)',
-      '모의투자 무제한',
-      '기본 백테스팅',
-      '이메일 지원'
+      '🤖 AI 기반 자동매매',
+      '📊 실시간 시장 분석',
+      '📱 텔레그램 알림',
+      '📈 모의투자 무제한',
+      '📋 거래 내역 관리',
+      '💰 매수/매도 시 1% 수수료',
+      '📞 이메일 지원',
+      '🎯 기본 투자 전략'
     ],
     color: 'primary',
-    popular: false
+    popular: true,
+    feeRate: 1.0,
+    description: '매월 14,900원으로 모든 기능을 이용하세요'
   },
   {
-    id: 'premium',
-    name: '프리미엄 플랜',
-    price: 79000,
-    duration: '월간',
-    icon: <Diamond color="secondary" />,
+    id: 'lifetime',
+    name: 'Lifetime 플랜',
+    price: 10000000,
+    duration: '평생',
+    icon: <Diamond sx={{ color: '#FFD700' }} />,
     features: [
-      '고급 AI 매매 신호',
-      '실시간 시장 분석',
-      '텔레그램 실시간 알림',
-      '실전투자 연동',
-      '고급 백테스팅',
-      '개인 맞춤 전략',
-      '우선 고객지원',
-      '월간 1:1 상담'
-    ],
-    color: 'secondary',
-    popular: true
-  },
-  {
-    id: 'enterprise',
-    name: '엔터프라이즈 플랜',
-    price: 199000,
-    duration: '월간',
-    icon: <WorkspacePremium sx={{ color: '#FFD700' }} />,
-    features: [
-      '최고급 AI 매매 신호',
-      '24/7 실시간 모니터링',
-      '전용 텔레그램 채널',
-      '다중 계좌 연동',
-      '무제한 백테스팅',
-      '전용 투자 전략',
-      '24/7 전화 지원',
-      '주간 전문가 상담',
-      'API 접근 권한',
-      '커스텀 개발 지원'
+      '🤖 AI 기반 자동매매 (평생)',
+      '📊 실시간 시장 분석 (평생)',
+      '📱 텔레그램 알림 (평생)',
+      '📈 모의투자 무제한 (평생)',
+      '📋 거래 내역 관리 (평생)',
+      '💰 매수/매도 시 0.7% 수수료',
+      '📞 우선 고객지원',
+      '🎯 고급 투자 전략',
+      '💎 VIP 전용 기능',
+      '🔧 개인 맞춤 설정',
+      '📊 고급 분석 도구',
+      '💳 신용카드 할부 가능'
     ],
     color: 'warning',
-    popular: false
+    popular: false,
+    feeRate: 0.7,
+    description: '1,000만원 일시불 또는 신용카드 할부로 평생 이용',
+    installmentOptions: [
+      { months: 1, name: '일시불', fee: 0 },
+      { months: 3, name: '3개월 할부', fee: 0 },
+      { months: 6, name: '6개월 할부', fee: 0 },
+      { months: 12, name: '12개월 할부', fee: 0 },
+      { months: 24, name: '24개월 할부', fee: 0 }
+    ]
   }
 ]
 
-// Link.com 결제 방법
+// 토스페이먼츠 결제 방법
 const PAYMENT_METHODS = [
-  { id: 'card', name: '신용카드/체크카드', icon: <CreditCard />, fee: 0 },
-  { id: 'bank', name: '계좌이체', icon: <AccountBalance />, fee: 0 },
-  { id: 'virtual', name: '가상계좌', icon: <Payment />, fee: 0 }
+  { id: 'card', name: '신용카드/체크카드', icon: <CreditCard />, fee: 0, description: '즉시 결제, 할부 가능' },
+  { id: 'transfer', name: '계좌이체', icon: <AccountBalance />, fee: 0, description: '실시간 계좌이체' },
+  { id: 'virtualaccount', name: '가상계좌', icon: <Payment />, fee: 0, description: '입금 확인 후 승인' },
+  { id: 'phone', name: '휴대폰 결제', icon: <Payment />, fee: 0, description: '휴대폰 소액결제' }
 ]
 
 function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [paymentDialog, setPaymentDialog] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState('card')
+  const [selectedInstallment, setSelectedInstallment] = useState(0)
   const [loading, setLoading] = useState(false)
   const [paymentForm, setPaymentForm] = useState({
     customerName: user?.name || '',
@@ -121,65 +119,62 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
     agreePrivacy: false
   })
 
-  // Link.com 결제 처리 함수
-  const processLinkPayment = async (planId, amount, method) => {
+  // 토스페이먼츠 결제 처리 함수
+  const processTossPayment = async (planId, amount, method, installmentMonths = 0) => {
     try {
       setLoading(true)
       
-      // Link.com API 호출 시뮬레이션
+      // 토스페이먼츠 결제 데이터
       const paymentData = {
-        merchantId: 'christmas-trading-2024',
-        orderId: `CHR-${Date.now()}`,
         amount: amount,
-        currency: 'KRW',
-        productName: PAYMENT_PLANS.find(p => p.id === planId)?.name,
+        orderId: `CHR-${Date.now()}`,
+        orderName: PAYMENT_PLANS.find(p => p.id === planId)?.name,
         customerName: paymentForm.customerName,
         customerEmail: paymentForm.customerEmail,
-        customerPhone: paymentForm.customerPhone,
-        paymentMethod: method,
-        returnUrl: window.location.origin + '/payment/success',
-        cancelUrl: window.location.origin + '/payment/cancel',
-        webhookUrl: window.location.origin + '/api/payment/webhook'
+        customerMobilePhone: paymentForm.customerPhone,
+        successUrl: window.location.origin + '/payment/success',
+        failUrl: window.location.origin + '/payment/fail',
+        method: method,
+        ...(installmentMonths > 0 && { cardInstallmentPlan: installmentMonths })
       }
       
-      console.log('🔗 Link.com 결제 요청:', paymentData)
+      console.log('💳 토스페이먼츠 결제 요청:', paymentData)
       
-      // 실제 환경에서는 Link.com API를 호출
-      // const response = await fetch('https://api.link.com/v1/payments', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${process.env.REACT_APP_LINK_API_KEY}`
-      //   },
-      //   body: JSON.stringify(paymentData)
-      // })
+      // 실제 환경에서는 토스페이먼츠 SDK 사용
+      // const tossPayments = TossPayments(process.env.REACT_APP_TOSS_CLIENT_KEY)
+      // await tossPayments.requestPayment(method, paymentData)
       
       // 시뮬레이션: 2초 후 성공 응답
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       const mockResponse = {
         success: true,
-        paymentId: `link_${Date.now()}`,
+        paymentKey: `toss_${Date.now()}`,
         orderId: paymentData.orderId,
         amount: amount,
-        status: 'completed',
-        paymentUrl: `https://pay.link.com/checkout/${paymentData.orderId}`,
-        transactionId: `TXN_${Date.now()}`
+        status: 'DONE',
+        method: method,
+        transactionId: `TXN_${Date.now()}`,
+        approvedAt: new Date().toISOString()
       }
       
-      console.log('✅ Link.com 결제 응답:', mockResponse)
+      console.log('✅ 토스페이먼츠 결제 응답:', mockResponse)
       
       if (mockResponse.success) {
         // 결제 성공 처리
+        const selectedPlanData = PAYMENT_PLANS.find(p => p.id === planId)
         const paymentResult = {
           planId: planId,
-          planName: PAYMENT_PLANS.find(p => p.id === planId)?.name,
+          planName: selectedPlanData?.name,
           amount: amount,
-          paymentId: mockResponse.paymentId,
+          paymentKey: mockResponse.paymentKey,
           transactionId: mockResponse.transactionId,
           paymentMethod: method,
-          paidAt: new Date().toISOString(),
-          validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30일 후
+          feeRate: selectedPlanData?.feeRate || 1.0,
+          paidAt: mockResponse.approvedAt,
+          validUntil: planId === 'lifetime' ? 
+            new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString() : // 100년 후 (평생)
+            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30일 후 (구독제)
         }
         
         // 사용자 멤버십 업데이트
@@ -239,7 +234,7 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
     }
     
     try {
-      await processLinkPayment(selectedPlan.id, selectedPlan.price, selectedMethod)
+      await processTossPayment(selectedPlan.id, selectedPlan.price, selectedMethod, selectedInstallment)
     } catch (error) {
       console.error('결제 처리 실패:', error)
     }
@@ -260,9 +255,10 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
       
       <Alert severity="info" sx={{ mb: 4 }}>
         <Typography variant="body1">
-          <strong>🔗 Link.com 안전결제</strong><br />
-          국내 최고 수준의 보안 시스템으로 안전하게 결제하세요. 
-          신용카드, 계좌이체, 가상계좌 등 다양한 결제 방법을 지원합니다.
+          <strong>💳 토스페이먼츠 안전결제</strong><br />
+          국내 1위 핀테크 토스의 안전한 결제 시스템을 사용합니다. 
+          신용카드, 계좌이체, 가상계좌, 휴대폰 결제 등 다양한 방법을 지원하며, 
+          Lifetime 플랜은 신용카드 할부 결제가 가능합니다.
         </Typography>
       </Alert>
 

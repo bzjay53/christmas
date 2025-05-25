@@ -984,6 +984,483 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           />
         )}
         
+        {/* 성과 분석 페이지 */}
+        {selectedView === 'analytics' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="📊 성과 분석" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    거래 성과를 다양한 관점에서 분석합니다.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>📈 수익률 분석</Typography>
+                        <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography color="text.secondary">수익률 차트 (Chart.js 연동 예정)</Typography>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>📊 종목별 성과</Typography>
+                        <Box sx={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography color="text.secondary">종목별 차트 (Chart.js 연동 예정)</Typography>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 주문 내역 페이지 */}
+        {selectedView === 'orders' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="📋 주문 내역" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    모든 거래 내역을 확인할 수 있습니다.
+                  </Alert>
+                  
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>시간</TableCell>
+                          <TableCell>종목</TableCell>
+                          <TableCell>구분</TableCell>
+                          <TableCell align="right">수량</TableCell>
+                          <TableCell align="right">가격</TableCell>
+                          <TableCell align="right">손익</TableCell>
+                          <TableCell>상태</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {tradeRecords.length > 0 ? tradeRecords.map((trade, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{new Date(trade.created_at).toLocaleString()}</TableCell>
+                            <TableCell>{trade.symbol}</TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={trade.side === 'buy' ? '매수' : '매도'} 
+                                color={trade.side === 'buy' ? 'success' : 'error'}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell align="right">{trade.quantity}</TableCell>
+                            <TableCell align="right">{formatCurrency(trade.price)}</TableCell>
+                            <TableCell align="right">
+                              <Typography color={trade.profit_amount >= 0 ? 'success.main' : 'error.main'}>
+                                {formatCurrency(trade.profit_amount || 0)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={trade.status || 'completed'} 
+                                color="success"
+                                size="small"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )) : (
+                          <TableRow>
+                            <TableCell colSpan={7} align="center">
+                              <Typography color="text.secondary">거래 내역이 없습니다.</Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 포트폴리오 페이지 */}
+        {selectedView === 'portfolio' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="💼 포트폴리오" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    현재 보유 중인 포지션과 자산 현황을 확인합니다.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={4}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="h6" color="primary">총 자산</Typography>
+                        <Typography variant="h4" fontWeight="bold">
+                          {formatCurrency(portfolioData.totalProfit + 10000000)}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="h6" color="success.main">실현 수익</Typography>
+                        <Typography variant="h4" fontWeight="bold" color="success.main">
+                          {formatCurrency(portfolioData.totalProfit)}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="h6" color="info.main">수익률</Typography>
+                        <Typography variant="h4" fontWeight="bold" color="info.main">
+                          {formatPercent(portfolioData.profitChange)}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>현재 포지션</Typography>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>종목</TableCell>
+                          <TableCell align="right">수량</TableCell>
+                          <TableCell align="right">진입가</TableCell>
+                          <TableCell align="right">현재가</TableCell>
+                          <TableCell align="right">평가손익</TableCell>
+                          <TableCell align="right">수익률</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {portfolioData.currentPositions.map((position) => (
+                          <TableRow key={position.symbol}>
+                            <TableCell fontWeight="bold">{position.symbol}</TableCell>
+                            <TableCell align="right">{position.quantity}</TableCell>
+                            <TableCell align="right">${position.entryPrice.toFixed(2)}</TableCell>
+                            <TableCell align="right">${position.currentPrice.toFixed(2)}</TableCell>
+                            <TableCell align="right">
+                              <Typography color={position.profit >= 0 ? 'success.main' : 'error.main'}>
+                                ${((position.currentPrice - position.entryPrice) * position.quantity).toFixed(2)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography color={position.profit >= 0 ? 'success.main' : 'error.main'} fontWeight="bold">
+                                {formatPercent(position.profit)}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 신호 페이지 */}
+        {selectedView === 'signals' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="🎯 AI 매매 신호" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    AI가 분석한 실시간 매매 신호를 확인합니다.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>🔥 실시간 신호</Typography>
+                        {lastTradingSignal ? (
+                          <Box>
+                            <Typography variant="body1">
+                              <strong>{lastTradingSignal.symbol}</strong> - {lastTradingSignal.action}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              신뢰도: {lastTradingSignal.confidence}%
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography color="text.secondary">신호 대기 중...</Typography>
+                        )}
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>📊 신호 통계</Typography>
+                        <Typography variant="body2">
+                          오늘 신호: <strong>12개</strong><br />
+                          성공률: <strong>87.5%</strong><br />
+                          평균 수익률: <strong>+2.3%</strong>
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>최근 신호 내역</Typography>
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>시간</TableCell>
+                          <TableCell>종목</TableCell>
+                          <TableCell>신호</TableCell>
+                          <TableCell>신뢰도</TableCell>
+                          <TableCell>결과</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {realtimeAlerts.filter(alert => alert.type === 'trading_signal').slice(0, 10).map((alert) => (
+                          <TableRow key={alert.id}>
+                            <TableCell>{new Date(alert.timestamp).toLocaleTimeString()}</TableCell>
+                            <TableCell>AAPL</TableCell>
+                            <TableCell>
+                              <Chip label="매수" color="success" size="small" />
+                            </TableCell>
+                            <TableCell>85%</TableCell>
+                            <TableCell>
+                              <Chip label="성공" color="success" size="small" />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 설정 페이지 */}
+        {selectedView === 'settings' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="⚙️ 시스템 설정" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    시스템 설정을 변경할 수 있습니다.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>🔔 알림 설정</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Button variant="outlined" startIcon={<Notifications />}>
+                            텔레그램 알림 설정
+                          </Button>
+                          <Button variant="outlined" startIcon={<Notifications />}>
+                            이메일 알림 설정
+                          </Button>
+                          <Button variant="outlined" startIcon={<Notifications />}>
+                            푸시 알림 설정
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>🎯 거래 설정</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Button variant="outlined" startIcon={<Settings />}>
+                            투자 전략 변경
+                          </Button>
+                          <Button variant="outlined" startIcon={<Settings />}>
+                            리스크 관리 설정
+                          </Button>
+                          <Button variant="outlined" startIcon={<Settings />}>
+                            자동매매 설정
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 백테스트 페이지 */}
+        {selectedView === 'backtest' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="📊 백테스트" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    과거 데이터를 기반으로 전략의 성과를 시뮬레이션합니다.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={4}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>📅 기간 설정</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Button variant="outlined" size="small">최근 1개월</Button>
+                          <Button variant="outlined" size="small">최근 3개월</Button>
+                          <Button variant="outlined" size="small">최근 1년</Button>
+                          <Button variant="contained" size="small">사용자 정의</Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>📈 백테스트 결과</Typography>
+                        <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography color="text.secondary">백테스트 차트 (Chart.js 연동 예정)</Typography>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>백테스트 통계</Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} md={3}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">총 수익률</Typography>
+                        <Typography variant="h6" color="success.main">+15.7%</Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">승률</Typography>
+                        <Typography variant="h6" color="primary.main">73.2%</Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">최대 손실</Typography>
+                        <Typography variant="h6" color="error.main">-3.1%</Typography>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                      <Paper sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="body2" color="text.secondary">샤프 비율</Typography>
+                        <Typography variant="h6" color="info.main">1.85</Typography>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 알림 페이지 */}
+        {selectedView === 'notifications' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="🔔 알림 센터" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    모든 시스템 알림과 거래 신호를 확인할 수 있습니다.
+                  </Alert>
+                  
+                  <Typography variant="h6" sx={{ mb: 2 }}>실시간 알림</Typography>
+                  <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    {realtimeAlerts.length > 0 ? realtimeAlerts.map((alert) => (
+                      <Paper key={alert.id} sx={{ p: 2, mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {alert.type === 'trading_signal' ? <TrendingUp color="success" /> : <Info color="info" />}
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="body2">{alert.message}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {new Date(alert.timestamp).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    )) : (
+                      <Typography color="text.secondary" textAlign="center">
+                        알림이 없습니다.
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* 도움말 페이지 */}
+        {selectedView === 'help' && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <CardHeader title="❓ 도움말" />
+                <CardContent>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    Christmas Trading 사용법과 자주 묻는 질문을 확인하세요.
+                  </Alert>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>🚀 시작하기</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            1. KIS API 설정하기
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            2. 투자 전략 선택하기
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            3. 자동매매 시작하기
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            4. 수익 확인하기
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 2 }}>
+                        <Typography variant="h6" gutterBottom>❓ 자주 묻는 질문</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            Q. 최소 투자 금액은?
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            Q. 수수료는 얼마인가요?
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            Q. 손실이 발생하면?
+                          </Button>
+                          <Button variant="text" sx={{ justifyContent: 'flex-start' }}>
+                            Q. 환불 정책은?
+                          </Button>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Typography variant="h6" gutterBottom>📞 고객지원</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      이메일: support@christmas-trading.com<br />
+                      텔레그램: @christmas_trading_support<br />
+                      운영시간: 평일 09:00 - 18:00
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        )}
+
         {/* 기본 대시보드 컨텐츠 (관리자 전용 뷰가 아닐 때만 표시) */}
         {selectedView === 'dashboard' && (
           <>
