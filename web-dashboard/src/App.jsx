@@ -5,31 +5,43 @@ import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import { NotificationProvider, useNotification } from './components/NotificationProvider'
 
-// Christmas 테마
+// Christmas 테마 (Enhanced)
 const christmasTheme = createTheme({
   palette: {
     primary: {
-      main: '#2196F3',
+      main: '#1d3557',
+      light: '#457b9d',
+      lighter: '#a8dadc',
+      dark: '#1d3557'
     },
     secondary: {
-      main: '#FF6B6B',
+      main: '#e63946',
+      light: '#f1faee',
     },
     success: {
-      main: '#4CAF50',
+      main: '#4cc9f0',
+      light: '#a7e9af',
     },
     warning: {
-      main: '#FF9800',
+      main: '#ffd166',
+      light: '#fff3cd',
     },
     error: {
-      main: '#F44336',
+      main: '#e63946',
+      light: '#f7cad0',
     },
     info: {
-      main: '#2196F3',
-      lighter: '#E3F2FD'
+      main: '#4895ef',
+      light: '#4361ee',
+      lighter: '#e3f2fd'
+    },
+    background: {
+      default: '#f8f9fa',
+      paper: '#ffffff'
     }
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Noto Sans KR", "Roboto", "Helvetica", "Arial", sans-serif',
     h4: {
       fontWeight: 700,
     },
@@ -38,7 +50,7 @@ const christmasTheme = createTheme({
     }
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 10,
   },
   components: {
     MuiButton: {
@@ -52,7 +64,39 @@ const christmasTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+          borderRadius: 10,
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: '#1d3557',
+          color: 'white',
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          color: 'rgba(255, 255, 255, 0.8)',
+        },
+      },
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          color: 'rgba(255, 255, 255, 0.8)',
+        },
+      },
+    },
+    MuiTableRow: {
+      styleOverrides: {
+        hover: {
+          '&:hover': {
+            backgroundColor: 'rgba(77, 196, 240, 0.1)',
+          },
         },
       },
     },
