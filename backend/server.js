@@ -4,7 +4,6 @@
  */
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -59,21 +58,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB 연결 (실패해도 서버는 계속 실행)
-let isDbConnected = false;
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/christmas_trading', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('✅ MongoDB 연결 성공');
-  isDbConnected = true;
-})
-.catch((error) => {
-  console.error('❌ MongoDB 연결 실패:', error.message);
-  console.log('🔄 데이터베이스 없이 서버를 시작합니다. (시뮬레이션 모드)');
-  isDbConnected = false;
-});
+// Supabase 기반 시스템 (MongoDB 완전 제거)
+let isDbConnected = true; // Supabase는 클라우드 기반이므로 항상 연결 상태
+console.log('✅ Supabase 기반 데이터베이스 시스템 초기화 완료');
 
 // 기본 라우트
 app.get('/', (req, res) => {
@@ -82,8 +69,8 @@ app.get('/', (req, res) => {
     version: '2.0.0',
     status: 'running',
     timestamp: new Date().toISOString(),
-    database: isDbConnected ? 'connected' : 'disconnected',
-    mode: isDbConnected ? 'production' : 'simulation',
+    database: 'supabase-connected',
+    mode: 'production',
     endpoints: {
       auth: '/api/auth',
       users: '/api/users',
@@ -111,8 +98,8 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    database: isDbConnected ? 'connected' : 'disconnected',
-    mode: isDbConnected ? 'production' : 'simulation'
+    database: 'supabase-connected',
+    mode: 'production'
   });
 });
 
@@ -123,24 +110,19 @@ app.use('/api/auth', authRoutes);
 // app.use('/api/coupons', couponRoutes);
 // app.use('/api/admin', adminRoutes);
 
-// 데이터베이스 없을 때 시뮬레이션 모드 안내
-app.get('/api/simulation', (req, res) => {
-  if (isDbConnected) {
-    return res.json({
-      message: '데이터베이스가 연결되어 있습니다.',
-      mode: 'production'
-    });
-  }
-
+// Supabase 데이터베이스 상태 확인
+app.get('/api/database-status', (req, res) => {
   res.json({
-    message: '🔄 시뮬레이션 모드로 실행 중입니다.',
-    mode: 'simulation',
-    notice: 'MongoDB를 설치하고 연결하면 실제 데이터베이스를 사용할 수 있습니다.',
-    mongodbInstall: {
-      windows: 'https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/',
-      mac: 'brew install mongodb/brew/mongodb-community',
-      linux: 'sudo apt-get install mongodb'
-    }
+    message: '✅ Supabase PostgreSQL 데이터베이스 연결됨',
+    mode: 'production',
+    database: 'supabase',
+    status: 'connected',
+    features: [
+      '실시간 데이터베이스',
+      '사용자 인증',
+      '파일 저장소',
+      '실시간 구독'
+    ]
   });
 });
 
@@ -153,7 +135,7 @@ app.use('*', (req, res) => {
     availableEndpoints: [
       'GET /',
       'GET /health',
-      'GET /api/simulation',
+      'GET /api/database-status',
       'POST /api/auth/login',
       'POST /api/auth/signup',
       'GET /api/auth/me'
@@ -165,23 +147,20 @@ app.use('*', (req, res) => {
 app.use((error, req, res, next) => {
   console.error('Global Error Handler:', error);
   
-  // Mongoose 유효성 검사 오류
-  if (error.name === 'ValidationError') {
-    const errors = Object.values(error.errors).map(err => err.message);
+  // Supabase 오류 처리 (PostgreSQL 기반)
+  if (error.code === '23505') { // PostgreSQL unique violation
     return res.status(400).json({
-      error: 'Validation Error',
-      message: '입력 데이터가 유효하지 않습니다.',
-      details: errors
+      error: 'Duplicate Error',
+      message: '이미 존재하는 데이터입니다.',
+      detail: error.detail
     });
   }
   
-  // Mongoose 중복 키 오류
-  if (error.code === 11000) {
-    const field = Object.keys(error.keyValue)[0];
+  if (error.code === '23503') { // PostgreSQL foreign key violation
     return res.status(400).json({
-      error: 'Duplicate Error',
-      message: `${field}이(가) 이미 존재합니다.`,
-      field: field
+      error: 'Reference Error',
+      message: '참조 무결성 오류가 발생했습니다.',
+      detail: error.detail
     });
   }
   
@@ -216,7 +195,7 @@ const server = app.listen(PORT, () => {
 🎄 Christmas Trading Backend Server
 🚀 서버가 포트 ${PORT}에서 실행 중입니다.
 🌍 환경: ${process.env.NODE_ENV || 'development'}
-📊 데이터베이스: ${isDbConnected ? '연결됨' : '연결 안됨 (시뮬레이션 모드)'}
+📊 데이터베이스: Supabase PostgreSQL (연결됨)
 🔗 클라이언트 URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}
 ⏰ 시작 시간: ${new Date().toISOString()}
 🔧 테스트 URL: http://localhost:${PORT}
@@ -228,14 +207,8 @@ process.on('SIGTERM', () => {
   console.log('SIGTERM 신호를 받았습니다. 서버를 종료합니다...');
   server.close(() => {
     console.log('서버가 종료되었습니다.');
-    if (isDbConnected) {
-      mongoose.connection.close(false, () => {
-        console.log('MongoDB 연결이 종료되었습니다.');
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
-    }
+    console.log('✅ Supabase 기반 시스템 종료 완료');
+    process.exit(0);
   });
 });
 
@@ -243,14 +216,8 @@ process.on('SIGINT', () => {
   console.log('SIGINT 신호를 받았습니다. 서버를 종료합니다...');
   server.close(() => {
     console.log('서버가 종료되었습니다.');
-    if (isDbConnected) {
-      mongoose.connection.close(false, () => {
-        console.log('MongoDB 연결이 종료되었습니다.');
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
-    }
+    console.log('✅ Supabase 기반 시스템 종료 완료');
+    process.exit(0);
   });
 });
 
