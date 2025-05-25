@@ -24,5 +24,8 @@ export default defineConfig({
   },
   define: {
     'process.env': process.env
+  },
+  esbuild: {
+    charset: 'utf8'
   }
 }) 
