@@ -20,7 +20,7 @@ import {
   Speed,
   TrendingUp
 } from '@mui/icons-material'
-import { supabase } from '../lib/supabase'
+import { supabase, isSupabaseEnabled, isAuthBypass } from '../lib/supabase'
 import apiService from '../lib/apiService'
 
 function Login({ onLogin, onShowNotification }) {
@@ -33,11 +33,40 @@ function Login({ onLogin, onShowNotification }) {
   const [error, setError] = useState('')
   
   const handleAuth = async () => {
-    console.log(`🔑 Supabase ${isSignUp ? '회원가입' : '로그인'} 시작`)
+    console.log(`🔑 ${isSignUp ? '회원가입' : '로그인'} 시작`)
     setLoading(true)
     setError('')
     
     try {
+      // 인증 우회 모드인 경우 데모 사용자 생성
+      if (isAuthBypass || !isSupabaseEnabled) {
+        console.log('🎮 인증 우회 모드 - 데모 사용자 생성')
+        
+        const demoUser = {
+          id: 'demo-user-' + Date.now(),
+          name: email.split('@')[0] || 'Demo User',
+          email: email,
+          membershipType: 'free',
+          isAuthenticated: true,
+          joinDate: new Date().toLocaleDateString(),
+          isDemoMode: true,
+          isAuthBypass: true
+        }
+        
+        onLogin(demoUser)
+        
+        if (onShowNotification) {
+          const message = isSignUp 
+            ? `🎉 데모 회원가입 완료! 환영합니다, ${demoUser.name}님!`
+            : `🎮 데모 로그인 성공! 환영합니다, ${demoUser.name}님!`
+          onShowNotification(message, 'success')
+        }
+        
+        setLoading(false)
+        return
+      }
+      
+      // 실제 Supabase 인증 처리
       let result
       if (isSignUp) {
         // 회원가입

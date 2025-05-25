@@ -190,14 +190,17 @@ function AppContent() {
           console.log('✅ 초기화 완료')
           setLoading(false)
           
-          // 초기화 완료 알림
-          setTimeout(() => {
-            if (session && session.user) {
-              showNotification(`🎉 환영합니다! ${session.user.user_metadata?.first_name || 'Christmas Trader'}님`, 'success')
-            } else {
-              showNotification('🎉 Christmas Trading 시스템이 성공적으로 로드되었습니다!', 'success')
-            }
-          }, 500)
+          // 초기화 완료 알림 (한번만 표시)
+          if (!sessionStorage.getItem('welcomeShown')) {
+            setTimeout(() => {
+              if (session && session.user) {
+                showNotification(`🎉 환영합니다! ${session.user.user_metadata?.first_name || 'Christmas Trader'}님`, 'success')
+              } else {
+                showNotification('🎉 Christmas Trading 시스템이 성공적으로 로드되었습니다!', 'success')
+              }
+              sessionStorage.setItem('welcomeShown', 'true')
+            }, 500)
+          }
         }
         
       } catch (error) {

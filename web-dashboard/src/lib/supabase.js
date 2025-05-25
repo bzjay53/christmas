@@ -21,12 +21,12 @@ console.log('🔧 Supabase 설정:', {
   enableDemo: import.meta.env.VITE_ENABLE_DEMO_MODE === 'true'
 })
 
-// Supabase 클라이언트 생성 (유효한 설정이 있으면 항상 생성)
-export const supabase = hasValidSupabaseConfig ? createClient(supabaseUrl, supabaseAnonKey, {
+// Supabase 클라이언트 생성 (인증 우회 모드에서도 데모 클라이언트 생성)
+export const supabase = hasValidSupabaseConfig || bypassAuth ? createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+    autoRefreshToken: !bypassAuth,
+    persistSession: !bypassAuth,
+    detectSessionInUrl: !bypassAuth
   },
   realtime: {
     params: {
