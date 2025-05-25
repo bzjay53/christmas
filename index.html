@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas Trading - 자동매매 플랫폼</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .features {
+            margin-top: 40px;
+            text-align: left;
+        }
+        .feature {
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+        .loading {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎄</div>
+        <h1>Christmas Trading</h1>
+        <div class="subtitle">AI 기반 자동매매 플랫폼</div>
+        
+        <div class="features">
+            <div class="feature">🤖 AI 기반 매매 신호 생성</div>
+            <div class="feature">📈 실시간 시장 분석</div>
+            <div class="feature">💰 자동 수익 실현</div>
+            <div class="feature">📱 텔레그램 실시간 알림</div>
+            <div class="feature">🛡️ 리스크 관리 시스템</div>
+        </div>
+        
+        <a href="./web-dashboard/index.html" class="btn">🚀 대시보드 시작하기</a>
+        <a href="./web-dashboard/index.html?signup=true&ref=CHR1STMS" class="btn">🎁 무료 체험 시작</a>
+        
+        <div class="loading">
+            <p>잠시만 기다려주세요... 대시보드로 이동 중입니다.</p>
+        </div>
+    </div>
+
+    <script>
+        // URL 파라미터 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref');
+        const signup = urlParams.get('signup');
+        
+        // 자동 리다이렉트 (3초 후)
+        setTimeout(() => {
+            let redirectUrl = './web-dashboard/index.html';
+            
+            if (ref || signup) {
+                const params = new URLSearchParams();
+                if (ref) params.set('ref', ref);
+                if (signup) params.set('signup', 'true');
+                redirectUrl += '?' + params.toString();
+            }
+            
+            window.location.href = redirectUrl;
+        }, 3000);
+        
+        // 즉시 리다이렉트 옵션
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn')) {
+                e.preventDefault();
+                window.location.href = e.target.href;
+            }
+        });
+    </script>
+</body>
+</html> 

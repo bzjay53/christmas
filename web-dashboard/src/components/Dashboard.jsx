@@ -65,6 +65,7 @@ import {
 import { supabase, supabaseHelpers } from '../lib/supabase'
 import apiService from '../lib/apiService'
 import KISApiSettings from './KISApiSettings'
+import PaymentService from './PaymentService'
 
 const drawerWidth = 240
 
@@ -332,6 +333,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
       { text: '포트폴리오', icon: <Wallet />, active: selectedView === 'portfolio', view: 'portfolio' },
       { text: '신호', icon: <Lightbulb />, active: selectedView === 'signals', view: 'signals' },
       { text: 'KIS API 설정', icon: <Settings />, active: selectedView === 'kis-settings', view: 'kis-settings' },
+      { text: '💳 요금제', icon: <Payment />, active: selectedView === 'payment', view: 'payment' },
       { text: '설정', icon: <Settings />, active: selectedView === 'settings', view: 'settings' },
       { text: '백테스트', icon: <Assignment />, active: selectedView === 'backtest', view: 'backtest' },
       { text: '알림', icon: <Notifications />, active: selectedView === 'notifications', view: 'notifications' },
@@ -578,10 +580,10 @@ function Dashboard({ user, onLogout, onShowNotification }) {
           </Alert>
         )}
 
-        {/* 데이터 없음 상태 (데모 모드) */}
-        {!loading && user?.isDemoMode && (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            🎮 현재 데모 모드입니다. 실제 거래 데이터를 보려면 Supabase 계정으로 로그인하세요.
+        {/* 시스템 상태 알림 */}
+        {!loading && (
+          <Alert severity="success" sx={{ mb: 3 }}>
+            🎄 Christmas Trading 시스템이 정상 작동 중입니다! 모든 기능을 이용하실 수 있습니다.
           </Alert>
         )}
 
@@ -893,6 +895,24 @@ function Dashboard({ user, onLogout, onShowNotification }) {
         {/* KIS API 설정 컴포넌트 */}
         {selectedView === 'kis-settings' && (
           <KISApiSettings onShowNotification={onShowNotification} />
+        )}
+
+        {/* 결제 서비스 */}
+        {selectedView === 'payment' && (
+          <PaymentService 
+            user={user}
+            onShowNotification={onShowNotification}
+            onPaymentSuccess={(paymentResult) => {
+              console.log('결제 성공:', paymentResult)
+              // 사용자 멤버십 업데이트 로직 추가
+              if (onShowNotification) {
+                onShowNotification(
+                  `🎉 ${paymentResult.planName} 구독이 활성화되었습니다!`,
+                  'success'
+                )
+              }
+            }}
+          />
         )}
         
         {/* 기본 대시보드 컨텐츠 (관리자 전용 뷰가 아닐 때만 표시) */}

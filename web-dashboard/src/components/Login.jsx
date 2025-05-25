@@ -38,32 +38,9 @@ function Login({ onLogin, onShowNotification }) {
     setError('')
     
     try {
-      // 인증 우회 모드인 경우 데모 사용자 생성
-      if (isAuthBypass || !isSupabaseEnabled) {
-        console.log('🎮 인증 우회 모드 - 데모 사용자 생성')
-        
-        const demoUser = {
-          id: 'demo-user-' + Date.now(),
-          name: email.split('@')[0] || 'Demo User',
-          email: email,
-          membershipType: 'free',
-          isAuthenticated: true,
-          joinDate: new Date().toLocaleDateString(),
-          isDemoMode: true,
-          isAuthBypass: true
-        }
-        
-        onLogin(demoUser)
-        
-        if (onShowNotification) {
-          const message = isSignUp 
-            ? `🎉 데모 회원가입 완료! 환영합니다, ${demoUser.name}님!`
-            : `🎮 데모 로그인 성공! 환영합니다, ${demoUser.name}님!`
-          onShowNotification(message, 'success')
-        }
-        
-        setLoading(false)
-        return
+      // 실제 Supabase 인증만 허용 (인증 우회 모드 완전 제거)
+      if (!isSupabaseEnabled) {
+        throw new Error('Supabase 연결이 필요합니다. 관리자에게 문의하세요.')
       }
       
       // 실제 Supabase 인증 처리
