@@ -17,16 +17,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Install dependencies and build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Build with Docker multi-stage
         working-directory: ./web-dashboard
         run: |
-          npm ci --force
-          npm run build
+          echo "🐳 Building Christmas Trading Dashboard with Docker..."
+          docker build --target build -t christmas-build .
+          docker run --rm -v $PWD/dist:/output christmas-build sh -c "cp -r /app/dist/* /output/"
+          echo "✅ Build completed! Files in dist:"
+          ls -la dist/
         
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v2
@@ -34,11 +35,11 @@ jobs:
           publish-dir: './web-dashboard/dist'
           production-branch: main
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
+          deploy-message: "🐳 Docker Multi-stage Build Deploy - ${{ github.sha }}"
           enable-pull-request-comment: true
           enable-commit-comment: true
           overwrites-pull-request-comment: true
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 10 
+        timeout-minutes: 15 

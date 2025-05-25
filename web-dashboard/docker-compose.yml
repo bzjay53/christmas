@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 개발 환경
+  christmas-frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
+    stdin_open: true
+    tty: true
+    networks:
+      - christmas-network
+
+  # 프로덕션 환경 (테스트용)
+  christmas-frontend-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8090:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - christmas-network
+    profiles:
+      - production
+
+  # 백엔드 API (선택사항)
+  christmas-backend:
+    image: python:3.11-alpine
+    ports:
+      - "8000:8000"
+    working_dir: /app
+    volumes:
+      - ../backend:/app
+    command: >
+      sh -c "
+        pip install fastapi uvicorn &&
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - christmas-network
+    profiles:
+      - with-backend
+
+networks:
+  christmas-network:
+    driver: bridge
+
+volumes:
+  node_modules: 
