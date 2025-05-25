@@ -46,7 +46,7 @@ import {
   SwapHoriz,
   Wallet,
   Lightbulb,
-  ClipboardData,
+  Assignment,
   NotificationImportant,
   Help,
   Menu,
@@ -159,7 +159,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     { text: '포트폴리오', icon: <Wallet /> },
     { text: '신호', icon: <Lightbulb /> },
     { text: '설정', icon: <Settings /> },
-    { text: '백테스트', icon: <ClipboardData /> },
+    { text: '백테스트', icon: <Assignment /> },
     { text: '알림', icon: <Notifications /> },
     { text: '도움말', icon: <Help /> }
   ]
