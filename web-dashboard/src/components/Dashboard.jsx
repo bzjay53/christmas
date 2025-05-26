@@ -61,19 +61,23 @@ import {
   Casino,
   Timeline,
   Refresh,
-  Payment
+  Payment,
+  DarkMode,
+  LightMode
 } from '@mui/icons-material'
 import { supabase, supabaseHelpers } from '../lib/supabase'
 import apiService from '../lib/apiService'
 import websocketClient from '../lib/websocket'
 import KISApiSettings from './KISApiSettings'
 import PaymentService from './PaymentService'
+import useThemeStore from '../store/themeStore'
 
 const drawerWidth = 240
 
 function Dashboard({ user, onLogout, onShowNotification }) {
   console.log('📊 Supabase Enhanced Dashboard 컴포넌트 렌더링', user)
   
+  const { isDarkMode, toggleTheme } = useThemeStore()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [mobileOpen, setMobileOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState('weekly')
@@ -526,6 +530,13 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                 color={backendStatus === 'connected' ? "success" : "error"}
               />
             </Badge>
+            <IconButton 
+              color="inherit" 
+              onClick={toggleTheme}
+              title={isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
+            >
+              {isDarkMode ? <LightMode /> : <DarkMode />}
+            </IconButton>
             <Chip 
               icon={<AccountCircle />}
               label={user.name}

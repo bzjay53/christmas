@@ -1,6 +1,6 @@
 /**
  * Christmas Trading Backend Server
- * 메인 서버 파일
+ * 메인 서버 파일 - Supabase 기반
  */
 require('dotenv').config();
 const express = require('express');
@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
 const WebSocketServer = require('./websocket');
+const supabaseAuth = require('./services/supabaseAuth');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -84,9 +85,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// Supabase 기반 시스템 (MongoDB 완전 제거)
-let isDbConnected = true; // Supabase는 클라우드 기반이므로 항상 연결 상태
-console.log('✅ Supabase 기반 데이터베이스 시스템 초기화 완료');
+// Supabase 연결 상태 확인
+async function initializeSupabase() {
+  try {
+    const connectionStatus = await supabaseAuth.checkConnection();
+    if (connectionStatus.connected) {
+      console.log('✅ Supabase 데이터베이스 연결 성공');
+      return true;
+    } else {
+      console.error('❌ Supabase 연결 실패:', connectionStatus.error);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Supabase 초기화 오류:', error);
+    return false;
+  }
+}
+
+let isDbConnected = false;
 
 // 기본 라우트
 app.get('/', (req, res) => {
@@ -239,19 +255,38 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 서버 시작 (WebSocket과 함께)
-server.listen(PORT, () => {
-  console.log(`
+// 서버 시작 함수
+async function startServer() {
+  // Supabase 초기화
+  isDbConnected = await initializeSupabase();
+  
+  // 서버 시작 (WebSocket과 함께)
+  server.listen(PORT, () => {
+    console.log(`
 🎄 Christmas Trading Backend Server
 🚀 서버가 포트 ${PORT}에서 실행 중입니다.
 🌍 환경: ${process.env.NODE_ENV || 'development'}
-📊 데이터베이스: Supabase PostgreSQL (연결됨)
+📊 데이터베이스: Supabase PostgreSQL ${isDbConnected ? '(연결됨)' : '(연결 실패)'}
 🔗 클라이언트 URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}
 🔌 WebSocket: 활성화됨 (실시간 알림)
 ⏰ 시작 시간: ${new Date().toISOString()}
 🔧 테스트 URL: http://localhost:${PORT}
-  `);
-});
+    `);
+    
+    // 환경 변수 확인
+    const requiredEnvVars = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    
+    if (missingVars.length > 0) {
+      console.warn('⚠️  누락된 환경 변수:', missingVars.join(', '));
+    } else {
+      console.log('✅ 모든 필수 환경 변수가 설정되었습니다.');
+    }
+  });
+}
+
+// 서버 시작
+startServer();
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

@@ -1,12 +1,16 @@
 {
   "name": "christmas-project",
   "version": "1.0.0",
-  "description": "Christmas \ucd08\ub2e8\ud0c0 \ub9e4\ub9e4 \ud50c\ub7ab\ud3fc",
+  "description": "Christmas 초단타 매매 플랫폼",
   "scripts": {
     "build": "python setup.py",
     "dev": "python app/web/main.py"
   },
   "engines": {
     "node": ">=14"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "bcryptjs": "^3.0.2"
   }
 }

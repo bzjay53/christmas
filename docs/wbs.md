@@ -105,9 +105,19 @@
 - [x] 9.2 테스트 자동화 (Test Automation)
   - [x] 9.2.1 CI/CD 파이프라인 구성 (CI/CD Pipeline Setup)
   - [x] 9.2.2 테스트 자동화 스크립트 작성 (Test Automation Scripts)
-- [ ] 9.3 추가 분석 모듈 개발 (Additional Analysis Module Development)
-  - [ ] 9.3.1 머신러닝 모델 통합 (Machine Learning Model Integration)
-  - [ ] 9.3.2 예측 알고리즘 개발 (Prediction Algorithm Development)
-- [ ] 9.4 UI/UX 개선 (UI/UX Improvement)
-  - [ ] 9.4.1 대시보드 개선 (Dashboard Enhancement)
-  - [ ] 9.4.2 모바일 대응 UI 개발 (Mobile-responsive UI Development) 
+- [x] 9.3 데이터베이스 마이그레이션 (Database Migration) - **NEW 2025-05-26**
+  - [x] 9.3.1 MongoDB → Supabase 전환 계획 수립
+  - [x] 9.3.2 Supabase 인증 시스템 구현
+  - [x] 9.3.3 백엔드 코드 리팩토링 (MongoDB 의존성 제거)
+  - [x] 9.3.4 Docker 환경에서 Supabase 클라이언트 설치
+  - [x] 9.3.5 백엔드 서버 배포 및 재시작 완료
+  - [x] 9.3.6 프론트엔드 다크모드 기능 구현 및 배포
+  - [ ] 9.3.7 사용자 테이블 생성 및 테스트 계정 설정 (사용자 액션 필요)
+  - [ ] 9.3.8 로그인 테스트 및 JWT 토큰 검증
+  - [ ] 9.3.9 비즈니스 로직 복원 (쿠폰, 리퍼럴, 회원등급 시스템)
+- [ ] 9.4 추가 분석 모듈 개발 (Additional Analysis Module Development)
+  - [ ] 9.4.1 머신러닝 모델 통합 (Machine Learning Model Integration)
+  - [ ] 9.4.2 예측 알고리즘 개발 (Prediction Algorithm Development)
+- [ ] 9.5 UI/UX 개선 (UI/UX Improvement)
+  - [ ] 9.5.1 대시보드 개선 (Dashboard Enhancement)
+  - [ ] 9.5.2 모바일 대응 UI 개발 (Mobile-responsive UI Development) 

@@ -2,8 +2,7 @@
  * Christmas Trading Authentication Middleware
  * JWT 토큰 검증 및 사용자 인증 미들웨어
  */
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const supabaseAuth = require('../services/supabaseAuth');
 
 // JWT 토큰 검증 미들웨어
 const authenticate = async (req, res, next) => {
@@ -26,21 +25,11 @@ const authenticate = async (req, res, next) => {
       });
     }
     
-    // JWT 토큰 검증
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // 사용자 조회
-    const user = await User.findById(decoded.userId).select('-password');
-    
-    if (!user) {
-      return res.status(401).json({
-        error: 'Invalid Token',
-        message: '사용자를 찾을 수 없습니다.'
-      });
-    }
+    // Supabase를 통한 토큰 검증
+    const user = await supabaseAuth.verifyToken(token);
     
     // 계정 활성화 확인
-    if (!user.isActive) {
+    if (!user.is_active) {
       return res.status(401).json({
         error: 'Account Disabled',
         message: '비활성화된 계정입니다.'
@@ -48,7 +37,7 @@ const authenticate = async (req, res, next) => {
     }
     
     // 계정 잠금 확인
-    if (user.lockUntil && user.lockUntil > Date.now()) {
+    if (user.lock_until && new Date(user.lock_until) > new Date()) {
       return res.status(401).json({
         error: 'Account Locked',
         message: '잠긴 계정입니다. 잠시 후 다시 시도해주세요.'
@@ -57,36 +46,22 @@ const authenticate = async (req, res, next) => {
     
     // 요청 객체에 사용자 정보 추가
     req.user = user;
-    req.userId = user._id;
+    req.userId = user.id;
     
     next();
     
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        error: 'Invalid Token',
-        message: '유효하지 않은 토큰입니다.'
-      });
-    }
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        error: 'Token Expired',
-        message: '토큰이 만료되었습니다. 다시 로그인해주세요.'
-      });
-    }
-    
     console.error('Authentication Error:', error);
-    res.status(500).json({
-      error: 'Server Error',
-      message: '인증 처리 중 오류가 발생했습니다.'
+    res.status(401).json({
+      error: 'Invalid Token',
+      message: error.message || '유효하지 않은 토큰입니다.'
     });
   }
 };
 
 // 관리자 권한 확인 미들웨어
 const requireAdmin = (req, res, next) => {
-  if (!req.user || !req.user.isAdmin) {
+  if (!req.user || !req.user.is_admin) {
     return res.status(403).json({
       error: 'Access Forbidden',
       message: '관리자 권한이 필요합니다.'
@@ -109,11 +84,11 @@ const requireMembership = (allowedTypes = []) => {
       return next(); // 모든 회원 허용
     }
     
-    if (!allowedTypes.includes(req.user.membershipType)) {
+    if (!allowedTypes.includes(req.user.membership_type)) {
       return res.status(403).json({
         error: 'Membership Required',
         message: `${allowedTypes.join(' 또는 ')} 회원만 이용 가능합니다.`,
-        currentMembership: req.user.membershipType,
+        currentMembership: req.user.membership_type,
         requiredMembership: allowedTypes
       });
     }
@@ -149,7 +124,7 @@ const requireTradingPermission = (tradeType = 'demo') => {
 
 // 이메일 인증 확인 미들웨어
 const requireEmailVerification = (req, res, next) => {
-  if (!req.user || !req.user.isEmailVerified) {
+  if (!req.user || !req.user.is_email_verified) {
     return res.status(403).json({
       error: 'Email Verification Required',
       message: '이메일 인증이 필요합니다.',
@@ -172,12 +147,12 @@ const requireOwnership = (resourceField = 'userId') => {
     }
     
     // 관리자는 모든 리소스 접근 가능
-    if (req.user.isAdmin) {
+    if (req.user.is_admin) {
       return next();
     }
     
     // 본인의 리소스만 접근 가능
-    if (req.user._id.toString() !== resourceUserId.toString()) {
+    if (req.user.id.toString() !== resourceUserId.toString()) {
       return res.status(403).json({
         error: 'Access Forbidden',
         message: '본인의 리소스만 접근할 수 있습니다.'
@@ -271,12 +246,11 @@ const optionalAuth = async (req, res, next) => {
     }
     
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.userId).select('-password');
+      const user = await supabaseAuth.verifyToken(token);
       
-      if (user && user.isActive) {
+      if (user && user.is_active) {
         req.user = user;
-        req.userId = user._id;
+        req.userId = user.id;
       }
     } catch (jwtError) {
       // JWT 오류는 무시하고 계속 진행

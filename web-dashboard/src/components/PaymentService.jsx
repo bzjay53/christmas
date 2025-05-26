@@ -249,7 +249,16 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4 }}>
+      <Typography 
+        variant="h4" 
+        gutterBottom 
+        sx={{ 
+          textAlign: 'center', 
+          mb: 4,
+          color: 'text.primary',
+          fontWeight: 'bold'
+        }}
+      >
         🎄 Christmas Trading 요금제
       </Typography>
       
@@ -295,7 +304,17 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
                 avatar={plan.icon}
                 title={plan.name}
                 subheader={`₩${plan.price.toLocaleString()} / ${plan.duration}`}
-                sx={{ textAlign: 'center' }}
+                sx={{ 
+                  textAlign: 'center',
+                  '& .MuiCardHeader-title': {
+                    color: 'text.primary',
+                    fontWeight: 'bold'
+                  },
+                  '& .MuiCardHeader-subheader': {
+                    color: 'text.secondary',
+                    fontWeight: 'medium'
+                  }
+                }}
               />
               
               <CardContent>
@@ -307,7 +326,10 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
                       </ListItemIcon>
                       <ListItemText 
                         primary={feature} 
-                        primaryTypographyProps={{ variant: 'body2' }}
+                        primaryTypographyProps={{ 
+                          variant: 'body2',
+                          color: 'text.primary'
+                        }}
                       />
                     </ListItem>
                   ))}

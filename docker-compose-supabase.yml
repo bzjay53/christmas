@@ -1,0 +1,31 @@
+version: '3.8'
+
+networks:
+  christmas-network:
+    driver: bridge
+
+services:
+  # Christmas Trading 백엔드 (Supabase 버전)
+  christmas-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: christmas-backend
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+      JWT_SECRET: christmas_jwt_secret_2024
+      SUPABASE_URL: https://qehzzsxzjijfzqkysazc.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE
+      KIS_API_KEY: ${KIS_API_KEY}
+      KIS_API_SECRET: ${KIS_API_SECRET}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3 
