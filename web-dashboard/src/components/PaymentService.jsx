@@ -328,7 +328,8 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
                         primary={feature} 
                         primaryTypographyProps={{ 
                           variant: 'body2',
-                          color: 'text.primary'
+                          color: 'text.primary',
+                          sx: { color: 'text.primary' }
                         }}
                       />
                     </ListItem>

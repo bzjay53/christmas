@@ -510,8 +510,8 @@ function KISApiSettings({ onShowNotification }) {
                     placeholder="P-xxxxxxxxxxxxxxxxxxxxxxxx"
                     value={settings.realAppKey}
                     onChange={(e) => handleInputChange('realAppKey', e.target.value)}
-                    helperText="P- 로 시작하는 키"
-                    disabled={settings.mockMode}
+                    helperText={settings.mockMode ? "모의투자 모드에서도 미리 설정 가능" : "P- 로 시작하는 키"}
+                    disabled={false}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -521,15 +521,15 @@ function KISApiSettings({ onShowNotification }) {
                     type={showSecrets.realSecret ? 'text' : 'password'}
                     value={settings.realAppSecret}
                     onChange={(e) => handleInputChange('realAppSecret', e.target.value)}
-                    helperText="실전투자용 시크릿 키"
-                    disabled={settings.mockMode}
+                    helperText={settings.mockMode ? "모의투자 모드에서도 미리 설정 가능" : "실전투자용 시크릿 키"}
+                    disabled={false}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
                             onClick={() => toggleSecretVisibility('realSecret')}
                             edge="end"
-                            disabled={settings.mockMode}
+                            disabled={false}
                           >
                             {showSecrets.realSecret ? <VisibilityOff /> : <Visibility />}
                           </IconButton>

@@ -135,15 +135,30 @@ app.get('/', (req, res) => {
   });
 });
 
-// 헬스 체크
+// 헬스 체크 (두 경로 모두 지원)
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    database: 'supabase-connected',
-    mode: 'production'
+    database: isDbConnected ? 'supabase-connected' : 'supabase-disconnected',
+    mode: process.env.NODE_ENV || 'development'
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    database: isDbConnected ? 'supabase-connected' : 'supabase-disconnected',
+    mode: process.env.NODE_ENV || 'development',
+    supabase: {
+      connected: isDbConnected,
+      url: process.env.SUPABASE_URL ? 'configured' : 'not-configured'
+    }
   });
 });
 
