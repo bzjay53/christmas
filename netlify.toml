@@ -1,17 +1,18 @@
 [build]
   base = "web-dashboard"
-  command = "npm ci --force && npm run build"
+  command = "npm ci && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps --force"
+  NPM_FLAGS = "--legacy-peer-deps"
   VITE_NODE_ENV = "production"
   VITE_APP_NAME = "Christmas Trading"
   VITE_APP_VERSION = "2.0.0"
   VITE_APP_URL = "https://christmas-protocol.netlify.app"
-  VITE_SUPABASE_URL = "https://qehzzsxzjijfzqkysazc.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE"
+  # Supabase 환경변수는 Netlify 대시보드에서 설정
+  # VITE_SUPABASE_URL = "your_supabase_url_here"
+  # VITE_SUPABASE_ANON_KEY = "your_supabase_anon_key_here"
   VITE_API_BASE_URL = "https://christmas-protocol.netlify.app/api"
   VITE_ENABLE_DEMO_MODE = "true"
   VITE_ENABLE_ANALYTICS = "true"

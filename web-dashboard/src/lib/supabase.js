@@ -27,7 +27,7 @@ console.log('🔧 Supabase 설정:', {
 // Supabase 클라이언트 생성 (항상 생성하되 유효성에 따라 기능 제한)
 export const supabase = createClient(
   supabaseUrl.includes('supabase.co') ? supabaseUrl : 'https://qehzzsxzjijfzqkysazc.supabase.co',
-  supabaseAnonKey.startsWith('eyJ') ? supabaseAnonKey : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE',
+  supabaseAnonKey,
   {
     auth: {
       autoRefreshToken: true,

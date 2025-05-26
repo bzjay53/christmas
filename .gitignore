@@ -140,3 +140,10 @@ data/
 
 # Local Netlify folder
 .netlify
+
+# 민감한 환경변수 파일들
+env.txt
+*.env.production
+*.env.docker
+production.env
+netlify-production.env

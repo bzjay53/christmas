@@ -9,7 +9,11 @@ const jwt = require('jsonwebtoken');
 class SupabaseAuthService {
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL || 'https://qehzzsxzjijfzqkysazc.supabase.co';
-    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE';
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('SUPABASE_URL과 SUPABASE_ANON_KEY 환경변수가 필요합니다.');
+}
     
     console.log('🔧 Supabase 초기화:', { 
       url: supabaseUrl, 
