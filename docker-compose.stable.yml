@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: christmas-backend-stable
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - christmas-network
+
+  # 모니터링 서비스 추가
+  watchtower:
+    image: containrrr/watchtower
+    container_name: christmas-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+      - WATCHTOWER_INCLUDE_STOPPED=true
+    networks:
+      - christmas-network
+
+  # 헬스체크 모니터링
+  healthcheck-monitor:
+    image: alpine:latest
+    container_name: christmas-healthcheck
+    restart: unless-stopped
+    volumes:
+      - ./scripts:/scripts
+    command: sh /scripts/continuous-monitor.sh
+    depends_on:
+      - backend
+    networks:
+      - christmas-network
+
+networks:
+  christmas-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+    driver: local 
