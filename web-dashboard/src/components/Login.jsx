@@ -449,32 +449,36 @@ function Login({ onLogin, onShowNotification }) {
                 {isSignUp ? '로그인으로 전환' : '회원가입으로 전환'}
               </Button>
               
-              <Button
-                fullWidth
-                variant="text"
-                size="large"
-                onClick={handleDemoLogin}
-                sx={{ mb: 1 }}
-              >
-                🎮 데모 모드로 체험하기
-              </Button>
-              
-              <Button
-                fullWidth
-                variant="text"
-                size="small"
-                onClick={handleAdminDemoLogin}
-                sx={{ 
-                  mb: 2,
-                  color: 'warning.main',
-                  fontSize: '0.8rem',
-                  '&:hover': {
-                    bgcolor: 'warning.lighter'
-                  }
-                }}
-              >
-                👑 관리자 데모 모드 (고급 기능)
-              </Button>
+              {/* 데모 모드 섹션 - 더 눈에 띄게 개선 */}
+              <Paper elevation={2} sx={{ p: 2, mb: 2, bgcolor: 'success.lighter', borderRadius: 2 }}>
+                <Typography variant="body2" color="success.main" fontWeight="bold" textAlign="center" gutterBottom>
+                  🎮 로그인 없이 바로 체험하기
+                </Typography>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  onClick={handleDemoLogin}
+                  sx={{ mb: 1, borderRadius: 2 }}
+                >
+                  🎮 데모 모드로 체험하기
+                </Button>
+                
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={handleAdminDemoLogin}
+                  sx={{ 
+                    fontSize: '0.8rem',
+                    borderRadius: 2
+                  }}
+                >
+                  👑 관리자 데모 모드 (고급 기능)
+                </Button>
+              </Paper>
             </Box>
 
             <Divider sx={{ my: 2 }} />
@@ -486,8 +490,8 @@ function Login({ onLogin, onShowNotification }) {
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <Chip 
-                  label="✅ Supabase 연동" 
-                  color="success" 
+                  label={supabase?.supabaseUrl?.includes('qehzzsxzjijfzqkysazc') ? "✅ Supabase 연동" : "❌ Supabase 오류"} 
+                  color={supabase?.supabaseUrl?.includes('qehzzsxzjijfzqkysazc') ? "success" : "error"} 
                   size="small" 
                 />
                 <Chip 
@@ -501,7 +505,7 @@ function Login({ onLogin, onShowNotification }) {
                   size="small" 
                 />
                 <Chip 
-                  label="🐳 Docker 배포" 
+                  label="🐳 Netlify 배포" 
                   color="info" 
                   size="small" 
                 />
