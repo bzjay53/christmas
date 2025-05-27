@@ -1,8 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase 설정 - 올바른 URL로 수정
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qehzzsxzjijfzqkysazc.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE'
+// Supabase 설정 - 올바른 URL로 수정 (하드코딩으로 임시 해결)
+const supabaseUrl = 'https://qehzzsxzjijfzqkysazc.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE'
+
+// 환경 변수 디버깅
+console.log('🔧 환경 변수 디버깅:', {
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'NOT_SET',
+  finalUrl: supabaseUrl,
+  finalKey: supabaseAnonKey ? 'SET' : 'NOT_SET'
+})
 
 // 환경 변수 체크 (더 관대한 검증)
 const hasValidSupabaseConfig = (import.meta.env.VITE_SUPABASE_URL && 
@@ -24,16 +32,16 @@ console.log('🔧 Supabase 설정:', {
   enableDemo: import.meta.env.VITE_ENABLE_DEMO_MODE === 'true'
 })
 
-// Supabase 클라이언트 생성 (항상 생성하되 유효성에 따라 기능 제한)
+// Supabase 클라이언트 생성 (안전한 URL 보장)
 export const supabase = createClient(
-  supabaseUrl.includes('supabase.co') ? supabaseUrl : 'https://qehzzsxzjijfzqkysazc.supabase.co',
+  supabaseUrl,
   supabaseAnonKey,
   {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      redirectTo: import.meta.env.VITE_APP_URL || 'http://localhost:3000'
+      redirectTo: 'https://christmas-protocol.netlify.app'
     },
     realtime: {
       params: {
