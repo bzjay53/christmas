@@ -71,6 +71,10 @@ import websocketClient from '../lib/websocket'
 import KISApiSettings from './KISApiSettings'
 import PaymentService from './PaymentService'
 import useThemeStore from '../store/themeStore'
+import useInvestmentStore from '../store/investmentStore'
+import useBacktestStore from '../store/backtestStore'
+import useReferralStore from '../store/referralStore'
+import useCouponStore from '../store/couponStore'
 
 const drawerWidth = 240
 
@@ -78,6 +82,29 @@ function Dashboard({ user, onLogout, onShowNotification }) {
   console.log('📊 Supabase Enhanced Dashboard 컴포넌트 렌더링', user)
   
   const { isDarkMode, toggleTheme } = useThemeStore()
+  const { 
+    investmentStyle, 
+    setInvestmentStyle, 
+    getInvestmentInfo 
+  } = useInvestmentStore()
+  const { 
+    isRunning: backtestRunning, 
+    results: backtestResults, 
+    runBacktest, 
+    clearResults: clearBacktestResults 
+  } = useBacktestStore()
+  const { 
+    referralLink, 
+    initializeReferral, 
+    shareReferralLink, 
+    getStats 
+  } = useReferralStore()
+  const { 
+    getAvailableCoupons, 
+    getCouponStats, 
+    applyCoupon, 
+    validateCoupon 
+  } = useCouponStore()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [mobileOpen, setMobileOpen] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState('weekly')
@@ -409,6 +436,48 @@ function Dashboard({ user, onLogout, onShowNotification }) {
     const sign = value >= 0 ? '+' : ''
     return `${sign}${value.toFixed(2)}%`
   }
+
+  // 투자 성향 변경 핸들러
+  const handleInvestmentStyleChange = (style) => {
+    setInvestmentStyle(style)
+    const styleNames = {
+      aggressive: '공격형',
+      neutral: '중립형', 
+      defensive: '방어형'
+    }
+    onShowNotification(`투자 성향이 ${styleNames[style]}으로 변경되었습니다! 🎯`, 'success')
+  }
+
+  // 백테스트 실행 핸들러
+  const handleRunBacktest = async (period) => {
+    try {
+      onShowNotification('백테스트를 시작합니다... 📊', 'info')
+      const strategy = investmentStyle === 'aggressive' ? 'aggressive' : 
+                     investmentStyle === 'neutral' ? 'traditional' : 'defensive'
+      
+      const results = await runBacktest(period, strategy)
+      onShowNotification(`백테스트 완료! 총 수익률: ${results.performance.totalReturn.toFixed(2)}% 🎉`, 'success')
+    } catch (error) {
+      onShowNotification('백테스트 실행 중 오류가 발생했습니다. 😞', 'error')
+    }
+  }
+
+  // 친구초대 링크 공유 핸들러
+  const handleShareReferral = async (method) => {
+    try {
+      const result = await shareReferralLink(method)
+      onShowNotification(result.message, result.success ? 'success' : 'error')
+    } catch (error) {
+      onShowNotification('공유 중 오류가 발생했습니다.', 'error')
+    }
+  }
+
+  // 컴포넌트 마운트 시 초대 코드 초기화
+  useEffect(() => {
+    if (user?.id) {
+      initializeReferral(user.id)
+    }
+  }, [user?.id, initializeReferral])
   
   // 사이드바 메뉴 아이템들 (권한에 따라 다름)
   const getMenuItems = () => {
@@ -526,19 +595,26 @@ function Dashboard({ user, onLogout, onShowNotification }) {
             Christmas Trading Dashboard
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Badge badgeContent={backendStatus === 'connected' ? "✓" : "✕"} 
-                   color={backendStatus === 'connected' ? "success" : "error"}>
+            {backendStatus === 'connected' && (
+              <Badge badgeContent="✓" color="success">
+                <Chip 
+                  label="백엔드 연결됨"
+                  size="small"
+                  sx={{ color: 'white', borderColor: 'success.main' }}
+                  variant="outlined"
+                  color="success"
+                />
+              </Badge>
+            )}
+            {backendStatus === 'checking' && (
               <Chip 
-                label={backendStatus === 'connected' ? "백엔드 연결됨" : "백엔드 연결 끊김"}
+                label="연결 확인 중..."
                 size="small"
-                sx={{ 
-                  color: 'white', 
-                  borderColor: backendStatus === 'connected' ? 'success.main' : 'error.main'
-                }}
+                sx={{ color: 'white', borderColor: 'info.main' }}
                 variant="outlined"
-                color={backendStatus === 'connected' ? "success" : "error"}
+                color="info"
               />
-            </Badge>
+            )}
             <IconButton 
               color="inherit" 
               onClick={toggleTheme}
@@ -1332,10 +1408,38 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                       <Paper sx={{ p: 2 }}>
                         <Typography variant="h6" gutterBottom>📅 기간 설정</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <Button variant="outlined" size="small">최근 1개월</Button>
-                          <Button variant="outlined" size="small">최근 3개월</Button>
-                          <Button variant="outlined" size="small">최근 1년</Button>
-                          <Button variant="contained" size="small">사용자 정의</Button>
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            disabled={backtestRunning}
+                            onClick={() => handleRunBacktest('1month')}
+                          >
+                            {backtestRunning ? '실행 중...' : '최근 1개월'}
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            disabled={backtestRunning}
+                            onClick={() => handleRunBacktest('3months')}
+                          >
+                            {backtestRunning ? '실행 중...' : '최근 3개월'}
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            disabled={backtestRunning}
+                            onClick={() => handleRunBacktest('1year')}
+                          >
+                            {backtestRunning ? '실행 중...' : '최근 1년'}
+                          </Button>
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            disabled={backtestRunning}
+                            onClick={() => handleRunBacktest('custom')}
+                          >
+                            {backtestRunning ? '실행 중...' : '사용자 정의'}
+                          </Button>
                         </Box>
                       </Paper>
                     </Grid>
@@ -1343,7 +1447,51 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                       <Paper sx={{ p: 2 }}>
                         <Typography variant="h6" gutterBottom>📈 백테스트 결과</Typography>
                         <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Typography color="text.secondary">백테스트 차트 (Chart.js 연동 예정)</Typography>
+                          {backtestRunning ? (
+                            <Box sx={{ textAlign: 'center' }}>
+                              <CircularProgress sx={{ mb: 2 }} />
+                              <Typography color="text.secondary">백테스트 실행 중...</Typography>
+                            </Box>
+                          ) : backtestResults ? (
+                            <Box sx={{ width: '100%' }}>
+                              <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                  <Typography variant="body2" color="text.secondary">총 수익률</Typography>
+                                  <Typography variant="h6" color={backtestResults.performance.totalReturn >= 0 ? 'success.main' : 'error.main'}>
+                                    {backtestResults.performance.totalReturn.toFixed(2)}%
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography variant="body2" color="text.secondary">승률</Typography>
+                                  <Typography variant="h6">
+                                    {backtestResults.performance.winRate.toFixed(1)}%
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography variant="body2" color="text.secondary">최대 낙폭</Typography>
+                                  <Typography variant="h6" color="error.main">
+                                    {backtestResults.performance.maxDrawdown.toFixed(2)}%
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Typography variant="body2" color="text.secondary">샤프 비율</Typography>
+                                  <Typography variant="h6">
+                                    {backtestResults.performance.sharpeRatio.toFixed(2)}
+                                  </Typography>
+                                </Grid>
+                              </Grid>
+                              <Button 
+                                variant="outlined" 
+                                size="small" 
+                                sx={{ mt: 2 }}
+                                onClick={clearBacktestResults}
+                              >
+                                결과 초기화
+                              </Button>
+                            </Box>
+                          ) : (
+                            <Typography color="text.secondary">기간을 선택하여 백테스트를 실행하세요</Typography>
+                          )}
                         </Box>
                       </Paper>
                     </Grid>
@@ -1718,7 +1866,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="h6" color="success.main" gutterBottom>
-                    내 초대 코드: <strong>CHR1STMS</strong>
+                    내 초대 코드: <strong>{referralLink ? referralLink.split('=')[1] : '생성 중...'}</strong>
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     아래 링크를 친구에게 공유해보세요
@@ -1734,7 +1882,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                   borderColor: 'grey.400'
                 }}>
                   <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                    https://bzjay53.github.io/christmas/signup?ref=CHR1STMS
+                    {referralLink || '초대 링크 생성 중...'}
                   </Typography>
                 </Box>
                 
@@ -1743,10 +1891,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                     variant="contained" 
                     color="success" 
                     size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText('https://bzjay53.github.io/christmas/signup?ref=CHR1STMS')
-                      onShowNotification('초대 링크가 복사되었습니다! 📋', 'success')
-                    }}
+                    onClick={() => handleShareReferral('clipboard')}
                   >
                     링크 복사
                   </Button>
@@ -1754,11 +1899,7 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                     variant="outlined" 
                     color="success" 
                     size="small"
-                    onClick={() => {
-                      const text = `🎄 Christmas Trading에서 자동매매를 시작해보세요!\n\n💝 특별 혜택: 7일 무료 체험\n🔗 가입링크: https://bzjay53.github.io/christmas/signup?ref=CHR1STMS`
-                      navigator.clipboard.writeText(text)
-                      onShowNotification('카카오톡용 메시지가 복사되었습니다! 💬', 'success')
-                    }}
+                    onClick={() => handleShareReferral('kakao')}
                   >
                     카톡 공유
                   </Button>
@@ -1766,8 +1907,8 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                 
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    📊 초대 현황: <strong>2명</strong> 초대 완료<br />
-                    🎁 획득 혜택: <strong>14일</strong> 무료 연장
+                    📊 초대 현황: <strong>{getStats().totalInvites}명</strong> 초대 완료<br />
+                    🎁 획득 혜택: <strong>{getStats().totalInvites * 7}일</strong> 무료 연장
                   </Typography>
                 </Box>
               </CardContent>
@@ -1799,16 +1940,18 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                 
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" gutterBottom>
-                    <strong>사용 가능한 쿠폰:</strong>
+                    <strong>사용 가능한 쿠폰: {getAvailableCoupons().length}개</strong>
                   </Typography>
-                  <Box sx={{ p: 1.5, bgcolor: 'warning.lighter', borderRadius: 1, mb: 1 }}>
-                    <Typography variant="body2">
-                      🎟️ <strong>WELCOME30</strong> - 첫 결제 30% 할인
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      2025.01.31까지 | 1회 사용 가능
-                    </Typography>
-                  </Box>
+                  {getAvailableCoupons().slice(0, 2).map((coupon) => (
+                    <Box key={coupon.id} sx={{ p: 1.5, bgcolor: 'warning.lighter', borderRadius: 1, mb: 1 }}>
+                      <Typography variant="body2">
+                        🎟️ <strong>{coupon.code}</strong> - {coupon.description}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {coupon.expiryDate}까지 | 1회 사용 가능
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
                 
                 <Button 
@@ -1816,9 +1959,12 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                   color="warning" 
                   size="small"
                   fullWidth
-                  onClick={() => onShowNotification('쿠폰 관리 페이지로 이동합니다! 🎫', 'info')}
+                  onClick={() => {
+                    const stats = getCouponStats()
+                    onShowNotification(`사용 가능한 쿠폰 ${stats.available}개, 총 절약 금액 ${stats.totalSaved.toLocaleString()}원! 🎫`, 'info')
+                  }}
                 >
-                  모든 쿠폰 보기
+                  모든 쿠폰 보기 ({getAvailableCoupons().length}개)
                 </Button>
               </CardContent>
             </Card>
@@ -1883,7 +2029,11 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" gutterBottom>
-                    현재 활성 전략: <Chip label="🛡️ 방어형" color="primary" size="small" />
+                    현재 활성 전략: <Chip 
+                      label={`${getInvestmentInfo().emoji} ${getInvestmentInfo().name}`} 
+                      color={getInvestmentInfo().color} 
+                      size="small" 
+                    />
                   </Typography>
                 </Box>
                 
@@ -1898,8 +2048,14 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                         • 큰 투자 금액 (잔고의 70-90%)<br />
                         • 적극적 리스크 감수
                       </Typography>
-                      <Button variant="outlined" color="error" size="small" fullWidth>
-                        공격형 선택
+                      <Button 
+                        variant={investmentStyle === 'aggressive' ? 'contained' : 'outlined'} 
+                        color="error" 
+                        size="small" 
+                        fullWidth
+                        onClick={() => handleInvestmentStyleChange('aggressive')}
+                      >
+                        {investmentStyle === 'aggressive' ? '✅ 현재 적용됨' : '공격형 선택'}
                       </Button>
                     </Box>
                   </Grid>
@@ -1914,8 +2070,14 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                         • 중간 투자 금액 (잔고의 40-60%)<br />
                         • 균형잡힌 리스크 관리
                       </Typography>
-                      <Button variant="outlined" color="warning" size="small" fullWidth>
-                        중립형 선택
+                      <Button 
+                        variant={investmentStyle === 'neutral' ? 'contained' : 'outlined'} 
+                        color="warning" 
+                        size="small" 
+                        fullWidth
+                        onClick={() => handleInvestmentStyleChange('neutral')}
+                      >
+                        {investmentStyle === 'neutral' ? '✅ 현재 적용됨' : '중립형 선택'}
                       </Button>
                     </Box>
                   </Grid>
@@ -1930,8 +2092,14 @@ function Dashboard({ user, onLogout, onShowNotification }) {
                         • 작은 투자 금액 (잔고의 10-30%)<br />
                         • 보수적 리스크 관리
                       </Typography>
-                      <Button variant="contained" color="success" size="small" fullWidth>
-                        ✅ 현재 적용됨
+                      <Button 
+                        variant={investmentStyle === 'defensive' ? 'contained' : 'outlined'} 
+                        color="success" 
+                        size="small" 
+                        fullWidth
+                        onClick={() => handleInvestmentStyleChange('defensive')}
+                      >
+                        {investmentStyle === 'defensive' ? '✅ 현재 적용됨' : '방어형 선택'}
                       </Button>
                     </Box>
                   </Grid>

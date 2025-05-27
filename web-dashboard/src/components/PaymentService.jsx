@@ -306,13 +306,16 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
                 subheader={`₩${plan.price.toLocaleString()} / ${plan.duration}`}
                 sx={{ 
                   textAlign: 'center',
+                  bgcolor: plan.popular ? 'secondary.lighter' : 'background.default',
                   '& .MuiCardHeader-title': {
                     color: 'text.primary',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: '1.25rem'
                   },
                   '& .MuiCardHeader-subheader': {
-                    color: 'text.secondary',
-                    fontWeight: 'medium'
+                    color: plan.popular ? 'secondary.main' : 'text.secondary',
+                    fontWeight: 'bold',
+                    fontSize: '1.1rem'
                   }
                 }}
               />
@@ -331,6 +334,8 @@ function PaymentService({ user, onShowNotification, onPaymentSuccess }) {
                           sx: { 
                             color: 'text.primary',
                             fontWeight: 'medium',
+                            fontSize: '0.9rem',
+                            lineHeight: 1.4,
                             '&.MuiTypography-root': {
                               color: 'text.primary !important'
                             }
