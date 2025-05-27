@@ -41,10 +41,10 @@
 - **결과**: 프론트엔드 정상 작동
 - **소요시간**: 15분
 
-### Phase 2: 백엔드 서버 복구 (진행 중 - 90%) 🔄
-**기간**: 2025-05-26 20:00-22:00 (2시간)
-**상태**: 진행 중 (Git 동기화 및 사용자 액션 대기)
-**담당**: PM + 사용자
+### Phase 2: 백엔드 서버 복구 (긴급 상황 - 95%) 🚨
+**기간**: 2025-05-27 00:00-02:00 (2시간)
+**상태**: 긴급 복구 필요 (SUPABASE_SERVICE_KEY 플레이스홀더 문제)
+**담당**: PM + 사용자 (긴급 액션 필요)
 
 #### 2.1 Git 동기화 및 스크립트 배포 (완료) ✅
 - **문제**: 로컬 스크립트가 서버에 없음
@@ -155,20 +155,32 @@
 1. **데이터베이스 스키마 수정** (Phase 2 완료 후)
 2. **비즈니스 로직 복원** (Phase 3 완료 후)
 
-## 🔑 현재 블로커 (Critical Path)
+## 🔑 현재 블로커 (Critical Path) - 2025-05-27 업데이트
 
-### 🚨 즉시 해결 필요
-1. **서버 Git 동기화**
-   - 사용자 액션: SSH 접속 → `git pull origin main`
+### 🚨 긴급 해결 필요 (백엔드 서버 완전 다운)
+1. **SUPABASE_SERVICE_KEY 플레이스홀더 문제** ⭐ 최우선
+   - 현재 상태: `your-supabase-service-role-key` (플레이스홀더)
+   - 사용자 액션: Supabase Dashboard → Service Role Key 복사 → 서버 .env 수정
+   - 예상 해결 시간: 10분
+
+2. **서버 Git 동기화 및 환경변수 적용**
+   - 사용자 액션: SSH 접속 → `git pull origin main` → 환경변수 수정
+   - 예상 해결 시간: 8분
+
+3. **Docker 서비스 재시작**
+   - 사용자 액션: `docker-compose down` → `docker-compose up -d --build`
+   - 예상 해결 시간: 7분
+
+### 🔴 추가 발견된 문제들
+4. **데이터베이스 스키마 문제**
+   - 문제: `column ai_learning_data.strategy_type does not exist`
+   - 해결: Supabase SQL Editor에서 스크립트 실행
+   - 예상 해결 시간: 3분
+
+5. **프론트엔드 API URL 문제**
+   - 문제: `http://31.220.83.213` (포트 8000 누락)
+   - 해결: Netlify 환경변수 수정 → 재배포
    - 예상 해결 시간: 5분
-
-2. **Supabase Service Role Key 설정**
-   - 사용자 액션: Supabase Dashboard → 키 복사 → 서버 .env 수정
-   - 예상 해결 시간: 10분
-
-3. **Docker 복구 스크립트 실행**
-   - 사용자 액션: `./scripts/docker-recovery.sh` 실행
-   - 예상 해결 시간: 10분
 
 ### ⚠️ 의존성 관계
 - Phase 2 완료 → Phase 3 시작 가능
