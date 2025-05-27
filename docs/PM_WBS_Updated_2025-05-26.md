@@ -41,31 +41,39 @@
 - **결과**: 프론트엔드 정상 작동
 - **소요시간**: 15분
 
-### Phase 2: 백엔드 서버 복구 (진행 중) 🔄
-**기간**: 2025-05-26 20:00-21:00 (1시간)
-**상태**: 진행 중 (Docker 컨테이너 충돌 해결 중)
+### Phase 2: 백엔드 서버 복구 (진행 중 - 90%) 🔄
+**기간**: 2025-05-26 20:00-22:00 (2시간)
+**상태**: 진행 중 (Git 동기화 및 사용자 액션 대기)
 **담당**: PM + 사용자
 
-#### 2.1 Docker 컨테이너 충돌 해결 (진행 중) 🔄
+#### 2.1 Git 동기화 및 스크립트 배포 (완료) ✅
+- **문제**: 로컬 스크립트가 서버에 없음
+- **해결**: Git 커밋 및 푸시 완료
+- **결과**: `scripts/docker-recovery.sh` 서버에서 사용 가능
+- **가이드**: `scripts/server-sync-guide-en.ps1` 생성 완료
+- **소요시간**: 15분
+
+#### 2.2 Docker 컨테이너 충돌 해결 (준비 완료) ✅
 - **문제**: 컨테이너 이름 충돌 `/christmas-backend`
 - **에러**: `Container name "/christmas-backend" is already in use`
 - **해결 방안**: 
   - 기존 컨테이너 강제 제거
   - Docker 환경 정리
   - 새로운 빌드 및 재시작
-- **스크립트**: `scripts/docker-recovery.sh` (생성 완료)
-- **예상 소요시간**: 15분
+- **스크립트**: `scripts/docker-recovery.sh` (서버에서 실행 대기)
+- **예상 소요시간**: 10분
 
-#### 2.2 환경변수 수정 (대기 중) ⏳
+#### 2.3 환경변수 수정 (사용자 액션 필요) ⏳
 - **문제**: `SUPABASE_SERVICE_KEY=your-supabase-service-role-key` (플레이스홀더)
 - **필요 작업**: 
   - Supabase Dashboard에서 Service Role Key 복사
+  - 서버 SSH 접속: `ssh root@31.220.83.213`
+  - Git 동기화: `git pull origin main`
   - `backend/.env` 파일 수정
-  - 추가 환경변수 설정 (`KIS_API_KEY`, `OPENAI_API_KEY`)
 - **담당**: 사용자 액션 필요
 - **예상 소요시간**: 10분
 
-#### 2.3 서비스 재시작 및 검증 (대기 중) ⏳
+#### 2.4 서비스 재시작 및 검증 (대기 중) ⏳
 - **작업**: Docker Compose 재시작
 - **검증**: Health Check, 외부 접근 테스트
 - **성공 지표**: 
@@ -150,12 +158,16 @@
 ## 🔑 현재 블로커 (Critical Path)
 
 ### 🚨 즉시 해결 필요
-1. **Docker 컨테이너 충돌**
-   - 사용자 액션: SSH 접속 → 스크립트 실행
-   - 예상 해결 시간: 15분
+1. **서버 Git 동기화**
+   - 사용자 액션: SSH 접속 → `git pull origin main`
+   - 예상 해결 시간: 5분
 
 2. **Supabase Service Role Key 설정**
-   - 사용자 액션: Supabase Dashboard → 키 복사 → .env 수정
+   - 사용자 액션: Supabase Dashboard → 키 복사 → 서버 .env 수정
+   - 예상 해결 시간: 10분
+
+3. **Docker 복구 스크립트 실행**
+   - 사용자 액션: `./scripts/docker-recovery.sh` 실행
    - 예상 해결 시간: 10분
 
 ### ⚠️ 의존성 관계
@@ -167,26 +179,30 @@
 
 ### 🔑 필수 사용자 액션 (25분)
 
-#### 1️⃣ Supabase Service Role Key 확인 (5분)
+#### 1️⃣ 서버 SSH 접속 및 Git 동기화 (5분)
+```bash
+ssh root@31.220.83.213
+cd /root/christmas-trading
+git pull origin main
+ls -la scripts/docker-recovery.sh  # 파일 존재 확인
+chmod +x scripts/docker-recovery.sh
+```
+
+#### 2️⃣ Supabase Service Role Key 확인 및 설정 (10분)
 ```
 1. https://supabase.com/dashboard 접속
 2. Christmas Trading 프로젝트 선택
 3. Settings → API 메뉴
 4. Service Role Key 복사 (secret 키)
+5. 서버에서: nano backend/.env
+6. SUPABASE_SERVICE_KEY=실제_키_값으로_수정
 ```
 
-#### 2️⃣ 31.220.83.213 서버 SSH 접속 (5분)
+#### 3️⃣ Docker 복구 스크립트 실행 (10분)
 ```bash
-ssh root@31.220.83.213
-cd /root/christmas-trading/backend
-nano .env
-# SUPABASE_SERVICE_KEY=실제_키_값으로_수정
-```
-
-#### 3️⃣ Docker 복구 스크립트 실행 (15분)
-```bash
-chmod +x scripts/docker-recovery.sh
 ./scripts/docker-recovery.sh
+# 스크립트가 자동으로 모든 복구 작업 수행
+# 완료 후 결과 확인
 ```
 
 ## 📈 성공 지표
