@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase 설정
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo-supabase-url.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-anon-key'
+// Supabase 설정 - 올바른 URL로 수정
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://qehzzsxzjijfzqkysazc.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlaHp6c3h6amlqZnpxa3lzYXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNTgxMTQsImV4cCI6MjA2MzYzNDExNH0.zjrrUaVajb9fV1NRwzA_RMy3-r3Lpww9Uen-cZYXDuE'
 
 // 환경 변수 체크 (더 관대한 검증)
 const hasValidSupabaseConfig = (import.meta.env.VITE_SUPABASE_URL && 
