@@ -280,24 +280,33 @@ function Dashboard({ user, onLogout, onShowNotification }) {
   
   // 백엔드 연결 상태 주기적 체크
   useEffect(() => {
+    let consecutiveFailures = 0
+    const maxFailures = 3 // 3번 연속 실패 후에만 "연결 끊김"으로 표시
+    
     const checkBackendConnection = async () => {
       try {
         const health = await apiService.getHealth()
         setBackendStatus('connected')
         setLastConnectionCheck(new Date())
+        consecutiveFailures = 0 // 성공 시 실패 카운트 리셋
         console.log('✅ 백엔드 연결 정상:', health)
       } catch (error) {
-        setBackendStatus('disconnected')
+        consecutiveFailures++
+        console.warn(`⚠️ 백엔드 연결 실패 (${consecutiveFailures}/${maxFailures}):`, error.message)
+        
+        // 3번 연속 실패 시에만 연결 끊김으로 표시
+        if (consecutiveFailures >= maxFailures) {
+          setBackendStatus('disconnected')
+        }
         setLastConnectionCheck(new Date())
-        console.warn('⚠️ 백엔드 연결 실패:', error.message)
       }
     }
     
     // 즉시 체크
     checkBackendConnection()
     
-    // 30초마다 주기적 체크
-    const healthCheckTimer = setInterval(checkBackendConnection, 30000)
+    // 15초마다 주기적 체크 (더 빈번하게)
+    const healthCheckTimer = setInterval(checkBackendConnection, 15000)
     
     return () => clearInterval(healthCheckTimer)
   }, [])
