@@ -17,6 +17,7 @@ const kisApiRoutes = require('./routes/kisApi');
 const telegramRoutes = require('./routes/telegram');
 const tradingRoutes = require('./routes/trading');
 const userRoutes = require('./routes/users');
+const setupRoutes = require('./routes/setup');
 
 const app = express();
 const server = http.createServer(app);
@@ -168,6 +169,7 @@ app.use('/api/kis', kisApiRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/trading', tradingRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/setup', setupRoutes);
 // app.use('/api/referrals', referralRoutes);
 // app.use('/api/coupons', couponRoutes);
 // app.use('/api/admin', adminRoutes);
