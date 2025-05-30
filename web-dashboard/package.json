@@ -1,7 +1,7 @@
 {
   "name": "christmas-trading-dashboard",
-  "version": "2.1.7",
-  "description": "Christmas 자동매매 시스템 웹 대시보드 - 임시 Mixed Content 해결",
+  "version": "2.1.8",
+  "description": "Christmas 자동매매 시스템 웹 대시보드 - 강화된 API 프록시 적용",
   "homepage": "https://christmas-protocol.netlify.app/",
   "private": true,
   "dependencies": {
