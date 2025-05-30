@@ -1,30 +1,30 @@
 [build]
-  base = "web-dashboard"
-  command = "npm ci && npm run build"
-  publish = "dist"
+  publish = "web-dashboard/dist"
+  command = "cd web-dashboard && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps"
-  VITE_NODE_ENV = "production"
-  VITE_APP_NAME = "Christmas Trading"
-  VITE_APP_VERSION = "2.0.0"
-  VITE_APP_URL = "https://christmas-protocol.netlify.app"
-  # Supabase 환경변수는 Netlify 대시보드에서 설정
-  # VITE_SUPABASE_URL = "your_supabase_url_here"
-  # VITE_SUPABASE_ANON_KEY = "your_supabase_anon_key_here"
-  VITE_API_BASE_URL = "https://christmas-protocol.netlify.app/api"
-  VITE_ENABLE_DEMO_MODE = "true"
-  VITE_ENABLE_ANALYTICS = "true"
-  VITE_ENABLE_REAL_TRADING = "false"
 
-# SPA 라우팅을 위한 리디렉트 설정
+[functions]
+  directory = "netlify/functions"
+
+# API 프록시 라우팅 (순서 중요! 더 구체적인 것부터)
+[[redirects]]
+  from = "/api/proxy"
+  to = "/.netlify/functions/api-proxy"
+  status = 200
+
+[[redirects]]
+  from = "/api/proxy/*"
+  to = "/.netlify/functions/api-proxy/:splat"
+  status = 200
+
+# SPA 폴백 (마지막에 위치)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# 정적 파일 캐싱 설정
 [[headers]]
   for = "/static/*"
   [headers.values]
@@ -38,4 +38,9 @@
 [[headers]]
   for = "/*.css"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable" 
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Environment variables (set in Netlify dashboard)
+# VITE_SUPABASE_URL
+# VITE_SUPABASE_ANON_KEY
+# VITE_API_BASE_URL 
