@@ -43,7 +43,10 @@ app.use(helmet({
 const allowedOrigins = [
   process.env.CLIENT_URL || 'http://localhost:3000',
   'https://christmas-trading.netlify.app',
-  'http://31.220.83.213'
+  'https://christmas-protocol.netlify.app',
+  'http://31.220.83.213',
+  'http://localhost:3000',
+  'http://localhost:5173'
 ];
 
 app.use(cors({

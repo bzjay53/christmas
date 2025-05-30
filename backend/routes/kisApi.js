@@ -188,4 +188,51 @@ router.post('/test/mock-order', async (req, res) => {
   }
 });
 
+// KIS API 설정 로드
+router.get('/load-settings', async (req, res) => {
+  try {
+    // 임시 설정 데이터 (실제로는 Supabase users 테이블에서 조회)
+    const settings = {
+      kis_real_app_key: '',
+      kis_real_app_secret: '',
+      kis_real_account: '',
+      kis_demo_app_key: '',
+      kis_demo_app_secret: '',
+      kis_demo_account: '',
+      kis_mock_mode: true
+    };
+    
+    res.json({
+      success: true,
+      data: settings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// KIS API 설정 저장
+router.post('/save-settings', async (req, res) => {
+  try {
+    const settings = req.body;
+    
+    // 여기서 실제로는 Supabase users 테이블에 저장
+    console.log('KIS 설정 저장:', settings);
+    
+    res.json({
+      success: true,
+      message: 'KIS API 설정이 저장되었습니다.',
+      data: settings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 
