@@ -6,17 +6,16 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Mixed Content 에러 임시 해결: 개발환경에서는 localhost 사용
+  // Mixed Content 문제 해결: 프로덕션에서는 API 프록시 사용
   const apiBaseUrl = mode === 'development' 
-    ? 'http://localhost:8000'
-    : process.env.VITE_API_BASE_URL || env.VITE_API_BASE_URL || 'http://31.220.83.213'
+    ? 'http://localhost:8000'  // 개발: 직접 백엔드 연결
+    : '/api/proxy'             // 프로덕션: Netlify Functions 프록시 사용
   
   console.log('🔧 Vite Config Debug:', {
     mode,
     command,
     apiBaseUrl,
-    processEnv: process.env.VITE_API_BASE_URL,
-    loadedEnv: env.VITE_API_BASE_URL
+    note: mode === 'production' ? 'Using Netlify Functions Proxy' : 'Direct backend connection'
   })
   
   return {
@@ -41,7 +40,7 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       'process.env': process.env,
-      // 환경 변수를 직접 설정
+      // API 프록시 사용을 위한 환경 변수 설정
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(apiBaseUrl)
     },
     esbuild: {
