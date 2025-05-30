@@ -6,16 +6,15 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Mixed Content 문제 해결: 프로덕션에서는 API 프록시 사용
-  const apiBaseUrl = mode === 'development' 
-    ? 'http://localhost:8000'  // 개발: 직접 백엔드 연결
-    : '/api/proxy'             // 프로덕션: Netlify Functions 프록시 사용
+  // 🚨 임시 해결책: Mixed Content 문제로 인해 임시로 백엔드 직접 연결
+  // TODO: 백엔드 HTTPS 적용 후 프록시로 변경
+  const apiBaseUrl = 'http://31.220.83.213:8000'  // 임시로 모든 환경에서 직접 연결
   
   console.log('🔧 Vite Config Debug:', {
     mode,
     command,
     apiBaseUrl,
-    note: mode === 'production' ? 'Using Netlify Functions Proxy' : 'Direct backend connection'
+    note: '임시로 백엔드 직접 연결 - Mixed Content 문제 해결 중'
   })
   
   return {
@@ -23,7 +22,15 @@ export default defineConfig(({ command, mode }) => {
     base: '/',
     server: {
       port: 3000,
-      host: true
+      host: true,
+      // 개발 환경에서 CORS 문제 해결
+      proxy: mode === 'development' ? {
+        '/api': {
+          target: 'http://31.220.83.213:8000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
+        }
+      } : undefined
     },
     build: {
       outDir: 'dist',
@@ -39,12 +46,11 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     define: {
-      'process.env': process.env,
-      // API 프록시 사용을 위한 환경 변수 설정
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(apiBaseUrl)
-    },
-    esbuild: {
-      charset: 'utf8'
+      'process.env': {
+        VITE_API_BASE_URL: JSON.stringify(apiBaseUrl),
+        VITE_SUPABASE_URL: JSON.stringify(env.VITE_SUPABASE_URL),
+        VITE_SUPABASE_ANON_KEY: JSON.stringify(env.VITE_SUPABASE_ANON_KEY)
+      }
     }
   }
 }) 
