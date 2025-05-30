@@ -3,11 +3,13 @@
  * 백엔드 서버와의 연동을 위한 API 서비스
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://31.220.83.213'
+// Netlify Functions 프록시를 통해 Mixed Content 문제 해결
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/proxy'
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL
+    console.log('🔧 API Service 초기화:', { baseURL: this.baseURL })
   }
 
   // 기본 fetch 래퍼

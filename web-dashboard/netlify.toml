@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# API 프록시 라우팅 (Mixed Content 문제 해결)
+[[redirects]]
+  from = "/api/proxy/*"
+  to = "/.netlify/functions/api-proxy"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

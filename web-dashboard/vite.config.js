@@ -6,8 +6,10 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Netlify 환경에서 환경 변수 직접 접근
-  const apiBaseUrl = process.env.VITE_API_BASE_URL || env.VITE_API_BASE_URL || 'http://31.220.83.213'
+  // Mixed Content 에러 임시 해결: 개발환경에서는 localhost 사용
+  const apiBaseUrl = mode === 'development' 
+    ? 'http://localhost:8000'
+    : process.env.VITE_API_BASE_URL || env.VITE_API_BASE_URL || 'http://31.220.83.213'
   
   console.log('🔧 Vite Config Debug:', {
     mode,
