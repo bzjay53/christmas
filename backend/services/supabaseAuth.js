@@ -240,10 +240,9 @@ if (!supabaseUrl || !supabaseKey) {
   // 데이터베이스 연결 상태 확인
   async checkConnection() {
     try {
-      const { data, error } = await this.supabase
+      const { count, error } = await this.supabase
         .from('users')
-        .select('count(*)')
-        .limit(1);
+        .select('*', { count: 'exact', head: true });
 
       if (error) {
         throw new Error(`Supabase 연결 실패: ${error.message}`);
@@ -251,7 +250,8 @@ if (!supabaseUrl || !supabaseKey) {
 
       return {
         connected: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        userCount: count
       };
     } catch (error) {
       console.error('Supabase 연결 확인 오류:', error);
