@@ -1,7 +1,7 @@
 {
   "name": "christmas-trading-dashboard",
-  "version": "2.1.2",
-  "description": "Christmas 자동매매 시스템 웹 대시보드",
+  "version": "2.1.3",
+  "description": "Christmas 자동매매 시스템 웹 대시보드 - 긴급 수정 완료",
   "homepage": "https://christmas-protocol.netlify.app/",
   "private": true,
   "dependencies": {

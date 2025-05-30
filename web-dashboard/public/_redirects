@@ -1,0 +1,8 @@
+# Netlify Functions API Proxy Redirects
+# Emergency fix for 404 errors - 2025-05-30 21:45 KST
+
+# API 프록시 라우팅 (최우선 순위)
+/api/proxy/*  /.netlify/functions/api-proxy  200
+
+# SPA 폴백 (다른 모든 요청)
+/*  /index.html  200 
