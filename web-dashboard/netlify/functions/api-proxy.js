@@ -1,5 +1,6 @@
 // Netlify Functions API Proxy
 // 백엔드 API를 프록시하여 Mixed Content 문제 해결
+// Last updated: 2025-05-30 21:45 KST - Emergency deployment
 
 const BACKEND_URL = 'http://31.220.83.213';
 
