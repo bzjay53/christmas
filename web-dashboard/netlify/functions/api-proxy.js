@@ -1,10 +1,17 @@
 // Netlify Functions API Proxy
 // 백엔드 API를 프록시하여 Mixed Content 문제 해결
 // Last updated: 2025-05-30 21:45 KST - Emergency deployment
+// EMERGENCY FIX: 2025-05-30 21:45:30 KST - Force redeploy due to 404 errors
 
 const BACKEND_URL = 'http://31.220.83.213';
 
 exports.handler = async (event, context) => {
+  console.log('🔧 Emergency API Proxy Handler Called:', {
+    path: event.path,
+    method: event.httpMethod,
+    timestamp: new Date().toISOString()
+  });
+
   // CORS 헤더 설정
   const headers = {
     'Access-Control-Allow-Origin': 'https://christmas-protocol.netlify.app',
@@ -15,6 +22,7 @@ exports.handler = async (event, context) => {
 
   // OPTIONS 요청 처리 (CORS preflight)
   if (event.httpMethod === 'OPTIONS') {
+    console.log('✅ CORS preflight request handled');
     return {
       statusCode: 200,
       headers,
@@ -27,7 +35,7 @@ exports.handler = async (event, context) => {
     const apiPath = event.path.replace('/api/proxy', '');
     const targetUrl = `${BACKEND_URL}${apiPath}`;
     
-    console.log(`🔄 API Proxy: ${event.httpMethod} ${targetUrl}`);
+    console.log(`🔄 Emergency API Proxy: ${event.httpMethod} ${targetUrl}`);
 
     // 백엔드 API 호출
     const response = await fetch(targetUrl, {
@@ -43,6 +51,8 @@ exports.handler = async (event, context) => {
 
     const data = await response.text();
     
+    console.log(`✅ Backend response: ${response.status} ${response.statusText}`);
+    
     return {
       statusCode: response.status,
       headers,
@@ -50,15 +60,20 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('❌ API Proxy Error:', error);
+    console.error('❌ Emergency API Proxy Error:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        error: 'API Proxy Error',
+        error: 'Emergency API Proxy Error',
         message: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        backend_url: BACKEND_URL
       })
     };
   }
