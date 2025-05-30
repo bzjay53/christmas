@@ -3,7 +3,7 @@
  * 백엔드 서버와의 연동을 위한 API 서비스
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://31.220.83.213'
 
 class ApiService {
   constructor() {
