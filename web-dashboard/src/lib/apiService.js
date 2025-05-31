@@ -3,66 +3,121 @@
  * 백엔드 서버와의 연동을 위한 API 서비스
  */
 
-// 🚨 긴급 수정: Functions 문제로 인해 임시로 백엔드 직접 연결
-// TODO: Functions 문제 해결 후 '/api/proxy'로 복원
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://31.220.83.213:8000'
+// 🔗 Christmas Trading - API Service
+// Phase 1-C: Mixed Content 해결 - Netlify Functions 프록시 복원
+
+// 환경별 API 설정
+const isDevelopment = import.meta.env.DEV;
+const useBackendProxy = import.meta.env.VITE_USE_BACKEND_PROXY === 'true';
+
+// API Base URL 설정 (Mixed Content 해결)
+const API_BASE_URL = '/api'; // Netlify Functions 프록시 사용
+
+console.log('🔧 API Service 초기화 (Mixed Content 해결):', {
+  isDevelopment,
+  useBackendProxy,
+  API_BASE_URL,
+  env: import.meta.env.MODE
+});
+
+// 환경변수 디버깅
+console.log('🔧 환경 변수 디버깅:', {
+  VITE_USE_BACKEND_PROXY: import.meta.env.VITE_USE_BACKEND_PROXY,
+  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? 'SET' : 'NOT_SET',
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'NOT_SET'
+});
+
+// Supabase 설정 (보안 강화)
+console.log('🔧 Supabase 설정:', {
+  url: import.meta.env.VITE_SUPABASE_URL || 'NOT_CONFIGURED',
+  key: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'CONFIGURED' : 'NOT_CONFIGURED'
+});
 
 class ApiService {
   constructor() {
-    this.baseURL = API_BASE_URL
-    console.log('🔧 API Service 초기화 (긴급 수정):', { 
-      baseURL: this.baseURL,
-      note: 'Functions 문제로 인해 백엔드 직접 연결'
-    })
+    this.baseURL = API_BASE_URL;
   }
 
-  // 기본 fetch 래퍼
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`
+    const url = `${this.baseURL}${endpoint}`;
     
-    const defaultOptions = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    }
+    console.log(`🌐 API 요청 (Netlify Functions 프록시): ${options.method || 'GET'} ${url}`);
 
     const config = {
-      ...defaultOptions,
-      ...options
-    }
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    };
 
     try {
-      console.log(`🌐 API 요청 (직접 연결): ${config.method || 'GET'} ${url}`)
-      
-      const response = await fetch(url, config)
+      const response = await fetch(url, config);
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json()
-      console.log(`✅ API 응답 성공:`, data)
-      
-      return data
+      const data = await response.json();
+      console.log(`✅ API 응답 성공: ${url}`, data);
+      return data;
     } catch (error) {
-      console.error(`❌ API 요청 실패 (${url}):`, error)
-      
-      // 네트워크 오류 상세 처리
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        const detailedError = new Error(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${this.baseURL})`)
-        detailedError.code = 'NETWORK_ERROR'
-        throw detailedError
-      }
-      
-      if (error.code === 'ECONNREFUSED') {
-        const detailedError = new Error(`백엔드 서버가 응답하지 않습니다. 포트 8000에서 서버를 시작해주세요.`)
-        detailedError.code = 'CONNECTION_REFUSED'
-        throw detailedError
-      }
-      
-      throw error
+      console.error(`❌ API 요청 실패 (${url}):`, error);
+      throw new Error(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${this.baseURL})`);
     }
+  }
+
+  // 인증 관련 API
+  async login(credentials) {
+    return this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+  }
+
+  async register(userData) {
+    return this.request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async getSession() {
+    return this.request('/api/auth/session');
+  }
+
+  async logout() {
+    return this.request('/api/auth/logout', {
+      method: 'POST',
+    });
+  }
+
+  // 거래 관련 API
+  async getTrades() {
+    return this.request('/api/trades');
+  }
+
+  async createTrade(tradeData) {
+    return this.request('/api/trades', {
+      method: 'POST',
+      body: JSON.stringify(tradeData),
+    });
+  }
+
+  // 포트폴리오 관련 API
+  async getPortfolio() {
+    return this.request('/api/portfolio');
+  }
+
+  // 시장 데이터 API
+  async getMarketData() {
+    return this.request('/api/market/data');
+  }
+
+  // 헬스 체크
+  async healthCheck() {
+    return this.request('/health');
   }
 
   // GET 요청
@@ -91,11 +146,6 @@ class ApiService {
     return this.request(endpoint, { method: 'DELETE' })
   }
 
-  // 서버 상태 확인
-  async getHealth() {
-    return this.get('/health')
-  }
-
   // 서버 기본 정보
   async getServerInfo() {
     return this.get('/')
@@ -104,15 +154,6 @@ class ApiService {
   // 시뮬레이션 모드 정보
   async getSimulationInfo() {
     return this.get('/api/simulation')
-  }
-
-  // 인증 관련 API
-  async login(credentials) {
-    return this.post('/api/auth/login', credentials)
-  }
-
-  async signup(userData) {
-    return this.post('/api/auth/signup', userData)
   }
 
   async getProfile(token) {
@@ -209,36 +250,18 @@ class ApiService {
   }
 }
 
-// 싱글톤 인스턴스
-const apiService = new ApiService()
+// 싱글톤 인스턴스 생성
+const apiService = new ApiService();
 
-export default apiService
+// 개별 함수들 (기존 호환성 유지)
+export const login = (credentials) => apiService.login(credentials);
+export const register = (userData) => apiService.register(userData);
+export const getSession = () => apiService.getSession();
+export const logout = () => apiService.logout();
+export const getTrades = () => apiService.getTrades();
+export const createTrade = (tradeData) => apiService.createTrade(tradeData);
+export const getPortfolio = () => apiService.getPortfolio();
+export const getMarketData = () => apiService.getMarketData();
+export const healthCheck = () => apiService.healthCheck();
 
-// 개별 함수로도 export
-export const {
-  get,
-  post,
-  put,
-  delete: deleteRequest,
-  getHealth,
-  getServerInfo,
-  getSimulationInfo,
-  login,
-  signup,
-  getProfile,
-  getAdminStats,
-  getUserList,
-  getSystemLogs,
-  // KIS API 메서드들
-  getKisStatus,
-  testKisToken,
-  getStockPrice,
-  testMockOrder,
-  getAccountBalance,
-  saveKisSettings,
-  loadKisSettings,
-  // 텔레그램 API 메서드들
-  validateTelegramToken,
-  sendTelegramTestMessage,
-  sendTradingAlert
-} = apiService 
+export default apiService; 

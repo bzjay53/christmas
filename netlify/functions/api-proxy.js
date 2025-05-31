@@ -1,12 +1,12 @@
 // 🔗 Christmas Trading - Netlify Functions API Proxy
-// Phase 1-B: 로깅 강화 및 에러 핸들링 개선
+// Phase 1-C: Mixed Content 해결 및 라우팅 개선
 
 const BACKEND_BASE_URL = 'http://31.220.83.213:8000';
 
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://christmas-protocol.netlify.app',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Credentials': 'true'
@@ -32,8 +32,8 @@ exports.handler = async (event, context) => {
       timestamp: new Date().toISOString()
     });
 
-    // 프록시 경로 추출 (/api/proxy/xxx → /xxx)
-    const proxyPath = event.path.replace('/api/proxy', '').replace('/.netlify/functions/api-proxy', '');
+    // 프록시 경로 추출 (/api/xxx → /xxx)
+    const proxyPath = event.path.replace('/api', '').replace('/.netlify/functions/api-proxy', '');
     const targetUrl = `${BACKEND_BASE_URL}${proxyPath}`;
     
     console.log(`🔗 Proxying to: ${targetUrl}`);
@@ -41,7 +41,7 @@ exports.handler = async (event, context) => {
     // 요청 헤더 준비
     const requestHeaders = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Christmas-Trading-Frontend/2.1.0'
+      'User-Agent': 'Christmas-Trading-Frontend/2.1.1'
     };
 
     // Authorization 헤더 전달
