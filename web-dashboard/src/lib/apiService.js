@@ -59,36 +59,36 @@ class ApiService {
 
   // 인증 관련 API
   async login(credentials) {
-    return this.request('/api/auth/login', {
+    return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
   async register(userData) {
-    return this.request('/api/auth/register', {
+    return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   }
 
   async getSession() {
-    return this.request('/api/auth/session');
+    return this.request('/auth/session');
   }
 
   async logout() {
-    return this.request('/api/auth/logout', {
+    return this.request('/auth/logout', {
       method: 'POST',
     });
   }
 
   // 거래 관련 API
   async getTrades() {
-    return this.request('/api/trades');
+    return this.request('/trades');
   }
 
   async createTrade(tradeData) {
-    return this.request('/api/trades', {
+    return this.request('/trades', {
       method: 'POST',
       body: JSON.stringify(tradeData),
     });
@@ -96,12 +96,12 @@ class ApiService {
 
   // 포트폴리오 관련 API
   async getPortfolio() {
-    return this.request('/api/portfolio');
+    return this.request('/portfolio');
   }
 
   // 시장 데이터 API
   async getMarketData() {
-    return this.request('/api/market/data');
+    return this.request('/market/data');
   }
 
   // 헬스 체크
@@ -142,11 +142,11 @@ class ApiService {
 
   // 시뮬레이션 모드 정보
   async getSimulationInfo() {
-    return this.get('/api/simulation')
+    return this.get('/simulation')
   }
 
   async getProfile(token) {
-    return this.request('/api/auth/me', {
+    return this.request('/auth/me', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -156,7 +156,7 @@ class ApiService {
 
   // 관리자 API (향후 확장)
   async getAdminStats(token) {
-    return this.request('/api/admin/stats', {
+    return this.request('/admin/stats', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -165,7 +165,7 @@ class ApiService {
   }
 
   async getUserList(token) {
-    return this.request('/api/admin/users', {
+    return this.request('/admin/users', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -175,7 +175,7 @@ class ApiService {
 
   // 시스템 모니터링
   async getSystemLogs(token) {
-    return this.request('/api/admin/logs', {
+    return this.request('/admin/logs', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -185,11 +185,11 @@ class ApiService {
 
   // KIS API 관련 메서드 추가
   async getKisStatus() {
-    return this.get('/api/kis/status')
+    return this.get('/kis/status')
   }
 
   async testKisToken(appKey, appSecret, mockMode = true) {
-    return this.post('/api/kis/token/test', {
+    return this.post('/kis/token/test', {
       appKey,
       appSecret,
       mockMode
@@ -197,32 +197,32 @@ class ApiService {
   }
 
   async getStockPrice(symbol = '005930', mockMode = true) {
-    return this.get(`/api/kis/stock/${symbol}/price?mock=${mockMode}`)
+    return this.get(`/kis/stock/${symbol}/price?mock=${mockMode}`)
   }
 
   async testMockOrder(orderData = {}) {
-    return this.post('/api/kis/test/mock-order', orderData)
+    return this.post('/kis/test/mock-order', orderData)
   }
 
   async getAccountBalance(mockMode = true) {
-    return this.get(`/api/kis/account/balance?mock=${mockMode}`)
+    return this.get(`/kis/account/balance?mock=${mockMode}`)
   }
 
   async saveKisSettings(settings) {
-    return this.post('/api/kis/save-settings', settings)
+    return this.post('/kis/save-settings', settings)
   }
 
   async loadKisSettings() {
-    return this.get('/api/kis/load-settings')
+    return this.get('/kis/load-settings')
   }
 
   // 텔레그램 API 관련 메서드 추가
   async validateTelegramToken(botToken) {
-    return this.post('/api/telegram/validate-token', { botToken })
+    return this.post('/telegram/validate-token', { botToken })
   }
 
   async sendTelegramTestMessage(botToken, chatId, customMessage = null) {
-    return this.post('/api/telegram/send-test-message', {
+    return this.post('/telegram/send-test-message', {
       botToken,
       chatId,
       customMessage
@@ -230,7 +230,7 @@ class ApiService {
   }
 
   async sendTradingAlert(botToken, chatId, alertType, data) {
-    return this.post('/api/telegram/send-trading-alert', {
+    return this.post('/telegram/send-trading-alert', {
       botToken,
       chatId,
       alertType,
