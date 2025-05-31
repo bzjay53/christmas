@@ -1,8 +1,8 @@
 [build]
   base = "web-dashboard"
   command = "npm ci && npx vite build"
-  publish = "web-dashboard/dist"
-  functions = "netlify/functions"
+  publish = "dist"
+  functions = "../netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
