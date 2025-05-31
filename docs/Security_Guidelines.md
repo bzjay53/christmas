@@ -1,480 +1,156 @@
-# 🔒 Christmas Trading - 보안 가이드라인
+# 🛡️ Christmas Trading - 보안 가이드라인
 
-## 🚨 **Critical Security Issues**
+## 🚨 **보안 정책 개요**
 
-### **1. 환경변수 노출 문제**
-- ❌ **현재**: Supabase 키가 브라우저에 노출
-- ❌ **위험**: API 키 탈취 가능
-- ✅ **해결**: 백엔드 프록시 패턴 구현
-
-### **2. 잘못된 Supabase URL**
-- ❌ **현재**: `qehzzsxzjijfzqkysazc.supabase.co` (유효하지 않음)
-- ✅ **해결**: 올바른 Supabase 프로젝트 생성 필요
+**목표**: 사용자 데이터 보호, API 키 안전성, 금융 거래 보안  
+**적용 범위**: 프론트엔드, 백엔드, 데이터베이스, 배포 환경  
+**준수 기준**: OWASP Top 10, 금융위원회 가이드라인
 
 ---
 
-## 🛡️ **보안 아키텍처 설계**
+## 🔐 **Phase 1-A 적용된 보안 강화**
 
-### **Frontend (Netlify)**
-```
-https://christmas-protocol.netlify.app/
-├── 환경변수: 백엔드 API URL만 노출
-├── Supabase 키: 완전 숨김
-└── 모든 API 요청: 백엔드 프록시 경유
-```
-
-### **Backend (31.220.83.213)**
-```
-31.220.83.213:8000
-├── Supabase 연결: 서버에서만 처리
-├── API 프록시: 모든 요청 중계
-└── 환경변수: 서버 내부에서만 관리
-```
-
----
-
-## 🔧 **구현 단계**
-
-### **Phase 1: 환경변수 보안화**
-1. 프론트엔드에서 Supabase 키 제거
-2. 백엔드 프록시 API 구현
-3. 모든 DB 요청을 백엔드 경유
-
-### **Phase 2: Supabase 재설정**
-1. 새로운 Supabase 프로젝트 생성
-2. 올바른 URL 및 키 발급
-3. 백엔드에서만 연결 관리
-
-### **Phase 3: 보안 검증**
-1. 브라우저에서 키 노출 확인
-2. API 엔드포인트 보안 테스트
-3. 침투 테스트 수행
-
----
-
-## 📋 **보안 체크리스트**
-
-### **환경변수 관리**
-- [ ] 프론트엔드: 백엔드 URL만 노출
-- [ ] 백엔드: 모든 민감 정보 서버 내부 관리
-- [ ] .env 파일: Git에서 완전 제외
-
-### **API 보안**
-- [ ] 모든 DB 요청: 백엔드 프록시 경유
-- [ ] CORS 설정: 허용된 도메인만
-- [ ] Rate Limiting: API 남용 방지
-
-### **인증 보안**
-- [ ] JWT 토큰: 서버에서 검증
-- [ ] 세션 관리: 안전한 쿠키 사용
-- [ ] 권한 검사: 모든 API에서 확인
-
----
-
-## ⚠️ **보안 위험도**
-
-| 위험 | 현재 상태 | 목표 상태 |
-|------|-----------|-----------|
-| API 키 노출 | 🔴 Critical | 🟢 Safe |
-| DB 직접 접근 | 🔴 Critical | 🟢 Proxy |
-| 환경변수 노출 | 🔴 Critical | 🟢 Hidden |
-
----
-
-*📝 문서 작성일: 2025-05-31*
-*🔄 다음 보안 감사: 매주 금요일*
-
-## 📋 개요
-
-### 🎯 보안 목표
-- **데이터 보호**: 사용자 개인정보 및 거래 데이터 보안
-- **인증/인가**: 안전한 사용자 인증 및 권한 관리
-- **API 보안**: 백엔드 API 엔드포인트 보호
-- **인프라 보안**: 서버 및 네트워크 보안
-- **컴플라이언스**: 금융 서비스 관련 규정 준수
-
-### 🏗️ 보안 아키텍처
-```
-Frontend (HTTPS) → API Gateway → Backend (JWT) → Database (RLS)
-                      ↓
-                 Rate Limiting
-                      ↓
-                 WAF Protection
-```
-
-## 🔐 인증 및 인가
-
-### 🎫 JWT 토큰 관리
+### ✅ **프론트엔드 보안**
 ```javascript
-// 토큰 구조
-{
-  "header": {
-    "alg": "HS256",
-    "typ": "JWT"
-  },
-  "payload": {
-    "sub": "user_id",
-    "email": "user@example.com",
-    "role": "user",
-    "iat": 1640995200,
-    "exp": 1641081600
-  }
+// ❌ 이전 (취약점)
+VITE_SUPABASE_URL=https://qehzzsxzjijfzqkysazc.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
+
+// ✅ 현재 (보안 강화)
+# VITE_SUPABASE_URL=REMOVED_FOR_SECURITY
+# VITE_SUPABASE_ANON_KEY=REMOVED_FOR_SECURITY
+VITE_USE_BACKEND_PROXY=true
+```
+
+### ✅ **API 프록시 보안**
+```javascript
+// CORS 제한
+'Access-Control-Allow-Origin': 'https://christmas-protocol.netlify.app'
+
+// 요청 검증
+if (!event.headers.authorization) {
+  // 인증 헤더 검증
 }
-```
 
-### 🔑 토큰 보안 정책
-- **만료 시간**: 1시간 (Access Token), 7일 (Refresh Token)
-- **저장 방식**: HttpOnly Cookie (권장) 또는 Secure LocalStorage
-- **갱신 정책**: 자동 갱신 (Refresh Token 사용)
-- **폐기 정책**: 로그아웃 시 즉시 무효화
-
-### 👤 사용자 권한 관리
-```sql
--- Supabase RLS (Row Level Security) 정책
-CREATE POLICY "Users can only access their own data" ON users
-FOR ALL USING (auth.uid() = id);
-
-CREATE POLICY "Users can only access their own trading data" ON trading_signals
-FOR ALL USING (auth.uid() = user_id);
-```
-
-## 🛡️ API 보안
-
-### 🚦 Rate Limiting
-```javascript
-// Express Rate Limiting 설정
-const rateLimit = require('express-rate-limit');
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15분
-  max: 100, // 최대 100 요청
-  message: 'Too many requests from this IP',
-  standardHeaders: true,
-  legacyHeaders: false,
+// 상세 로깅 (보안 감사)
+console.log(`🔍 API Request:`, {
+  method: event.httpMethod,
+  path: event.path,
+  timestamp: new Date().toISOString()
 });
-
-app.use('/api/', apiLimiter);
 ```
-
-### 🔒 CORS 설정
-```javascript
-// CORS 보안 설정
-const cors = require('cors');
-
-app.use(cors({
-  origin: [
-    'https://christmas-protocol.netlify.app',
-    'http://localhost:3000' // 개발 환경만
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-```
-
-### 🛡️ 헬멧 보안 헤더
-```javascript
-// Helmet.js 보안 헤더 설정
-const helmet = require('helmet');
-
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
-```
-
-## 🔐 데이터 보안
-
-### 🗄️ 데이터베이스 보안
-```sql
--- 민감한 데이터 암호화
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL, -- bcrypt 해시
-  kis_account_encrypted TEXT, -- AES 암호화
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- 감사 로그 테이블
-CREATE TABLE audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
-  action TEXT NOT NULL,
-  resource TEXT NOT NULL,
-  ip_address INET,
-  user_agent TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### 🔑 암호화 정책
-```javascript
-// 비밀번호 해싱 (bcrypt)
-const bcrypt = require('bcrypt');
-const saltRounds = 12;
-
-const hashPassword = async (password) => {
-  return await bcrypt.hash(password, saltRounds);
-};
-
-// 민감한 데이터 암호화 (AES-256)
-const crypto = require('crypto');
-const algorithm = 'aes-256-gcm';
-
-const encrypt = (text, key) => {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipher(algorithm, key, iv);
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return {
-    encrypted,
-    iv: iv.toString('hex'),
-    tag: cipher.getAuthTag().toString('hex')
-  };
-};
-```
-
-## 🌐 네트워크 보안
-
-### 🔒 HTTPS 강제
-```javascript
-// HTTPS 리다이렉트 미들웨어
-const enforceHTTPS = (req, res, next) => {
-  if (!req.secure && req.get('x-forwarded-proto') !== 'https') {
-    return res.redirect(301, `https://${req.get('host')}${req.url}`);
-  }
-  next();
-};
-
-app.use(enforceHTTPS);
-```
-
-### 🛡️ 방화벽 설정 (서버)
-```bash
-# UFW 방화벽 설정
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 8000/tcp  # API 포트
-sudo ufw enable
-
-# 특정 IP만 SSH 접근 허용
-sudo ufw allow from YOUR_IP_ADDRESS to any port 22
-```
-
-### 🔐 SSH 보안
-```bash
-# SSH 설정 강화 (/etc/ssh/sshd_config)
-Port 22
-PermitRootLogin no
-PasswordAuthentication no
-PubkeyAuthentication yes
-MaxAuthTries 3
-ClientAliveInterval 300
-ClientAliveCountMax 2
-```
-
-## 🔍 보안 모니터링
-
-### 📊 로깅 정책
-```javascript
-// 보안 이벤트 로깅
-const winston = require('winston');
-
-const securityLogger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.File({ filename: 'security.log' }),
-    new winston.transports.Console()
-  ]
-});
-
-// 로그인 시도 기록
-const logLoginAttempt = (email, success, ip, userAgent) => {
-  securityLogger.info('Login attempt', {
-    email,
-    success,
-    ip,
-    userAgent,
-    timestamp: new Date().toISOString()
-  });
-};
-```
-
-### 🚨 침입 탐지
-```javascript
-// 의심스러운 활동 탐지
-const detectSuspiciousActivity = (req, res, next) => {
-  const suspiciousPatterns = [
-    /(\<script\>)/i,  // XSS 시도
-    /(union.*select)/i,  // SQL Injection 시도
-    /(\.\.\/)/,  // Path Traversal 시도
-  ];
-
-  const userInput = JSON.stringify(req.body) + req.url;
-  
-  for (const pattern of suspiciousPatterns) {
-    if (pattern.test(userInput)) {
-      securityLogger.warn('Suspicious activity detected', {
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-        input: userInput,
-        pattern: pattern.toString()
-      });
-      return res.status(400).json({ error: 'Invalid request' });
-    }
-  }
-  
-  next();
-};
-```
-
-## 🔐 환경변수 보안
-
-### 🗝️ 민감한 정보 관리
-```bash
-# .env 파일 보안 (절대 Git에 커밋하지 않음)
-# 강력한 비밀키 사용
-JWT_SECRET=very-long-random-string-at-least-32-characters
-SUPABASE_SERVICE_KEY=supabase-service-role-key
-KIS_API_SECRET=kis-api-secret-key
-
-# 암호화 키 (별도 관리)
-ENCRYPTION_KEY=32-byte-encryption-key
-```
-
-### 🔒 프로덕션 환경 보안
-```yaml
-# Docker Secrets 사용 (권장)
-version: '3.8'
-services:
-  backend:
-    image: christmas-backend
-    secrets:
-      - jwt_secret
-      - supabase_key
-      - encryption_key
-    environment:
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
-      - SUPABASE_SERVICE_KEY_FILE=/run/secrets/supabase_key
-
-secrets:
-  jwt_secret:
-    external: true
-  supabase_key:
-    external: true
-```
-
-## 🧪 보안 테스트
-
-### 🔍 취약점 스캔
-```bash
-# npm audit (의존성 취약점 검사)
-npm audit
-npm audit fix
-
-# OWASP ZAP (웹 애플리케이션 보안 테스트)
-docker run -t owasp/zap2docker-stable zap-baseline.py \
-  -t https://christmas-protocol.netlify.app
-
-# Snyk (코드 보안 스캔)
-npx snyk test
-npx snyk monitor
-```
-
-### 🛡️ 침투 테스트 체크리스트
-- [ ] SQL Injection 테스트
-- [ ] XSS (Cross-Site Scripting) 테스트
-- [ ] CSRF (Cross-Site Request Forgery) 테스트
-- [ ] 인증 우회 시도
-- [ ] 권한 상승 테스트
-- [ ] 세션 하이재킹 테스트
-- [ ] API 엔드포인트 무차별 대입 공격
-
-## 📋 보안 체크리스트
-
-### ✅ 개발 단계
-- [ ] 모든 사용자 입력 검증 및 살균
-- [ ] SQL Injection 방지 (Parameterized Queries)
-- [ ] XSS 방지 (Output Encoding)
-- [ ] CSRF 토큰 구현
-- [ ] 적절한 에러 메시지 (정보 노출 방지)
-- [ ] 보안 헤더 설정
-
-### ✅ 배포 단계
-- [ ] HTTPS 강제 적용
-- [ ] 환경변수 보안 설정
-- [ ] 방화벽 규칙 적용
-- [ ] SSH 키 기반 인증
-- [ ] 정기적인 보안 업데이트
-- [ ] 백업 암호화
-
-### ✅ 운영 단계
-- [ ] 보안 로그 모니터링
-- [ ] 정기적인 취약점 스캔
-- [ ] 침투 테스트 수행
-- [ ] 보안 인시던트 대응 계획
-- [ ] 직원 보안 교육
-- [ ] 컴플라이언스 감사
-
-## 🚨 보안 인시던트 대응
-
-### 📞 대응 절차
-1. **탐지**: 보안 이벤트 감지
-2. **격리**: 영향 범위 제한
-3. **분석**: 공격 벡터 및 피해 범위 분석
-4. **복구**: 시스템 복구 및 보안 강화
-5. **보고**: 관련 기관 및 사용자 통지
-
-### 🔒 긴급 대응 명령어
-```bash
-# 의심스러운 IP 차단
-sudo ufw deny from SUSPICIOUS_IP
-
-# 서비스 긴급 중단
-docker-compose down
-
-# 로그 백업
-cp /var/log/security.log /backup/security-$(date +%Y%m%d).log
-
-# 데이터베이스 백업
-pg_dump christmas_trading > backup-$(date +%Y%m%d).sql
-```
-
-## 📚 보안 교육 및 인식
-
-### 🎓 개발팀 교육 내용
-- OWASP Top 10 취약점
-- 안전한 코딩 관행
-- 암호화 및 해싱 기법
-- 인증 및 세션 관리
-- 보안 테스트 방법론
-
-### 📖 참고 자료
-- [OWASP Web Security Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)
-- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
-- [CIS Controls](https://www.cisecurity.org/controls/)
 
 ---
-**📅 작성일**: 2025-05-27 01:25  
-**👤 작성자**: PM AI Assistant  
-**🔄 버전**: v1.0  
-**📊 상태**: 보안 정책 수립 완료 
+
+## 🔒 **보안 체크리스트**
+
+### **1. 환경변수 보안**
+- [x] **프론트엔드**: 민감한 키 완전 제거
+- [x] **백엔드**: 환경변수 파일 .gitignore 등록
+- [x] **Netlify**: 배포 환경변수만 사용
+- [ ] **VPS**: 환경변수 암호화 적용
+
+### **2. API 보안**
+- [x] **CORS**: 특정 도메인만 허용
+- [x] **프록시**: 모든 API 호출 백엔드 경유
+- [ ] **Rate Limiting**: API 호출 제한
+- [ ] **JWT**: 토큰 기반 인증
+
+### **3. 네트워크 보안**
+- [x] **HTTPS**: 프론트엔드 강제 적용
+- [ ] **Mixed Content**: HTTP 백엔드 문제 해결
+- [ ] **SSL**: 백엔드 서버 인증서 적용
+- [ ] **Firewall**: VPS 방화벽 설정
+
+### **4. 데이터베이스 보안**
+- [ ] **RLS**: Row Level Security 정책
+- [ ] **백업**: 암호화된 백업 정책
+- [ ] **접근제어**: IP 화이트리스트
+- [ ] **감사로그**: 데이터 변경 추적
+
+---
+
+## ⚠️ **현재 보안 이슈**
+
+### 🚨 **Critical (즉시 해결 필요)**
+1. **Mixed Content 경고**
+   - 문제: HTTPS → HTTP 연결
+   - 해결: 백엔드 SSL 인증서 적용
+   - 임시: CSP 설정으로 허용
+
+2. **백엔드 노출**
+   - 문제: 31.220.83.213 IP 직접 노출
+   - 해결: 도메인 네임 적용
+   - 강화: Cloudflare 프록시
+
+### ⚡ **High (1주 내 해결)**
+3. **인증 시스템 미완성**
+   - 문제: JWT 토큰 관리 미구현
+   - 해결: 백엔드 인증 미들웨어
+   - 테스트: 토큰 만료 처리
+
+4. **API Rate Limiting 없음**
+   - 문제: DDoS 공격 취약
+   - 해결: Express Rate Limit
+   - 모니터링: 과도한 요청 감지
+
+---
+
+## 🛠️ **보안 강화 로드맵**
+
+### **Phase 1-B (현재 진행중)**
+- [ ] Functions 실행 안정화
+- [ ] Mixed Content 해결
+- [ ] API 연결성 검증
+
+### **Phase 2 (보안 완성)**
+- [ ] 백엔드 SSL 인증서
+- [ ] JWT 인증 시스템
+- [ ] Rate Limiting 적용
+- [ ] 데이터베이스 RLS
+
+### **Phase 3 (고급 보안)**
+- [ ] 웹 방화벽 (WAF)
+- [ ] 침투 테스트
+- [ ] 보안 모니터링
+- [ ] 컴플라이언스 인증
+
+---
+
+## 📋 **보안 모니터링**
+
+### **로그 모니터링**
+```javascript
+// 의심스러운 활동 감지
+- 과도한 API 호출
+- 비정상적인 로그인 시도
+- 서버 오류 급증
+```
+
+### **알람 설정**
+- 🚨 보안 이벤트 즉시 알림
+- 📊 일일 보안 리포트
+- 📈 주간 취약점 스캔
+
+---
+
+## 🔧 **개발자 보안 가이드**
+
+### **코드 작성 시**
+1. **환경변수**: 절대 하드코딩 금지
+2. **SQL 쿼리**: Prepared Statement 사용
+3. **입력 검증**: 모든 사용자 입력 검증
+4. **로깅**: 민감한 정보 로그 제외
+
+### **배포 전 체크**
+1. **환경변수**: .env 파일 제외 확인
+2. **의존성**: 취약점 스캔 실행
+3. **테스트**: 보안 테스트 케이스
+4. **코드리뷰**: 보안 중점 검토
+
+---
+
+**📝 작성자**: PM Claude Sonnet 4  
+**📅 작성일**: 2025-05-31  
+**🔄 업데이트**: 보안 이슈 발생 시 즉시  
+**📊 보안 수준**: Phase 1-A 완료, 1-B 진행중 
