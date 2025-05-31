@@ -14,6 +14,8 @@ exports.handler = async (event, context) => {
   console.log('🔧 Enhanced API Proxy Called:', {
     method: event.httpMethod,
     path: event.path,
+    rawPath: event.rawPath,
+    queryStringParameters: event.queryStringParameters,
     timestamp: new Date().toISOString(),
     userAgent: event.headers['user-agent'],
     origin: event.headers.origin
@@ -27,7 +29,7 @@ exports.handler = async (event, context) => {
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
-    'X-Powered-By': 'Christmas-Proxy/2.0'
+    'X-Powered-By': 'Christmas-Proxy/2.1'
   };
 
   // OPTIONS 요청 처리 (CORS preflight)
@@ -41,8 +43,14 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // API 경로 처리
-    let apiPath = event.path.replace('/api/proxy', '');
+    // API 경로 처리 (더 강력한 처리)
+    let apiPath = event.path || event.rawPath || '';
+    
+    // /api/proxy 제거
+    apiPath = apiPath.replace('/api/proxy', '');
+    apiPath = apiPath.replace('/.netlify/functions/api-proxy', '');
+    
+    // 빈 경로 처리
     if (apiPath === '' || apiPath === '/') {
       apiPath = '/health';
     }
@@ -57,7 +65,7 @@ exports.handler = async (event, context) => {
     
     const targetUrl = `${BACKEND_URL}${apiPath}`;
     
-    console.log(`🔄 Proxying: ${event.httpMethod} ${targetUrl}`);
+    console.log(`🔄 Proxying: ${event.httpMethod} ${targetUrl} (original path: ${event.path})`);
 
     // HTTP 요청 실행
     const response = await makeRequest(targetUrl, event);
