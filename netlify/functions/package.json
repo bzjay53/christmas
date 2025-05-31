@@ -1,0 +1,9 @@
+{
+  "name": "christmas-netlify-functions",
+  "version": "1.0.0",
+  "description": "Christmas Trading System Netlify Functions",
+  "main": "api-proxy.js",
+  "engines": {
+    "node": "18"
+  }
+} 
