@@ -1,187 +1,133 @@
 import React, { useState, useEffect } from 'react'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { CssBaseline } from '@mui/material'
+import { CssBaseline, Box, Snackbar, Alert } from '@mui/material'
+import WelcomeScreen from './components/WelcomeScreen'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
-import { NotificationProvider, useNotification } from './components/NotificationProvider'
-import { supabase, isSupabaseEnabled, isAuthBypass, isDemoMode } from './lib/supabase'
+import { authHelpers } from './lib/supabase'
+import apiService from './lib/apiService'
 
-// Christmas 테마 (Enhanced)
+// 🎄 Christmas 테마
 const christmasTheme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#1d3557',
-      light: '#457b9d',
-      lighter: '#a8dadc',
-      dark: '#1d3557'
+      main: '#c41e3a', // Christmas Red
+      light: '#ff5722',
+      dark: '#8b0000'
     },
     secondary: {
-      main: '#e63946',
-      light: '#f1faee',
-    },
-    success: {
-      main: '#4cc9f0',
-      light: '#a7e9af',
-    },
-    warning: {
-      main: '#ffd166',
-      light: '#fff3cd',
-    },
-    error: {
-      main: '#e63946',
-      light: '#f7cad0',
-    },
-    info: {
-      main: '#4895ef',
-      light: '#4361ee',
-      lighter: '#e3f2fd'
+      main: '#228b22', // Christmas Green
+      light: '#32cd32',
+      dark: '#006400'
     },
     background: {
-      default: '#f8f9fa',
-      paper: '#ffffff'
+      default: '#0a0a0a',
+      paper: '#1a1a1a'
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#cccccc'
     }
   },
   typography: {
-    fontFamily: '"Noto Sans KR", "Roboto", "Helvetica", "Arial", sans-serif',
-    h4: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
       fontWeight: 700,
-    },
-    h6: {
-      fontWeight: 600,
+      fontSize: '2.5rem'
     }
-  },
-  shape: {
-    borderRadius: 10,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
+          borderRadius: 8,
           textTransform: 'none',
-          fontWeight: 600,
-        },
-      },
+          fontWeight: 600
+        }
+      }
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-          borderRadius: 10,
-        },
-      },
-    },
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          backgroundColor: '#1d3557',
-          color: 'white',
-        },
-      },
-    },
-    MuiListItemIcon: {
-      styleOverrides: {
-        root: {
-          color: 'rgba(255, 255, 255, 0.8)',
-        },
-      },
-    },
-    MuiListItemText: {
-      styleOverrides: {
-        primary: {
-          color: 'rgba(255, 255, 255, 0.8)',
-        },
-      },
-    },
-    MuiTableRow: {
-      styleOverrides: {
-        hover: {
-          '&:hover': {
-            backgroundColor: 'rgba(77, 196, 240, 0.1)',
-          },
-        },
-      },
-    },
-  },
+          borderRadius: 12,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+        }
+      }
+    }
+  }
 })
 
-function AppContent() {
+function App() {
   console.log('🔥 App 컴포넌트 렌더링 시작!')
   
-  const { showNotification } = useNotification()
-  
-  // Supabase 세션 관리 상태
-  const [user, setUser] = useState(null)
+  // 상태 관리
   const [currentView, setCurrentView] = useState('welcome')
-  const [loading, setLoading] = useState(true)
-  const [loadingMessage, setLoadingMessage] = useState('시스템 초기화 중...')
+  const [user, setUser] = useState(null)
   const [session, setSession] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [loadingMessage, setLoadingMessage] = useState('🎄 Christmas Trading 시스템 초기화 중...')
   
-  console.log('📊 현재 상태:', { user, currentView, loading, session })
-  
-  // Supabase 세션 관리 및 시스템 초기화
+  // 알림 시스템
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'info'
+  })
+
+  console.log('📊 현재 상태:', { currentView, user: user?.email, loading })
+
+  // 알림 표시 함수
+  const showNotification = (message, severity = 'info') => {
+    console.log('🔔 알림 표시:', message, severity)
+    setNotification({
+      open: true,
+      message,
+      severity
+    })
+  }
+
+  // 알림 닫기
+  const handleCloseNotification = () => {
+    setNotification(prev => ({ ...prev, open: false }))
+  }
+
+  // 🚀 시스템 초기화 (보안 강화 버전)
   useEffect(() => {
     console.log('🚀 시스템 초기화 시작')
     let mounted = true
-    
+
     const initializeSystem = async () => {
       try {
-        setLoadingMessage('🔐 인증 시스템 확인 중...')
-        
-        // 1. 인증 시스템 초기화 (환경 설정에 따라 처리)
+        // 1. 백엔드 프록시를 통한 세션 확인
         const initializeAuth = async () => {
-          // 인증 우회 모드인 경우 세션 체크 건너뛰기
-          if (isAuthBypass) {
-            console.log('🚀 인증 우회 모드 - 로그인 화면으로 이동')
-            return null
-          }
-          
-          // Supabase가 비활성화된 경우
-          if (!isSupabaseEnabled || !supabase) {
-            console.log('🎮 Supabase 비활성화 - 데모 모드로 실행')
-            return null
-          }
-          
           try {
-            // supabase.auth가 존재하는지 확인
-            if (!supabase?.auth) {
-              console.warn('⚠️ Supabase auth 객체가 없습니다.')
-              return null
-            }
+            console.log('🔄 백엔드 프록시를 통한 세션 확인 중...')
+            const sessionData = await authHelpers.getSession()
             
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 3000) // 3초 타임아웃
-            
-            const { data: { session }, error } = await supabase.auth.getSession()
-            clearTimeout(timeoutId)
-            
-            if (error) {
-              console.warn('⚠️ Supabase 연결 실패:', error.message)
-              return null
-            }
-            
-            if (session && session.user) {
-              console.log('✅ 기존 Supabase 세션 발견:', session.user)
+            if (sessionData && sessionData.user) {
+              console.log('✅ 기존 세션 발견:', sessionData.user)
               
               const userData = {
-                id: session.user.id,
-                name: session.user.user_metadata?.first_name || 'Christmas Trader',
-                email: session.user.email,
-                membershipType: session.user.user_metadata?.membership_type || 'free',
+                id: sessionData.user.id,
+                name: sessionData.user.name || 'Christmas Trader',
+                email: sessionData.user.email,
+                membershipType: sessionData.user.membership_type || 'free',
                 isAuthenticated: true,
-                joinDate: new Date(session.user.created_at).toLocaleDateString(),
-                supabaseUser: session.user
+                joinDate: new Date(sessionData.user.created_at).toLocaleDateString(),
+                backendUser: sessionData.user
               }
               
               if (mounted) {
-                setSession(session)
+                setSession(sessionData)
                 setUser(userData)
                 setCurrentView('dashboard')
               }
-              return session
+              return sessionData
             }
             return null
           } catch (error) {
-            console.warn('⚠️ Supabase 초기화 실패:', error.message)
+            console.warn('⚠️ 세션 확인 실패:', error.message)
             return null
           }
         }
@@ -192,213 +138,211 @@ function AppContent() {
         setLoadingMessage('🎄 Christmas Trading 시스템 로드 중...')
         await new Promise(resolve => setTimeout(resolve, 500))
         
-        if (mounted) {
-          console.log('✅ 초기화 완료')
-          setLoading(false)
-          
-          // 초기화 완료 알림 (한번만 표시)
-          const welcomeKey = `welcomeShown_${Date.now().toString().slice(-6)}`
-          if (!sessionStorage.getItem('welcomeShown')) {
-            setTimeout(() => {
-              if (session && session.user) {
-                showNotification(`🎉 환영합니다! ${session.user.user_metadata?.first_name || 'Christmas Trader'}님`, 'success')
-              } else {
-                showNotification('🎉 Christmas Trading 시스템 로드 완료!', 'success')
-              }
-              sessionStorage.setItem('welcomeShown', 'true')
-            }, 800)
-          }
+        // 3. 백엔드 연결 상태 확인
+        setLoadingMessage('🔗 백엔드 서버 연결 확인 중...')
+        try {
+          const healthCheck = await apiService.request('/health')
+          console.log('✅ 백엔드 연결 정상:', healthCheck)
+          showNotification('🎉 시스템이 정상적으로 초기화되었습니다!', 'success')
+        } catch (error) {
+          console.warn('⚠️ 백엔드 연결 실패:', error)
+          showNotification('⚠️ 백엔드 서버 연결에 문제가 있습니다.', 'warning')
         }
         
-      } catch (error) {
-        console.error('❌ 초기화 에러:', error)
+        // 4. 초기화 완료
         if (mounted) {
-          console.log('🚨 오류 발생, 데모 모드로 시작')
-          setLoading(false) // 즉시 로딩 해제
-          showNotification('데모 모드로 시작됩니다.', 'info')
-        }
-      } finally {
-        // 안전장치: 3초 후 강제로 로딩 해제
-        setTimeout(() => {
-          if (mounted && loading) {
-            console.log('⏰ 타임아웃: 강제 로딩 해제')
-            setLoading(false)
-            showNotification('시스템이 준비되었습니다.', 'info')
-          }
-        }, 3000)
-      }
-    }
-    
-    // Supabase 인증 상태 변화 리스너 (활성화된 경우에만)
-    let subscription = null
-    if (isSupabaseEnabled && supabase?.auth) {
-      const { data } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log('🔄 Supabase 인증 상태 변화:', event, session)
-          
-          if (event === 'SIGNED_IN' && session) {
-            // 이미 사용자가 설정되어 있으면 중복 처리 방지
-            if (user && user.id === session.user.id) {
-              console.log('🔄 이미 로그인된 사용자 - 중복 처리 방지')
-              return
-            }
-            
-            const userData = {
-              id: session.user.id,
-              name: session.user.user_metadata?.first_name || 'Christmas Trader',
-              email: session.user.email,
-              membershipType: session.user.user_metadata?.membership_type || 'free',
-              isAuthenticated: true,
-              joinDate: new Date(session.user.created_at).toLocaleDateString(),
-              supabaseUser: session.user
-            }
-            
-            console.log('🔄 App.jsx에서 인증 상태 변화 처리:', userData)
-            setSession(session)
-            setUser(userData)
-            setCurrentView('dashboard')
-          } else if (event === 'SIGNED_OUT') {
-            console.log('🚪 App.jsx에서 로그아웃 처리')
-            setSession(null)
-            setUser(null)
+          setLoading(false)
+          if (!session) {
             setCurrentView('welcome')
           }
         }
-      )
-      subscription = data
+        
+        console.log('✅ 초기화 완료')
+        
+      } catch (error) {
+        console.error('❌ 시스템 초기화 실패:', error)
+        if (mounted) {
+          setLoading(false)
+          setCurrentView('welcome')
+          showNotification('❌ 시스템 초기화에 실패했습니다.', 'error')
+        }
+      }
     }
-    
+
     initializeSystem()
     
     return () => {
       console.log('🧹 useEffect cleanup')
       mounted = false
-      if (subscription && subscription.subscription) {
-        subscription.subscription.unsubscribe()
-      }
     }
   }, [showNotification])
   
-  // 로그인 핸들러 (Supabase 연동)
-  const handleLogin = (userData) => {
-    console.log('🔐 handleLogin 호출됨:', userData)
+  // 🔑 로그인 핸들러 (백엔드 프록시 사용)
+  const handleLogin = async (email, password, isSignUp = false) => {
+    console.log(`🔑 ${isSignUp ? '회원가입' : '로그인'} 시작`)
     
-    // 중복 로그인 방지
-    if (user && user.id === userData.id) {
-      console.log('🔄 이미 로그인된 사용자 - 중복 방지')
-      return
-    }
-    
-    console.log('✅ 새로운 사용자 로그인 처리')
-    setUser(userData)
-    setCurrentView('dashboard')
-    
-    // 성공 알림 (이메일 인증이 아닌 경우에만)
-    if (!userData.emailVerified) {
-      showNotification(`환영합니다, ${userData.name}님! 🎉`, 'success')
-    }
-  }
-  
-  // 로그아웃 핸들러 (Supabase 연동)
-  const handleLogout = async () => {
-    console.log('🚪 로그아웃 시작')
     try {
-      if (isSupabaseEnabled && supabase?.auth) {
-        const { error } = await supabase.auth.signOut()
-        if (error) {
-          console.error('❌ 로그아웃 오류:', error)
-          showNotification('로그아웃 중 오류가 발생했습니다.', 'error')
-          return
+      let result
+      if (isSignUp) {
+        // 회원가입
+        const userData = {
+          first_name: email.split('@')[0],
+          last_name: 'User',
+          membership_type: 'free',
+          signup_event: 'christmas_launch_2024'
         }
-        console.log('✅ Supabase 로그아웃 성공')
+        
+        result = await authHelpers.signUp(email, password, userData)
+        console.log('📥 회원가입 응답:', result)
+        
+        if (result.user) {
+          showNotification('🎉 회원가입이 완료되었습니다! 이메일을 확인해주세요.', 'success')
+          return true
+        }
+      } else {
+        // 로그인
+        result = await authHelpers.signIn(email, password)
+        console.log('📥 로그인 응답:', result)
+        
+        if (result.user) {
+          const userData = {
+            id: result.user.id,
+            name: result.user.name || email.split('@')[0],
+            email: result.user.email,
+            membershipType: result.user.membership_type || 'free',
+            isAuthenticated: true,
+            joinDate: new Date(result.user.created_at).toLocaleDateString(),
+            backendUser: result.user
+          }
+          
+          setSession(result)
+          setUser(userData)
+          setCurrentView('dashboard')
+          showNotification(`🎉 환영합니다! ${userData.name}님`, 'success')
+          return true
+        }
       }
       
-      // 로컬 상태 정리
-      setUser(null)
-      setCurrentView('welcome')
-      setSession(null)
-      showNotification('성공적으로 로그아웃되었습니다.', 'info')
-      
+      return false
     } catch (error) {
-      console.error('❌ 로그아웃 예외:', error)
-      // 에러가 발생해도 로컬 상태는 정리
-      setUser(null)
-      setCurrentView('welcome')
-      setSession(null)
-      showNotification('로그아웃되었습니다.', 'info')
+      console.error(`❌ ${isSignUp ? '회원가입' : '로그인'} 실패:`, error)
+      showNotification(`❌ ${isSignUp ? '회원가입' : '로그인'} 실패: ${error.message}`, 'error')
+      return false
     }
   }
-  
-  // Phase 4-5-6: 로딩 화면 (Material-UI 스타일)
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        fontFamily: 'Roboto, Arial, sans-serif'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '80px', 
-            marginBottom: '30px',
-            animation: 'pulse 2s infinite'
-          }}>🎄</div>
-          <div style={{ fontSize: '28px', marginBottom: '15px', fontWeight: 'bold' }}>
-            Christmas Trading System
-          </div>
-          <div style={{ fontSize: '18px', opacity: 0.9, marginBottom: '20px' }}>
-            {loadingMessage}
-          </div>
-          <div style={{ 
-            marginTop: '30px',
-            fontSize: '14px',
-            opacity: 0.7,
-            padding: '10px 20px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            borderRadius: '20px',
-            display: 'inline-block'
-          }}>
-            ✅ Phase 4-5-6 통합 | 🎨 Material-UI | 🔔 알림 시스템 | 📊 완전한 기능
-          </div>
-        </div>
-      </div>
-    )
-  }
-  
-  // Phase 4-5-6: 조건부 렌더링 (통합 완료)
-  console.log('🎯 렌더링 결정:', { currentView, user: !!user, userId: user?.id })
-  
-  if (currentView === 'dashboard' && user && user.isAuthenticated) {
-    console.log('📊 Dashboard 렌더링')
-    return (
-      <Dashboard 
-        user={user} 
-        onLogout={handleLogout}
-        onShowNotification={showNotification}
-      />
-    )
-  }
-  
-  console.log('🔐 Login 렌더링')
-  return (
-    <Login 
-      onLogin={handleLogin}
-      onShowNotification={showNotification}
-    />
-  )
-}
 
-function App() {
+  // 🚪 로그아웃 핸들러
+  const handleLogout = async () => {
+    console.log('🚪 로그아웃 시작')
+    
+    try {
+      await authHelpers.signOut()
+      setSession(null)
+      setUser(null)
+      setCurrentView('welcome')
+      showNotification('👋 로그아웃되었습니다.', 'info')
+    } catch (error) {
+      console.error('❌ 로그아웃 실패:', error)
+      // 로그아웃은 실패해도 로컬 상태는 초기화
+      setSession(null)
+      setUser(null)
+      setCurrentView('welcome')
+      showNotification('👋 로그아웃되었습니다.', 'info')
+    }
+  }
+
+  // 🎯 렌더링 결정
+  const renderContent = () => {
+    console.log('🎯 렌더링 결정:', { currentView, loading, user: !!user })
+    
+    if (loading) {
+      return (
+        <Box 
+          display="flex" 
+          flexDirection="column"
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="100vh"
+          sx={{
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+            color: 'white',
+            textAlign: 'center'
+          }}
+        >
+          <Box sx={{ mb: 4 }}>
+            🎄
+          </Box>
+          <Box sx={{ fontSize: '1.2rem', mb: 2 }}>
+            {loadingMessage}
+          </Box>
+          <Box sx={{ fontSize: '0.9rem', opacity: 0.7 }}>
+            잠시만 기다려주세요...
+          </Box>
+        </Box>
+      )
+    }
+
+    switch (currentView) {
+      case 'welcome':
+        console.log('📊 Welcome 렌더링')
+        return (
+          <WelcomeScreen 
+            onGetStarted={() => setCurrentView('login')}
+            onShowNotification={showNotification}
+          />
+        )
+      
+      case 'login':
+        console.log('🔐 Login 렌더링')
+        return (
+          <Login 
+            onLogin={handleLogin}
+            onShowNotification={showNotification}
+          />
+        )
+      
+      case 'dashboard':
+        console.log('📊 Dashboard 렌더링')
+        return (
+          <Dashboard 
+            user={user}
+            onLogout={handleLogout}
+            onShowNotification={showNotification}
+          />
+        )
+      
+      default:
+        return (
+          <WelcomeScreen 
+            onGetStarted={() => setCurrentView('login')}
+            onShowNotification={showNotification}
+          />
+        )
+    }
+  }
+
   return (
     <ThemeProvider theme={christmasTheme}>
       <CssBaseline />
-      <NotificationProvider>
-        <AppContent />
-      </NotificationProvider>
+      <Box sx={{ minHeight: '100vh' }}>
+        {renderContent()}
+        
+        {/* 알림 시스템 */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={handleCloseNotification} 
+            severity={notification.severity}
+            sx={{ width: '100%' }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+      </Box>
     </ThemeProvider>
   )
 }
