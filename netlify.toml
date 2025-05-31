@@ -4,6 +4,11 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # 보안 강화: Supabase 키 제거됨
+  VITE_NODE_ENV = "production"
+  VITE_API_BASE_URL = "http://31.220.83.213:8000"
+  VITE_DEBUG_MODE = "false"
+  VITE_ENABLE_DEV_TOOLS = "false"
 
 [functions]
   directory = "netlify/functions"
@@ -40,7 +45,8 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Environment variables (set in Netlify dashboard)
-# VITE_SUPABASE_URL
-# VITE_SUPABASE_ANON_KEY
-# VITE_API_BASE_URL 
+# 🔒 보안 강화: Supabase 키 제거됨 - 백엔드 프록시만 사용
+# 환경변수는 Netlify 대시보드에서 설정:
+# VITE_API_BASE_URL=http://31.220.83.213:8000 (설정됨)
+# VITE_SUPABASE_URL=REMOVED_FOR_SECURITY (제거됨)
+# VITE_SUPABASE_ANON_KEY=REMOVED_FOR_SECURITY (제거됨)
