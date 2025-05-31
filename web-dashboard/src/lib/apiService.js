@@ -6,20 +6,12 @@
 // 🔗 Christmas Trading - API Service
 // Phase 1-C: Mixed Content 해결 - Netlify Functions 프록시 복원
 
-// 환경별 API 설정
-const isDevelopment = import.meta.env.DEV;
-const useBackendProxy = import.meta.env.VITE_USE_BACKEND_PROXY === 'true';
+// API Base URL 설정 (프록시만 사용)
+const API_BASE_URL = '/api';
 
-// API Base URL 설정 (Mixed Content 해결)
-// 개발환경: 프록시 사용, 프로덕션: 직접 연결 (임시)
-const API_BASE_URL = isDevelopment ? '/api' : 'http://31.220.83.213:8000';
-
-console.log('🔧 API Service 초기화 (조건부 프록시):', {
-  isDevelopment,
-  useBackendProxy,
+console.log('🔧 API Service 초기화 (프록시 고정):', {
   API_BASE_URL,
-  env: import.meta.env.MODE,
-  note: isDevelopment ? 'Using Proxy' : 'Direct Connection (Temporary)'
+  env: import.meta.env.MODE
 });
 
 // 환경변수 디버깅
@@ -42,9 +34,7 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
-    console.log(`🌐 API 요청 (${isDevelopment ? 'Proxy' : 'Direct'}): ${options.method || 'GET'} ${url}`);
-
+    console.log(`🌐 API 요청 (프록시): ${options.method || 'GET'} ${url}`);
     const config = {
       method: 'GET',
       headers: {
@@ -53,26 +43,17 @@ class ApiService {
       },
       ...options,
     };
-
     try {
       const response = await fetch(url, config);
-      
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
       const data = await response.json();
       console.log(`✅ API 응답 성공: ${url}`, data);
       return data;
     } catch (error) {
       console.error(`❌ API 요청 실패 (${url}):`, error);
-      
-      // Mixed Content 에러 감지
-      if (error.message.includes('Mixed Content') || error.message.includes('blocked')) {
-        throw new Error(`🔒 보안 정책으로 인해 HTTP 연결이 차단되었습니다. HTTPS 백엔드가 필요합니다.`);
-      }
-      
-      throw new Error(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${this.baseURL})`);
+      throw new Error(`백엔드 서버에 연결할 수 없습니다. (${this.baseURL})`);
     }
   }
 
