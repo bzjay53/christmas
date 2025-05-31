@@ -11,13 +11,15 @@ const isDevelopment = import.meta.env.DEV;
 const useBackendProxy = import.meta.env.VITE_USE_BACKEND_PROXY === 'true';
 
 // API Base URL 설정 (Mixed Content 해결)
-const API_BASE_URL = '/api'; // Netlify Functions 프록시 사용
+// 개발환경: 프록시 사용, 프로덕션: 직접 연결 (임시)
+const API_BASE_URL = isDevelopment ? '/api' : 'http://31.220.83.213:8000';
 
-console.log('🔧 API Service 초기화 (Mixed Content 해결):', {
+console.log('🔧 API Service 초기화 (조건부 프록시):', {
   isDevelopment,
   useBackendProxy,
   API_BASE_URL,
-  env: import.meta.env.MODE
+  env: import.meta.env.MODE,
+  note: isDevelopment ? 'Using Proxy' : 'Direct Connection (Temporary)'
 });
 
 // 환경변수 디버깅
@@ -41,7 +43,7 @@ class ApiService {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     
-    console.log(`🌐 API 요청 (Netlify Functions 프록시): ${options.method || 'GET'} ${url}`);
+    console.log(`🌐 API 요청 (${isDevelopment ? 'Proxy' : 'Direct'}): ${options.method || 'GET'} ${url}`);
 
     const config = {
       method: 'GET',
@@ -64,6 +66,12 @@ class ApiService {
       return data;
     } catch (error) {
       console.error(`❌ API 요청 실패 (${url}):`, error);
+      
+      // Mixed Content 에러 감지
+      if (error.message.includes('Mixed Content') || error.message.includes('blocked')) {
+        throw new Error(`🔒 보안 정책으로 인해 HTTP 연결이 차단되었습니다. HTTPS 백엔드가 필요합니다.`);
+      }
+      
       throw new Error(`백엔드 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요. (${this.baseURL})`);
     }
   }
