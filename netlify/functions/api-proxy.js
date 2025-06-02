@@ -33,13 +33,15 @@ exports.handler = async (event, context) => {
       timestamp: new Date().toISOString()
     });
 
-    // 프록시 경로를 event.path 그대로 사용 (예: /api/auth/session)
-    // const proxyPath = event.path.replace('/api', '').replace('/.netlify/functions/api-proxy', ''); // 기존 로직
-    const proxyPath = event.path.replace('/.netlify/functions/api-proxy', ''); // 함수 자체 경로만 제거
+    const functionPrefix = '/.netlify/functions/api-proxy';
+    // event.path에서 함수 자체 경로 부분을 제거하여 순수 splat 경로를 얻습니다. (예: /auth/session)
+    const splatPath = event.path.startsWith(functionPrefix) ? event.path.substring(functionPrefix.length) : event.path;
+    // 백엔드가 기대하는 /api 접두사를 splat 경로 앞에 추가합니다. (예: /api/auth/session)
+    const backendApiPath = `/api${splatPath}`;
     
     // targetUrl은 BACKEND_BASE_URL 뒤에 전체 API 경로가 붙어야 함
     // 예: http://31.220.83.213/api/auth/session
-    const targetUrl = `${BACKEND_BASE_URL}${proxyPath}`; 
+    const targetUrl = `${BACKEND_BASE_URL}${backendApiPath}`; 
     
     console.log(`🔗 Proxying to (Nginx): ${targetUrl}`); // 로그 메시지 변경
 
