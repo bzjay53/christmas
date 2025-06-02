@@ -1,7 +1,8 @@
 // 🔗 Christmas Trading - Netlify Functions API Proxy
 // Phase 1-C: Mixed Content 해결 및 라우팅 개선
 
-const BACKEND_BASE_URL = 'http://31.220.83.213:8000';
+// 백엔드 URL을 Nginx를 통하도록 변경 (80번 포트 사용)
+const BACKEND_BASE_URL = 'http://31.220.83.213'; // 포트 8000 제거
 
 exports.handler = async (event, context) => {
   // CORS 헤더 설정
@@ -32,11 +33,15 @@ exports.handler = async (event, context) => {
       timestamp: new Date().toISOString()
     });
 
-    // 프록시 경로 추출 (/api/xxx → /xxx)
-    const proxyPath = event.path.replace('/api', '').replace('/.netlify/functions/api-proxy', '');
-    const targetUrl = `${BACKEND_BASE_URL}${proxyPath}`;
+    // 프록시 경로를 event.path 그대로 사용 (예: /api/auth/session)
+    // const proxyPath = event.path.replace('/api', '').replace('/.netlify/functions/api-proxy', ''); // 기존 로직
+    const proxyPath = event.path.replace('/.netlify/functions/api-proxy', ''); // 함수 자체 경로만 제거
     
-    console.log(`🔗 Proxying to: ${targetUrl}`);
+    // targetUrl은 BACKEND_BASE_URL 뒤에 전체 API 경로가 붙어야 함
+    // 예: http://31.220.83.213/api/auth/session
+    const targetUrl = `${BACKEND_BASE_URL}${proxyPath}`; 
+    
+    console.log(`🔗 Proxying to (Nginx): ${targetUrl}`); // 로그 메시지 변경
 
     // 요청 헤더 준비
     const requestHeaders = {
@@ -51,7 +56,7 @@ exports.handler = async (event, context) => {
 
     // 쿼리 파라미터 처리
     let fullUrl = targetUrl;
-    if (event.queryStringParameters) {
+    if (event.queryStringParameters && Object.keys(event.queryStringParameters).length > 0) {
       const queryString = new URLSearchParams(event.queryStringParameters).toString();
       fullUrl = `${targetUrl}?${queryString}`;
     }
@@ -70,6 +75,8 @@ exports.handler = async (event, context) => {
     console.log(`📤 Request Options:`, { url: fullUrl, options: requestOptions });
 
     // 백엔드 요청 실행
+    // Dynamic import for node-fetch
+    const fetch = (await import('node-fetch')).default;
     const response = await fetch(fullUrl, requestOptions);
     const responseText = await response.text();
 
@@ -85,7 +92,7 @@ exports.handler = async (event, context) => {
     try {
       responseData = JSON.parse(responseText);
     } catch (e) {
-      console.log(`⚠️ Non-JSON response, returning as text`);
+      console.log(`⚠️ Non-JSON response, returning as text: [${responseText.substring(0,100)}...]`); // 응답 앞부분 로깅
       responseData = responseText;
     }
 
@@ -94,9 +101,9 @@ exports.handler = async (event, context) => {
       statusCode: response.status,
       headers: {
         ...corsHeaders,
-        'Content-Type': 'application/json'
+        'Content-Type': response.headers.get('content-type') || 'application/json' // 백엔드 응답의 Content-Type 사용
       },
-      body: JSON.stringify(responseData)
+      body: response.headers.get('content-type')?.includes('application/json') ? JSON.stringify(responseData) : responseText // JSON이면 stringify, 아니면 그대로
     };
 
   } catch (error) {
