@@ -141,7 +141,7 @@ function App() {
         // 3. 백엔드 연결 상태 확인
         setLoadingMessage('🔗 백엔드 서버 연결 확인 중...')
         try {
-          const healthCheck = await apiService.request('/health')
+          const healthCheck = await apiService.request('/api/health')
           console.log('✅ 백엔드 연결 정상:', healthCheck)
           showNotification('🎉 시스템이 정상적으로 초기화되었습니다!', 'success')
         } catch (error) {
