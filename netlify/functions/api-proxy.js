@@ -5,6 +5,10 @@
 const BACKEND_BASE_URL = 'http://31.220.83.213'; // 포트 8000 제거
 
 exports.handler = async (event, context) => {
+  // RAW INPUT LOGGING
+  console.log('RAW event.path:', event.path);
+  console.log('RAW event.queryStringParameters:', event.queryStringParameters);
+
   // CORS 헤더 설정
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
