@@ -6,14 +6,14 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on mode
   const env = loadEnv(mode, process.cwd(), '')
   
-  // 🚨 Nginx 프록시를 통한 백엔드 연결
-  const apiBaseUrl = 'http://31.220.83.213'  // 80번 포트 사용 (Nginx 프록시)
+  // 🚨 Nginx 프록시를 통한 백엔드 연결 (80번 포트)
+  const apiBaseUrl = 'http://31.220.83.213'  // Nginx 프록시 사용
   
   console.log('🔧 Vite Config Debug:', {
     mode,
     command,
     apiBaseUrl,
-    note: 'Nginx 프록시를 통한 백엔드 연결'
+    note: 'Nginx 프록시를 통한 백엔드 연결 (80번 포트)'
   })
   
   return {
@@ -25,7 +25,7 @@ export default defineConfig(({ command, mode }) => {
       // 개발 환경에서 CORS 문제 해결
       proxy: mode === 'development' ? {
         '/api': {
-          target: 'http://31.220.83.213',
+          target: 'http://31.220.83.213',  // Nginx 프록시 사용
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }
