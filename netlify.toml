@@ -1,5 +1,4 @@
 [build]
-  base = "web-dashboard"
   command = "npm ci && npx vite build"
   publish = "dist"
   functions = "../netlify/functions"
