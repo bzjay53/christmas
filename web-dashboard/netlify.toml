@@ -1,4 +1,4 @@
-functionsDirectory = "netlify/functions"
+# functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "config"
 headersOrigin = "config"
 redirectsOrigin = "config"
