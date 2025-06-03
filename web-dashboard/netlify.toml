@@ -1,16 +1,16 @@
-functionsDirectory = "E:\\study\\Business\\Develope\\christmas\\web-dashboard\\netlify\\functions"
+functionsDirectory = "netlify/functions"
 functionsDirectoryOrigin = "config"
 headersOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
 
 [build]
-publish = "E:\\study\\Business\\Develope\\christmas\\web-dashboard\\dist"
+publish = "dist"
 publishOrigin = "config"
 commandOrigin = "config"
-base = "E:\\study\\Business\\Develope\\christmas\\web-dashboard"
+base = "web-dashboard"
 command = "npm run build"
-functions = "E:\\study\\Business\\Develope\\christmas\\web-dashboard\\netlify\\functions"
+functions = "netlify/functions"
 
 [build.environment]
 NODE_VERSION = "18"
@@ -51,32 +51,8 @@ Cache-Control = "public, max-age=31536000, immutable"
 
 [[redirects]]
 from = "/api/proxy/*"
-to = "/.netlify/functions/api-proxy"
-status = 200.0
-force = false
-
-[redirects.query]
-
-[redirects.conditions]
-
-[redirects.headers]
-
-[[redirects]]
-from = "/api/proxy"
-to = "/.netlify/functions/api-proxy"
-status = 200.0
-force = false
-
-[redirects.query]
-
-[redirects.conditions]
-
-[redirects.headers]
-
-[[redirects]]
-from = "/api/proxy/*"
 to = "/.netlify/functions/api-proxy/:splat"
-status = 200.0
+status = 200
 force = false
 
 [redirects.query]
@@ -88,7 +64,7 @@ force = false
 [[redirects]]
 from = "/*"
 to = "/index.html"
-status = 200.0
+status = 200
 force = false
 
 [redirects.query]
