@@ -78,3 +78,25 @@ Cache-Control = "public, max-age=31536000, immutable"
 # [redirects.conditions]
 # 
 # [redirects.headers]
+
+# 리디렉션 규칙 추가 시작
+[[redirects]]
+  from = "/test-static"
+  to = "/test-page.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/proxy/*"
+  to = "/.netlify/functions/api-proxy/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/hello"
+  to = "/.netlify/functions/hello"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+# 리디렉션 규칙 추가 끝
