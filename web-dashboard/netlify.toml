@@ -55,6 +55,12 @@ to = "/.netlify/functions/api-proxy/:splat"
 status = 200
 force = false
 
+[[redirects]]
+from = "/api/hello"
+to = "/.netlify/functions/hello"
+status = 200
+force = false
+
 [redirects.query]
 
 [redirects.conditions]
