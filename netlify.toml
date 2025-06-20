@@ -1,7 +1,6 @@
 [build]
   publish = "frontend/dist"
   command = "cd frontend && npm install && npm run build"
-  functions = "functions"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -81,15 +80,15 @@
 [forms]
   spam-detection = true
 
-# 함수 설정
-[functions]
-  directory = "functions/"
-  node_bundler = "esbuild"
+# 함수 설정 (현재 사용 안함)
+# [functions]
+#   directory = "functions/"
+#   node_bundler = "esbuild"
 
-# Edge Functions 설정 (필요시)
-[[edge_functions]]
-  function = "auth-check"
-  path = "/dashboard/*"
+# Edge Functions 설정 (현재 사용 안함)
+# [[edge_functions]]
+#   function = "auth-check"
+#   path = "/dashboard/*"
 
 # 브랜치별 배포 설정
 [context.production]
