@@ -1,0 +1,186 @@
+/* Christmas Trading App Styles */
+
+.app-layout {
+  min-height: 100vh;
+}
+
+.site-layout {
+  margin-left: 200px;
+  transition: margin-left 0.2s;
+}
+
+.site-layout-content {
+  margin: 24px 16px 0;
+  overflow: initial;
+  min-height: calc(100vh - 112px);
+  background: #f0f2f5;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .site-layout {
+    margin-left: 0;
+  }
+  
+  .site-layout-content {
+    margin: 16px 8px 0;
+  }
+}
+
+/* Loading and error states */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Card hover effects */
+.hover-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hover-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Status indicators */
+.status-online {
+  color: #52c41a;
+}
+
+.status-offline {
+  color: #ff4d4f;
+}
+
+.status-warning {
+  color: #faad14;
+}
+
+/* Trading specific styles */
+.trading-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.trading-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: #1890ff;
+}
+
+.profit-positive {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.profit-negative {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.profit-neutral {
+  color: #8c8c8c;
+  font-weight: 600;
+}
+
+/* Chart container */
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+/* Mobile optimization */
+@media (max-width: 576px) {
+  .trading-card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .chart-container {
+    padding: 16px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .site-layout {
+    margin-left: 0;
+  }
+  
+  .ant-layout-sider {
+    display: none;
+  }
+  
+  .ant-layout-header {
+    display: none;
+  }
+}

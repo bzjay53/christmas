@@ -1,0 +1,115 @@
+[build]
+  publish = "frontend/dist"
+  command = "cd frontend && npm run build"
+  functions = "functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--production=false"
+
+# SPA routing을 위한 리다이렉트 설정
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API 프록시 설정 (백엔드 서버로 프록시)
+[[redirects]]
+  from = "/api/*"
+  to = "https://christmas-trading-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# 정적 파일 캐싱 설정
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# 보안 헤더 설정
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.christmas-trading.com https://*.firebaseapp.com https://*.googleapis.com wss://*.firebaseio.com; frame-src 'none';"
+
+# 개발 환경 설정
+[dev]
+  command = "cd frontend && npm run dev"
+  port = 3000
+  publish = "frontend/dist"
+
+# 환경 변수 (Netlify 대시보드에서 설정)
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+# 플러그인 설정
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+  [plugins.inputs]
+    thresholds.performance = 0.8
+    thresholds.accessibility = 0.9
+    thresholds.best-practices = 0.9
+    thresholds.seo = 0.8
+
+# 폼 처리 설정 (문의사항 등)
+[forms]
+  spam-detection = true
+
+# 함수 설정
+[functions]
+  directory = "functions/"
+  node_bundler = "esbuild"
+
+# Edge Functions 설정 (필요시)
+[[edge_functions]]
+  function = "auth-check"
+  path = "/dashboard/*"
+
+# 브랜치별 배포 설정
+[context.production]
+  command = "cd frontend && npm run build"
+  
+[context.deploy-preview]
+  command = "cd frontend && npm run build"
+  
+[context.branch-deploy]
+  command = "cd frontend && npm run build"
+
+# 환경별 환경변수
+[context.production.environment]
+  VITE_APP_ENV = "production"
+  VITE_API_URL = "https://christmas-trading-backend.onrender.com"
+
+[context.deploy-preview.environment]
+  VITE_APP_ENV = "preview"
+  VITE_API_URL = "https://christmas-trading-backend.onrender.com"
+
+[context.branch-deploy.environment]
+  VITE_APP_ENV = "development"
+  VITE_API_URL = "https://christmas-trading-backend.onrender.com"
