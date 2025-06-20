@@ -1,6 +1,7 @@
 [build]
-  publish = "frontend/dist"
-  command = "cd frontend && npm ci && npm run build"
+  base = "frontend"
+  publish = "dist"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -92,13 +93,13 @@
 
 # 브랜치별 배포 설정
 [context.production]
-  command = "cd frontend && npm run build"
+  command = "npm ci && npm run build"
   
 [context.deploy-preview]
-  command = "cd frontend && npm run build"
+  command = "npm ci && npm run build"
   
 [context.branch-deploy]
-  command = "cd frontend && npm run build"
+  command = "npm ci && npm run build"
 
 # 환경별 환경변수
 [context.production.environment]
