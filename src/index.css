@@ -1,0 +1,23 @@
+/* Import Christmas Design System */
+@import './styles/christmas-design-system.css';
+
+/* Additional global styles */
+html {
+  scroll-behavior: smooth;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--christmas-green);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--christmas-dark-green);
+  text-decoration: underline;
+}

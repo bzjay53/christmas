@@ -1,0 +1,457 @@
+/* 🎄 Christmas Trading Design System */
+
+:root {
+  /* Christmas Colors */
+  --christmas-red: #dc2626;
+  --christmas-green: #16a34a;
+  --christmas-gold: #eab308;
+  --christmas-silver: #64748b;
+  --christmas-white: #fefefe;
+  
+  /* Extended Colors */
+  --christmas-dark-red: #991b1b;
+  --christmas-dark-green: #166534;
+  --christmas-light-red: #fecaca;
+  --christmas-light-green: #dcfce7;
+  --christmas-cream: #fef3c7;
+  
+  /* Semantic Colors */
+  --profit-green: var(--christmas-green);
+  --loss-red: var(--christmas-red);
+  --neutral-gray: var(--christmas-silver);
+  
+  /* Risk Level Colors */
+  --risk-ultra-low: #dcfce7;
+  --risk-low: #bbf7d0;
+  --risk-medium: #fef3c7;
+  --risk-high: #fed7aa;
+  --risk-ultra-high: #fecaca;
+  
+  /* Status Colors */
+  --status-success: var(--christmas-green);
+  --status-warning: var(--christmas-gold);
+  --status-error: var(--christmas-red);
+  --status-info: #3b82f6;
+  
+  /* Gradients */
+  --christmas-gradient: linear-gradient(135deg, #dc2626 0%, #16a34a 100%);
+  --festive-gradient: linear-gradient(45deg, #eab308 0%, #dc2626 50%, #16a34a 100%);
+  --snow-gradient: linear-gradient(180deg, #fefefe 0%, #f1f5f9 100%);
+  --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  
+  /* Background Gradients */
+  --bg-winter: linear-gradient(to bottom, #e0f2fe 0%, #f0f9ff 100%);
+  --bg-warm: linear-gradient(to bottom, #fef3c7 0%, #fed7aa 100%);
+  --bg-cool: linear-gradient(to bottom, #ecfdf5 0%, #d1fae5 100%);
+  
+  /* Typography */
+  --font-primary: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  --font-secondary: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-monospace: 'Fira Code', 'JetBrains Mono', 'Monaco', monospace;
+  --font-festive: 'Dancing Script', cursive;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  
+  /* Border Radius */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;
+  --radius-base: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+  --radius-gift: var(--radius-xl);
+  --radius-ornament: var(--radius-full);
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-christmas: 0 8px 24px rgba(220, 38, 38, 0.2);
+  --shadow-gold: 0 4px 16px rgba(234, 179, 8, 0.3);
+  --shadow-snow: 0 2px 12px rgba(255, 255, 255, 0.8);
+  --shadow-festive: 0 8px 32px rgba(22, 163, 74, 0.15);
+}
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: #374151;
+  background: var(--bg-winter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Classes */
+.title-hero {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-extrabold);
+  background: var(--christmas-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.title-section {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--christmas-dark-green);
+}
+
+.title-card {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--christmas-dark-red);
+}
+
+.text-primary {
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  color: #374151;
+  line-height: 1.6;
+}
+
+.text-secondary {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.text-data {
+  font-family: var(--font-monospace);
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.025em;
+}
+
+.text-profit {
+  color: var(--profit-green);
+  font-weight: var(--font-bold);
+}
+
+.text-loss {
+  color: var(--loss-red);
+  font-weight: var(--font-bold);
+}
+
+/* Christmas Cards */
+.christmas-card {
+  background: white;
+  border-radius: var(--radius-gift);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              var(--festive-gradient) border-box;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  padding: var(--space-6);
+}
+
+.christmas-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--festive-gradient);
+}
+
+.christmas-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-christmas);
+}
+
+.card-profit {
+  background: var(--christmas-light-green);
+  border-left: 4px solid var(--christmas-green);
+}
+
+.card-portfolio {
+  background: var(--christmas-light-red);
+  border-left: 4px solid var(--christmas-red);
+}
+
+.card-trading {
+  background: var(--christmas-cream);
+  border-left: 4px solid var(--christmas-gold);
+}
+
+.card-ai {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border-left: 4px solid #6366f1;
+}
+
+/* Christmas Buttons */
+.btn-christmas-primary {
+  background: var(--christmas-gradient);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-6);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  font-size: var(--text-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-christmas-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-christmas-primary:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #15803d 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-christmas);
+}
+
+.btn-christmas-primary:hover::before {
+  left: 100%;
+}
+
+.btn-christmas-secondary {
+  background: white;
+  border: 2px solid var(--christmas-gold);
+  color: var(--christmas-gold);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-6);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: var(--text-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-christmas-secondary:hover {
+  background: var(--christmas-gold);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-christmas-danger {
+  background: var(--christmas-red);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-6);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: var(--text-base);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-christmas-danger:hover {
+  background: var(--christmas-dark-red);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Form Elements */
+.input-christmas {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input-christmas:focus {
+  outline: none;
+  border-color: var(--christmas-green);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.input-christmas:invalid {
+  border-color: var(--christmas-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Layout */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  max-width: 1280px;
+}
+
+.grid-responsive {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Animations */
+@keyframes snowfall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.snow-particle {
+  position: fixed;
+  top: -10px;
+  color: white;
+  user-select: none;
+  pointer-events: none;
+  animation: snowfall linear infinite;
+  z-index: 1000;
+}
+
+.snow-small { font-size: 10px; animation-duration: 6s; }
+.snow-medium { font-size: 16px; animation-duration: 8s; }
+.snow-large { font-size: 22px; animation-duration: 10s; }
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+.sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Utility Classes */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--space-2); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+
+.p-4 { padding: var(--space-4); }
+.p-6 { padding: var(--space-6); }
+.p-8 { padding: var(--space-8); }
+.px-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+.py-4 { padding-top: var(--space-4); padding-bottom: var(--space-4); }
+
+.m-4 { margin: var(--space-4); }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.mb-4 { margin-bottom: var(--space-4); }
+.mb-6 { margin-bottom: var(--space-6); }
+.mb-8 { margin-bottom: var(--space-8); }
+
+.rounded { border-radius: var(--radius-base); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-xl { border-radius: var(--radius-xl); }
+.rounded-full { border-radius: var(--radius-full); }

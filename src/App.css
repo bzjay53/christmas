@@ -1,0 +1,49 @@
+/* Christmas Trading App Specific Styles */
+
+/* Navigation enhancements */
+nav {
+  backdrop-filter: blur(10px);
+}
+
+/* Page transitions */
+main {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced sparkle effect */
+.sparkle {
+  position: relative;
+}
+
+.sparkle::after {
+  content: '✨';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.7em;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Gold sparkle for special elements */
+.gold-sparkle::after {
+  content: '⭐';
+  color: var(--christmas-gold);
+  animation: gold-sparkle 3s ease-in-out infinite;
+}
+
+/* Christmas gradient border effect */
+.border-christmas-gradient {
+  border-image: var(--festive-gradient);
+  border-image-slice: 1;
+}
