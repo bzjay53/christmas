@@ -1,4 +1,5 @@
 import { TrendingUp, DollarSign, Shield, Brain } from 'lucide-react'
+import AITradingAdvisor from '../components/AITradingAdvisor'
 
 export function Dashboard() {
   // Mock data
@@ -131,6 +132,11 @@ export function Dashboard() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* AI Trading Advisor */}
+        <div className="mb-8">
+          <AITradingAdvisor />
         </div>
 
         {/* AI Recommendations */}
