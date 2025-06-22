@@ -32,7 +32,7 @@ const ProTraderLayout: React.FC<ProTraderLayoutProps> = ({ children }) => {
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-slate-800 border-r border-slate-700`}>
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
-          <h1 className={`text-xl font-bold ${sidebarOpen ? 'block' : 'hidden'}`}>ProTrader</h1>
+          <h1 className={`text-xl font-bold ${sidebarOpen ? 'block' : 'hidden'} text-green-400`}>🎄 Christmas Trading</h1>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-slate-700 rounded-md"

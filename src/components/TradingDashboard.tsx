@@ -1,11 +1,11 @@
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Wifi, WifiOff } from 'lucide-react';
+import { PortfolioChart, VolumeChart, SectorPieChart, ChristmasDecorations } from './ChartComponents';
+import { usePortfolio, useChristmasNotifications } from '../hooks/useRealTimeData';
 
 const TradingDashboard: React.FC = () => {
-  // Mock data for demonstration
-  const portfolioValue = 158640;
-  const portfolioChange = 5439;
-  const portfolioChangePercent = 3.57;
+  const { portfolio, isConnected } = usePortfolio();
+  const { notifications, addNotification } = useChristmasNotifications();
   
   const topGainers = [
     { symbol: 'NVDA', price: 415.6, change: 15.6, changePercent: 3.32 },
@@ -27,16 +27,36 @@ const TradingDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <ChristmasDecorations />
+      
+      {/* Christmas Notifications */}
+      {notifications.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {notifications.map((notification, index) => (
+            <div
+              key={index}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse"
+            >
+              {notification}
+            </div>
+          ))}
+        </div>
+      )}
       {/* Portfolio Overview */}
       <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-slate-300 mb-2">Portfolio</h2>
-            <div className="text-3xl font-bold text-white">${portfolioValue.toLocaleString()}</div>
+            <h2 className="text-lg font-semibold text-slate-300 mb-2">🎄 Christmas Portfolio</h2>
+            <div className="text-3xl font-bold text-white">${portfolio.totalValue.toLocaleString()}</div>
             <div className="flex items-center mt-1">
               <TrendingUp size={16} className="text-green-500 mr-1" />
-              <span className="text-green-500 text-sm">+${portfolioChange.toLocaleString()} (+{portfolioChangePercent}%)</span>
+              <span className="text-green-500 text-sm">+${Math.abs(portfolio.totalChange).toLocaleString()} ({portfolio.totalChangePercent >= 0 ? '+' : ''}{portfolio.totalChangePercent.toFixed(2)}%)</span>
+              {isConnected ? (
+                <Wifi size={12} className="text-green-500 ml-2" />
+              ) : (
+                <WifiOff size={12} className="text-red-500 ml-2" />
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -47,11 +67,14 @@ const TradingDashboard: React.FC = () => {
         </div>
 
         {/* Chart Area */}
-        <div className="bg-slate-900 rounded-lg p-4 h-64 flex items-center justify-center border border-slate-700">
-          <div className="text-center text-slate-400">
-            <TrendingUp size={48} className="mx-auto mb-2 opacity-50" />
-            <p>Portfolio Performance Chart</p>
-            <p className="text-sm">Chart implementation would go here</p>
+        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <div className="mb-4">
+            <h4 className="text-sm text-slate-400 mb-2">Portfolio Performance</h4>
+            <PortfolioChart />
+          </div>
+          <div>
+            <h4 className="text-sm text-slate-400 mb-2">Trading Volume</h4>
+            <VolumeChart />
           </div>
         </div>
       </div>
@@ -81,68 +104,82 @@ const TradingDashboard: React.FC = () => {
 
         {/* Trading Panel */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold mb-4">Quick Trade</h3>
+          <h3 className="text-lg font-semibold mb-4">🎁 Christmas Trading</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-slate-400 mb-1">Symbol</label>
-              <input
-                type="text"
-                placeholder="AAPL"
-                className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none"
-              />
+              <select className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none">
+                <option>AAPL</option>
+                <option>GOOGL</option>
+                <option>MSFT</option>
+                <option>NVDA</option>
+                <option>TSLA</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm text-slate-400 mb-1">Quantity</label>
               <input
                 type="number"
-                placeholder="0"
+                placeholder="10"
+                min="1"
                 className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Price</label>
-              <input
-                type="text"
-                placeholder="Market"
-                className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none"
-              />
+              <label className="block text-sm text-slate-400 mb-1">Order Type</label>
+              <select className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none">
+                <option>Market Order</option>
+                <option>Limit Order</option>
+                <option>Stop Loss</option>
+              </select>
+            </div>
+            <div className="bg-slate-900 rounded p-3 border border-slate-700">
+              <div className="text-xs text-slate-400 mb-1">Estimated Total</div>
+              <div className="text-lg font-bold text-white">$1,862.50</div>
+              <div className="text-xs text-green-500">Commission: $0 (Christmas Special!)</div>
             </div>
             <div className="flex space-x-2">
-              <button className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors">
-                Buy
+              <button 
+                onClick={() => addNotification('Buy order placed successfully!')}
+                className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+              >
+                🎄 Buy
               </button>
-              <button className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors">
-                Sell
+              <button 
+                onClick={() => addNotification('Sell order placed successfully!')}
+                className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700 transition-colors"
+              >
+                🎁 Sell
               </button>
             </div>
           </div>
         </div>
 
-        {/* Watchlist */}
+        {/* Portfolio Allocation */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-lg font-semibold mb-4">Watchlist</h3>
-          <div className="space-y-3">
-            {[
-              { symbol: 'AAPL', name: 'Apple Inc.', price: 186.18, change: 3.74 },
-              { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 146.80, change: -0.33 },
-              { symbol: 'MSFT', name: 'Microsoft Corp.', price: 338.50, change: 9.33 },
-              { symbol: 'TSLA', name: 'Tesla Inc.', price: 245.75, change: 6.52 },
-              { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 131.76, change: -0.29 },
-              { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 415.60, change: 4.02 },
-            ].map((stock) => (
-              <div key={stock.symbol} className="flex items-center justify-between p-2 hover:bg-slate-700 rounded cursor-pointer">
-                <div>
-                  <div className="font-medium text-white">{stock.symbol}</div>
-                  <div className="text-slate-400 text-xs">{stock.name}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-white">${stock.price}</div>
-                  <div className={`text-sm ${stock.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {stock.change >= 0 ? '+' : ''}${stock.change.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <h3 className="text-lg font-semibold mb-4">🎄 Portfolio Allocation</h3>
+          <SectorPieChart />
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Technology</span>
+              <span className="text-green-500">35%</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Healthcare</span>
+              <span className="text-blue-500">25%</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Finance</span>
+              <span className="text-purple-500">20%</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Consumer</span>
+              <span className="text-yellow-500">15%</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-400">Energy</span>
+              <span className="text-red-500">5%</span>
+            </div>
           </div>
         </div>
       </div>

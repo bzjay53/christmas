@@ -1,4 +1,5 @@
 import { TrendingUp, PieChart, DollarSign } from 'lucide-react'
+import { PortfolioChart } from '../components/ChartComponents'
 
 export function Portfolio() {
   // Mock portfolio data
@@ -53,13 +54,6 @@ export function Portfolio() {
   const totalPnL = holdings.reduce((sum, holding) => sum + holding.pnl, 0)
   const totalPnLPercent = (totalPnL / (totalValue - totalPnL)) * 100
 
-  const performanceData = [
-    { date: '2024-06-17', value: 58000 },
-    { date: '2024-06-18', value: 59200 },
-    { date: '2024-06-19', value: 59800 },
-    { date: '2024-06-20', value: 60400 },
-    { date: '2024-06-21', value: 59805.5 }
-  ]
 
   return (
     <div className="space-y-6">
@@ -113,17 +107,9 @@ export function Portfolio() {
           </div>
         </div>
         
-        {/* Simple Chart Representation */}
-        <div className="h-64 bg-slate-900 rounded-lg flex items-end justify-around p-4 border border-slate-700">
-          {performanceData.map((data, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <div 
-                className="bg-green-500 rounded-t w-8 transition-all duration-500 hover:bg-green-400"
-                style={{ height: `${(data.value / 65000) * 200}px` }}
-              ></div>
-              <p className="text-xs text-slate-400 mt-2">{data.date.split('-')[2]}</p>
-            </div>
-          ))}
+        {/* Portfolio Performance Chart */}
+        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+          <PortfolioChart />
         </div>
       </div>
 
