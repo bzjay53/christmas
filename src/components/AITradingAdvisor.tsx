@@ -19,7 +19,8 @@ const AITradingAdvisor: React.FC = () => {
   const [formData, setFormData] = useState({
     portfolio: '',
     budget: 10000,
-    strategy: 'balanced'
+    strategy: 'balanced',
+    market: 'global'
   })
 
   const generateAdvice = async () => {
@@ -38,7 +39,8 @@ const AITradingAdvisor: React.FC = () => {
           arguments: {
             portfolio: portfolioArray,
             budget: formData.budget,
-            strategy: formData.strategy
+            strategy: formData.strategy,
+            market: formData.market
           }
         })
       })
@@ -84,7 +86,7 @@ const AITradingAdvisor: React.FC = () => {
               type="text"
               value={formData.portfolio}
               onChange={(e) => setFormData({...formData, portfolio: e.target.value})}
-              placeholder="AAPL, MSFT, TSLA (쉼표로 구분)"
+              placeholder="AAPL, MSFT, 삼성전자, NVDA (쉼표로 구분)"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -101,6 +103,29 @@ const AITradingAdvisor: React.FC = () => {
               max="1000000"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
             />
+          </div>
+        </div>
+
+        {/* 시장 선택 */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            투자 시장
+          </label>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            {[{value: 'global', label: '🌍 글로벌 (미국+한국)', desc: '해외주식 + 국내주식'}, {value: 'us', label: '🇺🇸 미국 시장', desc: 'NASDAQ, NYSE'}, {value: 'korea', label: '🇰🇷 한국 시장', desc: 'KOSPI, KOSDAQ'}, {value: 'asia', label: '🌏 아시아 시장', desc: '일본, 홍콩, 중국'}].map((market) => (
+              <div
+                key={market.value}
+                onClick={() => setFormData({...formData, market: market.value})}
+                className={`p-3 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                  formData.market === market.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="font-semibold text-gray-800">{market.label}</div>
+                <div className="text-xs text-gray-600">{market.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
 
