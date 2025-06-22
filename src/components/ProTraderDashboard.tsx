@@ -1,7 +1,12 @@
 import React from 'react';
-import { PortfolioChart, VolumeChart, ChristmasDecorations } from './ChartComponents';
+import { VolumeChart, ChristmasDecorations } from './ChartComponents';
+import MajorIndicesChart from './charts/MajorIndicesChart';
+import { useMarketData } from '../hooks/useMarketData';
 
 const ProTraderDashboard: React.FC = () => {
+  // 실시간 마켓 데이터 사용
+  const { indices, isLoading, lastUpdate } = useMarketData();
+
   // Holdings data matching screenshot exactly
   const holdings = [
     { symbol: 'AAPL', shares: 100, avgPrice: 150.50, current: 152.10, marketValue: 15210, pnl: 1330, pnlPercent: 9.16 },
@@ -39,27 +44,20 @@ const ProTraderDashboard: React.FC = () => {
           {/* Left Column - Main Chart (2/3 width) */}
           <div className="col-span-2 space-y-4">
             
-            {/* AAPL Main Chart */}
-            <div className="bg-slate-800 rounded-lg border border-slate-700 h-96">
-              <div className="p-4 border-b border-slate-700">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-white font-semibold">AAPL - Apple Inc.</h3>
-                    <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-2xl font-bold text-white">$168.63</span>
-                      <span className="bg-green-600 text-white px-2 py-1 rounded text-sm font-medium">
-                        +15.18 (+0.49%)
-                      </span>
-                    </div>
+            {/* Major Indices Chart - New Implementation */}
+            <div className="bg-slate-800 rounded-lg border border-slate-700">
+              <div className="p-4">
+                <MajorIndicesChart 
+                  indices={indices}
+                  height={350}
+                  showGrid={true}
+                  animated={true}
+                />
+                {!isLoading && (
+                  <div className="mt-2 text-xs text-slate-400 text-right">
+                    마지막 업데이트: {lastUpdate}
                   </div>
-                  <div className="text-right text-slate-400 text-sm">
-                    <div>10:00</div>
-                    <div>price: 152.1</div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 h-80">
-                <PortfolioChart />
+                )}
               </div>
             </div>
 
