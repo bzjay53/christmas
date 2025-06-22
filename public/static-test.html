@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎄 Christmas Trading - ProTrader Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -236,14 +237,22 @@
             <div class="content-area">
                 <!-- 차트 섹션 -->
                 <div class="chart-section">
+                    <!-- 메인 주요 지수 차트 -->
                     <div class="chart-container">
-                        <div class="chart-title">AAPL - Apple Inc. $150.25 (+2.45%)</div>
-                        <div class="chart-placeholder">📈 실시간 차트가 여기에 표시됩니다</div>
+                        <div class="chart-title">🌏 주요 지수 (KOSPI, NASDAQ, S&P500)</div>
+                        <canvas id="majorIndicesChart" style="height: 300px;"></canvas>
                     </div>
                     
+                    <!-- Apple 주식 차트 -->
+                    <div class="chart-container" style="height: 250px;">
+                        <div class="chart-title">📈 AAPL - Apple Inc. $150.25 (+2.45%)</div>
+                        <canvas id="appleStockChart" style="height: 180px;"></canvas>
+                    </div>
+                    
+                    <!-- 거래량 차트 -->
                     <div class="chart-container" style="height: 200px;">
-                        <div class="chart-title">거래량</div>
-                        <div class="chart-placeholder" style="height: 120px;">📊 거래량 차트</div>
+                        <div class="chart-title">📊 거래량</div>
+                        <canvas id="volumeChart" style="height: 120px;"></canvas>
                     </div>
                 </div>
 
@@ -268,6 +277,12 @@
                             <span>TSLA</span>
                             <span class="price-positive">$245.75 (+2.73%)</span>
                         </div>
+                    </div>
+
+                    <!-- 포트폴리오 성과 차트 -->
+                    <div class="panel">
+                        <div class="panel-title">📈 포트폴리오 성과</div>
+                        <canvas id="portfolioChart" style="height: 150px;"></canvas>
                     </div>
 
                     <!-- 빠른 거래 -->
@@ -370,8 +385,225 @@
         </div>
     </div>
 
-    <!-- 눈 내리는 효과 -->
+    <!-- 차트 및 인터랙션 스크립트 -->
     <script>
+        // 차트 테마 설정
+        Chart.defaults.color = '#E5E7EB';
+        Chart.defaults.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+        Chart.defaults.borderColor = '#10B981';
+
+        // 1. 주요 지수 차트 (KOSPI, NASDAQ, S&P500)
+        function createMajorIndicesChart() {
+            const ctx = document.getElementById('majorIndicesChart').getContext('2d');
+            
+            // 시뮬레이션 데이터 (7일간)
+            const labels = ['12/18', '12/19', '12/20', '12/21', '12/22', '12/23', '12/24'];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'KOSPI',
+                            data: [2580, 2595, 2610, 2625, 2640, 2655, 2670],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'NASDAQ',
+                            data: [17800, 17850, 17900, 17950, 18000, 18050, 18100],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'S&P500',
+                            data: [5950, 5960, 5970, 5980, 5990, 6000, 6010],
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#E5E7EB' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        },
+                        y: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Apple 주식 차트
+        function createAppleStockChart() {
+            const ctx = document.getElementById('appleStockChart').getContext('2d');
+            
+            // 시뮬레이션 데이터 (1일 시간별)
+            const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
+            const data = [148.50, 149.20, 150.10, 149.80, 150.25, 150.60, 150.25];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'AAPL 주가',
+                        data: data,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        },
+                        y: {
+                            grid: { color: '#374151' },
+                            ticks: { 
+                                color: '#9CA3AF',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. 거래량 차트
+        function createVolumeChart() {
+            const ctx = document.getElementById('volumeChart').getContext('2d');
+            
+            const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
+            const data = [1200000, 980000, 1500000, 1100000, 1350000, 1600000, 1800000];
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '거래량',
+                        data: data,
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10B981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151' },
+                            ticks: { color: '#9CA3AF' }
+                        },
+                        y: {
+                            grid: { color: '#374151' },
+                            ticks: { 
+                                color: '#9CA3AF',
+                                callback: function(value) {
+                                    return (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. 포트폴리오 성과 차트 (도넛 차트)
+        function createPortfolioChart() {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', '현금'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            '#10B981',
+                            '#3B82F6', 
+                            '#F59E0B',
+                            '#EF4444',
+                            '#6B7280'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#1e293b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { 
+                                color: '#E5E7EB',
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 실시간 업데이트 시뮬레이션
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // 포트폴리오 값 업데이트
+                const portfolioValue = document.querySelector('.portfolio-value');
+                const currentValue = 105550.91;
+                const variation = (Math.random() - 0.5) * 100;
+                const newValue = currentValue + variation;
+                
+                if (portfolioValue) {
+                    portfolioValue.textContent = `🎄 Christmas Portfolio $${newValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+                
+                // Apple 주가 업데이트 (차트 제목)
+                const appleTitle = document.querySelector('.chart-container .chart-title');
+                if (appleTitle && appleTitle.textContent.includes('AAPL')) {
+                    const currentPrice = 150.25;
+                    const priceVariation = (Math.random() - 0.5) * 2;
+                    const newPrice = currentPrice + priceVariation;
+                    const changePercent = ((newPrice - 148.50) / 148.50 * 100).toFixed(2);
+                    
+                    appleTitle.textContent = `📈 AAPL - Apple Inc. $${newPrice.toFixed(2)} (${changePercent > 0 ? '+' : ''}${changePercent}%)`;
+                }
+            }, 30000); // 30초마다 업데이트
+        }
+
+        // 눈 내리는 효과
         function createSnowflake() {
             const snowflake = document.createElement('div');
             snowflake.className = 'snowflake';
@@ -386,11 +618,61 @@
             }, 10000);
         }
 
-        // 눈 내리기 시작
-        setInterval(createSnowflake, 1000);
-        
-        console.log('🎄 Static Christmas Trading Dashboard loaded successfully!');
-        console.log('🎄 This is a working prototype of the trading interface');
+        // 버튼 기능
+        function initializeButtons() {
+            // 매수/매도 버튼 클릭 효과
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+            });
+
+            // 매수 주문 버튼
+            const orderButton = document.querySelector('.btn-buy[style*="width: 100%"]');
+            if (orderButton) {
+                orderButton.addEventListener('click', function() {
+                    const symbol = document.querySelector('input[value="AAPL"]').value;
+                    const quantity = document.querySelector('input[value="10"]').value;
+                    
+                    this.textContent = '주문 처리 중...';
+                    this.style.background = '#6B7280';
+                    
+                    setTimeout(() => {
+                        this.textContent = '✅ 주문 완료!';
+                        this.style.background = '#10B981';
+                        
+                        setTimeout(() => {
+                            this.textContent = '매수 주문하기';
+                        }, 2000);
+                    }, 1500);
+                });
+            }
+        }
+
+        // 모든 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎄 Christmas Trading Dashboard with Real Charts!');
+            
+            // 차트 생성
+            setTimeout(() => {
+                createMajorIndicesChart();
+                createAppleStockChart();
+                createVolumeChart();
+                createPortfolioChart();
+            }, 500);
+            
+            // 기능 초기화
+            initializeButtons();
+            simulateRealTimeUpdates();
+            
+            // 눈 내리기 시작
+            setInterval(createSnowflake, 1000);
+            
+            console.log('🎄 All charts and features loaded successfully!');
+        });
     </script>
 </body>
 </html>
