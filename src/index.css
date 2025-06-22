@@ -1,5 +1,5 @@
 /* Import Christmas Design System */
-/* @import './styles/christmas-design-system.css'; */
+@import './styles/christmas-design-system.css';
 
 /* Additional global styles */
 html {
