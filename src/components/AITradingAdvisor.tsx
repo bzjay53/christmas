@@ -52,7 +52,7 @@ const AITradingAdvisor: React.FC = () => {
       } else {
         toast.error('AI 분석에 실패했습니다.')
       }
-    } catch (error) {
+    } catch {
       toast.error('서버 연결에 실패했습니다.')
     } finally {
       setLoading(false)

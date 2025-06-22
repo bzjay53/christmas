@@ -75,7 +75,7 @@ export const PortfolioChart: React.FC = () => {
               borderRadius: '6px',
               color: '#F9FAFB'
             }}
-            formatter={(value: any) => [`$${value.toLocaleString()}`, 'Portfolio Value']}
+            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Portfolio Value']}
           />
           <Area
             type="monotone"
@@ -113,7 +113,7 @@ export const VolumeChart: React.FC = () => {
               borderRadius: '6px',
               color: '#F9FAFB'
             }}
-            formatter={(value: any) => [value.toLocaleString(), 'Volume']}
+            formatter={(value: number) => [value.toLocaleString(), 'Volume']}
           />
           <Bar dataKey="volume" fill="#3B82F6" radius={[2, 2, 0, 0]} />
         </BarChart>
@@ -133,7 +133,7 @@ export const SectorPieChart: React.FC = () => {
             cy="50%"
             outerRadius={80}
             dataKey="value"
-            label={({ name, value }: any) => `${name}: ${value}%`}
+            label={({ name, value }: { name: string; value: number }) => `${name}: ${value}%`}
           >
             {sectorData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -168,7 +168,7 @@ export const StockPerformanceChart: React.FC = () => {
               borderRadius: '6px',
               color: '#F9FAFB'
             }}
-            formatter={(value: any) => [`${value}%`, 'Return']}
+            formatter={(value: number) => [`${value}%`, 'Return']}
           />
           <Bar 
             dataKey="return" 
