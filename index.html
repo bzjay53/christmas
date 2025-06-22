@@ -396,10 +396,15 @@
         function createMajorIndicesChart() {
             const ctx = document.getElementById('majorIndicesChart').getContext('2d');
             
+            // 기존 차트가 있으면 삭제
+            if (chartInstances.majorIndices) {
+                chartInstances.majorIndices.destroy();
+            }
+            
             // 시뮬레이션 데이터 (7일간)
             const labels = ['12/18', '12/19', '12/20', '12/21', '12/22', '12/23', '12/24'];
             
-            new Chart(ctx, {
+            chartInstances.majorIndices = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -454,11 +459,16 @@
         function createAppleStockChart() {
             const ctx = document.getElementById('appleStockChart').getContext('2d');
             
+            // 기존 차트가 있으면 삭제
+            if (chartInstances.appleStock) {
+                chartInstances.appleStock.destroy();
+            }
+            
             // 시뮬레이션 데이터 (1일 시간별)
             const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
             const data = [148.50, 149.20, 150.10, 149.80, 150.25, 150.60, 150.25];
             
-            new Chart(ctx, {
+            chartInstances.appleStock = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -500,10 +510,15 @@
         function createVolumeChart() {
             const ctx = document.getElementById('volumeChart').getContext('2d');
             
+            // 기존 차트가 있으면 삭제
+            if (chartInstances.volume) {
+                chartInstances.volume.destroy();
+            }
+            
             const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
             const data = [1200000, 980000, 1500000, 1100000, 1350000, 1600000, 1800000];
             
-            new Chart(ctx, {
+            chartInstances.volume = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -540,11 +555,24 @@
             });
         }
 
+        // 차트 인스턴스 저장 변수
+        let chartInstances = {
+            majorIndices: null,
+            appleStock: null,
+            volume: null,
+            portfolio: null
+        };
+
         // 4. 포트폴리오 성과 차트 (도넛 차트)
         function createPortfolioChart() {
             const ctx = document.getElementById('portfolioChart').getContext('2d');
             
-            new Chart(ctx, {
+            // 기존 차트가 있으면 삭제
+            if (chartInstances.portfolio) {
+                chartInstances.portfolio.destroy();
+            }
+            
+            chartInstances.portfolio = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', '현금'],
@@ -564,12 +592,17 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
                             labels: { 
                                 color: '#E5E7EB',
-                                font: { size: 11 }
+                                font: { size: 11 },
+                                padding: 8,
+                                usePointStyle: true
                             }
                         }
                     }
