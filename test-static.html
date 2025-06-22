@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎄 Christmas Trading - ProTrader Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            overflow-x: hidden;
+        }
+        .dashboard {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background: #1e293b;
+            border-right: 1px solid #374151;
+            padding: 20px;
+        }
+        .logo {
+            color: #10B981;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .nav-item:hover { background: #374151; }
+        .nav-item.active { background: #10B981; color: black; }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: #1e293b;
+            padding: 20px;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .portfolio-summary {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .portfolio-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #10B981;
+        }
+        .portfolio-change {
+            color: #10B981;
+            font-size: 1.1rem;
+        }
+        .content-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            overflow: auto;
+        }
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .chart-container {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            height: 400px;
+        }
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #E5E7EB;
+        }
+        .chart-placeholder {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #374151, #4B5563);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9CA3AF;
+        }
+        .sidebar-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .panel {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .panel-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #E5E7EB;
+        }
+        .market-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #374151;
+        }
+        .market-item:last-child { border-bottom: none; }
+        .price-positive { color: #10B981; }
+        .price-negative { color: #EF4444; }
+        .quick-trade {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-buy { background: #10B981; color: white; }
+        .btn-sell { background: #6B7280; color: white; }
+        .input-group {
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            display: block;
+            color: #9CA3AF;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 6px;
+            color: white;
+        }
+        .tables-section {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .table-container {
+            background: #1e293b;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-header {
+            background: #374151;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+        .table th {
+            background: #374151;
+            color: #9CA3AF;
+            font-size: 0.9rem;
+        }
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1000;
+            user-select: none;
+            pointer-events: none;
+            color: rgba(255, 255, 255, 0.6);
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- 사이드바 -->
+        <div class="sidebar">
+            <div class="logo">🎄 Christmas Trading</div>
+            <nav>
+                <div class="nav-item active">📊 대시보드</div>
+                <div class="nav-item">💼 포트폴리오</div>
+                <div class="nav-item">🤖 AI 추천</div>
+                <div class="nav-item">🔔 알림</div>
+                <div class="nav-item">⚙️ 설정</div>
+            </nav>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="main-content">
+            <!-- 헤더 -->
+            <div class="header">
+                <div class="portfolio-summary">
+                    <div>
+                        <div class="portfolio-value">🎄 Christmas Portfolio $105,550.91</div>
+                        <div class="portfolio-change">+$1,575.60 (+1.52%)</div>
+                    </div>
+                </div>
+                <div style="color: #9CA3AF; font-size: 0.9rem;">
+                    마지막 업데이트: 오후 1:41:34 | 장중
+                </div>
+            </div>
+
+            <!-- 콘텐츠 영역 -->
+            <div class="content-area">
+                <!-- 차트 섹션 -->
+                <div class="chart-section">
+                    <div class="chart-container">
+                        <div class="chart-title">AAPL - Apple Inc. $150.25 (+2.45%)</div>
+                        <div class="chart-placeholder">📈 실시간 차트가 여기에 표시됩니다</div>
+                    </div>
+                    
+                    <div class="chart-container" style="height: 200px;">
+                        <div class="chart-title">거래량</div>
+                        <div class="chart-placeholder" style="height: 120px;">📊 거래량 차트</div>
+                    </div>
+                </div>
+
+                <!-- 사이드 패널들 -->
+                <div class="sidebar-panels">
+                    <!-- 주요 종목 -->
+                    <div class="panel">
+                        <div class="panel-title">주요 종목</div>
+                        <div class="market-item">
+                            <span>AAPL</span>
+                            <span class="price-positive">$150.25 (+1.67%)</span>
+                        </div>
+                        <div class="market-item">
+                            <span>MSFT</span>
+                            <span class="price-positive">$378.85 (+0.82%)</span>
+                        </div>
+                        <div class="market-item">
+                            <span>GOOGL</span>
+                            <span class="price-negative">$138.45 (-0.45%)</span>
+                        </div>
+                        <div class="market-item">
+                            <span>TSLA</span>
+                            <span class="price-positive">$245.75 (+2.73%)</span>
+                        </div>
+                    </div>
+
+                    <!-- 빠른 거래 -->
+                    <div class="panel">
+                        <div class="panel-title">🎁 빠른 거래</div>
+                        <div class="quick-trade">
+                            <button class="btn btn-buy">매수</button>
+                            <button class="btn btn-sell">매도</button>
+                        </div>
+                        <div class="input-group">
+                            <label>종목코드</label>
+                            <input type="text" placeholder="AAPL" value="AAPL">
+                        </div>
+                        <div class="input-group">
+                            <label>수량</label>
+                            <input type="number" placeholder="0" value="10">
+                        </div>
+                        <div class="input-group">
+                            <label>가격</label>
+                            <input type="text" placeholder="시장가" value="시장가">
+                        </div>
+                        <button class="btn btn-buy" style="width: 100%;">매수 주문하기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 테이블 섹션 -->
+            <div class="tables-section">
+                <!-- 보유 종목 -->
+                <div class="table-container">
+                    <div class="table-header">보유 종목</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>종목코드</th>
+                                <th>보유주식</th>
+                                <th>평균가</th>
+                                <th>현재가</th>
+                                <th>손익</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>AAPL</td>
+                                <td>100</td>
+                                <td>$145.30</td>
+                                <td class="price-positive">$150.25</td>
+                                <td class="price-positive">+$495.00</td>
+                            </tr>
+                            <tr>
+                                <td>MSFT</td>
+                                <td>50</td>
+                                <td>$375.20</td>
+                                <td class="price-positive">$378.85</td>
+                                <td class="price-positive">+$182.50</td>
+                            </tr>
+                            <tr>
+                                <td>GOOGL</td>
+                                <td>25</td>
+                                <td>$140.00</td>
+                                <td class="price-negative">$138.45</td>
+                                <td class="price-negative">-$38.75</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 최근 주문 -->
+                <div class="table-container">
+                    <div class="table-header">최근 주문</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>종목코드</th>
+                                <th>구분</th>
+                                <th>수량</th>
+                                <th>가격</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>AAPL</td>
+                                <td><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">매수</span></td>
+                                <td>10</td>
+                                <td>$150.00</td>
+                                <td><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">체결</span></td>
+                            </tr>
+                            <tr>
+                                <td>MSFT</td>
+                                <td><span style="background: #EF4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">매도</span></td>
+                                <td>5</td>
+                                <td>$378.50</td>
+                                <td><span style="background: #F59E0B; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">대기</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 눈 내리는 효과 -->
+    <script>
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = Math.random() > 0.5 ? '❄️' : '⭐';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 5 + 5 + 's';
+            snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => {
+                snowflake.remove();
+            }, 10000);
+        }
+
+        // 눈 내리기 시작
+        setInterval(createSnowflake, 1000);
+        
+        console.log('🎄 Static Christmas Trading Dashboard loaded successfully!');
+        console.log('🎄 This is a working prototype of the trading interface');
+    </script>
+</body>
+</html>
