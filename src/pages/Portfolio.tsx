@@ -4,47 +4,47 @@ export function Portfolio() {
   // Mock portfolio data
   const holdings = [
     {
-      symbol: '삼성전자',
-      name: 'Samsung Electronics',
-      quantity: 50,
-      avgPrice: 68000,
-      currentPrice: 71200,
-      totalValue: 3560000,
-      pnl: 160000,
-      pnlPercent: 4.7,
+      symbol: 'AAPL',
+      name: 'Apple Inc.',
+      quantity: 100,
+      avgPrice: 150.50,
+      currentPrice: 152.10,
+      totalValue: 15210,
+      pnl: 160,
+      pnlPercent: 1.06,
       allocation: 28.5
     },
     {
-      symbol: 'SK하이닉스',
-      name: 'SK Hynix',
-      quantity: 25,
-      avgPrice: 124000,
-      currentPrice: 128500,
-      totalValue: 3212500,
-      pnl: 112500,
-      pnlPercent: 3.6,
+      symbol: 'GOOGL',
+      name: 'Alphabet Inc.',
+      quantity: 50,
+      avgPrice: 148.20,
+      currentPrice: 146.80,
+      totalValue: 7340,
+      pnl: -70,
+      pnlPercent: -0.94,
       allocation: 25.7
     },
     {
-      symbol: 'NAVER',
-      name: 'Naver Corporation',
-      quantity: 15,
-      avgPrice: 185000,
-      currentPrice: 192000,
-      totalValue: 2880000,
-      pnl: 105000,
-      pnlPercent: 3.8,
+      symbol: 'MSFT',
+      name: 'Microsoft Corp.',
+      quantity: 75,
+      avgPrice: 325.00,
+      currentPrice: 330.50,
+      totalValue: 24787.5,
+      pnl: 412.5,
+      pnlPercent: 1.69,
       allocation: 23.0
     },
     {
-      symbol: 'LG에너지솔루션',
-      name: 'LG Energy Solution',
-      quantity: 8,
-      avgPrice: 420000,
-      currentPrice: 435000,
-      totalValue: 3480000,
-      pnl: 120000,
-      pnlPercent: 3.6,
+      symbol: 'NVDA',
+      name: 'NVIDIA Corp.',
+      quantity: 30,
+      avgPrice: 400.00,
+      currentPrice: 415.60,
+      totalValue: 12468,
+      pnl: 468,
+      pnlPercent: 3.90,
       allocation: 22.8
     }
   ]
@@ -54,150 +54,143 @@ export function Portfolio() {
   const totalPnLPercent = (totalPnL / (totalValue - totalPnL)) * 100
 
   const performanceData = [
-    { date: '2024-06-17', value: 11800000 },
-    { date: '2024-06-18', value: 12050000 },
-    { date: '2024-06-19', value: 12180000 },
-    { date: '2024-06-20', value: 12320000 },
-    { date: '2024-06-21', value: 12500000 }
+    { date: '2024-06-17', value: 58000 },
+    { date: '2024-06-18', value: 59200 },
+    { date: '2024-06-19', value: 59800 },
+    { date: '2024-06-20', value: 60400 },
+    { date: '2024-06-21', value: 59805.5 }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="title-hero mb-2">📊 나의 크리스마스 포트폴리오</h1>
-          <p className="text-secondary">안전하고 균형잡힌 투자 현황을 확인하세요</p>
+    <div className="space-y-6">
+      {/* Portfolio Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">Total Portfolio Value</p>
+              <p className="text-3xl font-bold text-white">${totalValue.toLocaleString()}</p>
+            </div>
+            <DollarSign className="w-8 h-8 text-green-500" />
+          </div>
         </div>
 
-        {/* Portfolio Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="christmas-card card-portfolio hover-lift">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-secondary text-sm">총 포트폴리오 가치</p>
-                <p className="text-3xl font-bold text-data">₩{totalValue.toLocaleString()}</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-christmas-gold" />
-            </div>
-          </div>
-
-          <div className="christmas-card card-profit hover-lift">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-secondary text-sm">총 수익/손실</p>
-                <p className="text-3xl font-bold text-profit flex items-center">
-                  ₩{totalPnL.toLocaleString()}
-                  <TrendingUp className="w-6 h-6 ml-2" />
-                </p>
-                <p className="text-profit text-sm">+{totalPnLPercent.toFixed(2)}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="christmas-card card-ai hover-lift">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-secondary text-sm">보유 종목 수</p>
-                <p className="text-3xl font-bold text-christmas-green">{holdings.length}</p>
-                <p className="text-xs text-secondary">다변화 지수: 우수</p>
-              </div>
-              <PieChart className="w-8 h-8 text-christmas-green" />
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">Total P&L</p>
+              <p className={`text-3xl font-bold flex items-center ${totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                ${Math.abs(totalPnL).toLocaleString()}
+                {totalPnL >= 0 ? <TrendingUp className="w-6 h-6 ml-2" /> : null}
+              </p>
+              <p className={`text-sm ${totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {totalPnL >= 0 ? '+' : ''}{totalPnLPercent.toFixed(2)}%
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Performance Chart Area */}
-        <div className="christmas-card mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="title-card">📈 성과 추이</h2>
-            <div className="flex space-x-2">
-              <button className="text-sm px-3 py-1 bg-christmas-light-green text-christmas-dark-green rounded">1주</button>
-              <button className="text-sm px-3 py-1 text-gray-600 hover:bg-gray-100 rounded">1개월</button>
-              <button className="text-sm px-3 py-1 text-gray-600 hover:bg-gray-100 rounded">3개월</button>
+        <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-slate-400 text-sm">Holdings Count</p>
+              <p className="text-3xl font-bold text-green-500">{holdings.length}</p>
+              <p className="text-xs text-slate-400">Diversification: Good</p>
             </div>
+            <PieChart className="w-8 h-8 text-green-500" />
           </div>
-          
-          {/* Simple Chart Representation */}
-          <div className="h-64 bg-gradient-to-t from-christmas-light-green to-white rounded-lg flex items-end justify-around p-4">
-            {performanceData.map((data, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div 
-                  className="bg-christmas-green rounded-t w-8 transition-all duration-500 hover:bg-christmas-dark-green"
-                  style={{ height: `${(data.value / 13000000) * 200}px` }}
-                ></div>
-                <p className="text-xs text-secondary mt-2">{data.date.split('-')[2]}</p>
+        </div>
+      </div>
+
+      {/* Performance Chart Area */}
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-white">Portfolio Performance</h2>
+          <div className="flex space-x-2">
+            <button className="text-sm px-3 py-1 bg-green-600 text-white rounded">1W</button>
+            <button className="text-sm px-3 py-1 text-slate-400 hover:bg-slate-700 rounded">1M</button>
+            <button className="text-sm px-3 py-1 text-slate-400 hover:bg-slate-700 rounded">3M</button>
+          </div>
+        </div>
+        
+        {/* Simple Chart Representation */}
+        <div className="h-64 bg-slate-900 rounded-lg flex items-end justify-around p-4 border border-slate-700">
+          {performanceData.map((data, index) => (
+            <div key={index} className="flex flex-col items-center">
+              <div 
+                className="bg-green-500 rounded-t w-8 transition-all duration-500 hover:bg-green-400"
+                style={{ height: `${(data.value / 65000) * 200}px` }}
+              ></div>
+              <p className="text-xs text-slate-400 mt-2">{data.date.split('-')[2]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Holdings Table */}
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+        <h2 className="text-lg font-semibold text-white mb-6">Holdings</h2>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-700">
+                <th className="text-left py-3 text-slate-400">Symbol</th>
+                <th className="text-right py-3 text-slate-400">Shares</th>
+                <th className="text-right py-3 text-slate-400">Avg Price</th>
+                <th className="text-right py-3 text-slate-400">Current</th>
+                <th className="text-right py-3 text-slate-400">Market Value</th>
+                <th className="text-right py-3 text-slate-400">P&L</th>
+                <th className="text-right py-3 text-slate-400">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {holdings.map((holding, index) => (
+                <tr key={index} className="border-b border-slate-700/50">
+                  <td className="py-4">
+                    <div>
+                      <div className="font-semibold text-white">{holding.symbol}</div>
+                      <div className="text-sm text-slate-400">{holding.name}</div>
+                    </div>
+                  </td>
+                  <td className="text-right py-4 text-white">{holding.quantity.toLocaleString()}</td>
+                  <td className="text-right py-4 text-white">${holding.avgPrice.toFixed(2)}</td>
+                  <td className="text-right py-4 text-white">${holding.currentPrice.toFixed(2)}</td>
+                  <td className="text-right py-4 text-white font-semibold">${holding.totalValue.toLocaleString()}</td>
+                  <td className="text-right py-4">
+                    <div className={`font-semibold ${holding.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      ${Math.abs(holding.pnl).toFixed(2)}
+                    </div>
+                  </td>
+                  <td className="text-right py-4">
+                    <div className={`font-semibold ${holding.pnlPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {holding.pnlPercent >= 0 ? '+' : ''}{holding.pnlPercent.toFixed(2)}%
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Portfolio Allocation */}
+        <div className="mt-8 pt-6 border-t border-slate-700">
+          <h3 className="font-semibold mb-4 text-white">Portfolio Allocation</h3>
+          <div className="space-y-3">
+            {holdings.map((holding, index) => (
+              <div key={index} className="flex items-center">
+                <div className="w-24 text-sm font-medium text-white">{holding.symbol}</div>
+                <div className="flex-1 mx-4">
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${holding.allocation}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <div className="w-16 text-right text-sm font-medium text-white">{holding.allocation}%</div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Holdings Table */}
-        <div className="christmas-card">
-          <h2 className="title-card mb-6">🎁 보유 종목</h2>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 font-semibold text-gray-700">종목</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">수량</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">평균단가</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">현재가</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">평가금액</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">손익</th>
-                  <th className="text-right py-3 font-semibold text-gray-700">비중</th>
-                </tr>
-              </thead>
-              <tbody>
-                {holdings.map((holding, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4">
-                      <div>
-                        <div className="font-semibold">{holding.symbol}</div>
-                        <div className="text-sm text-secondary">{holding.name}</div>
-                      </div>
-                    </td>
-                    <td className="text-right py-4 text-data">{holding.quantity.toLocaleString()}</td>
-                    <td className="text-right py-4 text-data">₩{holding.avgPrice.toLocaleString()}</td>
-                    <td className="text-right py-4 text-data">₩{holding.currentPrice.toLocaleString()}</td>
-                    <td className="text-right py-4 text-data font-semibold">₩{holding.totalValue.toLocaleString()}</td>
-                    <td className="text-right py-4">
-                      <div className="text-profit font-semibold">
-                        ₩{holding.pnl.toLocaleString()}
-                      </div>
-                      <div className="text-profit text-sm">
-                        +{holding.pnlPercent}%
-                      </div>
-                    </td>
-                    <td className="text-right py-4">
-                      <div className="text-data font-semibold">{holding.allocation}%</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Portfolio Allocation */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <h3 className="font-semibold mb-4">포트폴리오 배분</h3>
-            <div className="space-y-3">
-              {holdings.map((holding, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="w-24 text-sm font-medium">{holding.symbol}</div>
-                  <div className="flex-1 mx-4">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-christmas-green h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${holding.allocation}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="w-16 text-right text-sm font-medium">{holding.allocation}%</div>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>

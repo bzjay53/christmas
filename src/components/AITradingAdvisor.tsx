@@ -31,7 +31,7 @@ const AITradingAdvisor: React.FC = () => {
         .map(s => s.trim().toUpperCase())
         .filter(s => s.length > 0)
 
-      const response = await fetch('http://31.220.83.213:3002/tools/call', {
+      const response = await fetch('http://31.220.83.213/api/tools/call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

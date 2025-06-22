@@ -1,27 +1,21 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Navigation } from './components/Navigation'
-import { LandingPage } from './pages/LandingPage'
-import { Dashboard } from './pages/Dashboard'
+import ProTraderLayout from './components/ProTraderLayout'
+import TradingDashboard from './components/TradingDashboard'
 import { Portfolio } from './pages/Portfolio'
 import { AIRecommendations } from './pages/AIRecommendations'
-import { SnowEffect } from './components/SnowEffect'
 import './App.css'
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen">
-        <SnowEffect />
-        <Navigation />
-        <main>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/ai-recommendations" element={<AIRecommendations />} />
-          </Routes>
-        </main>
-      </div>
+      <ProTraderLayout>
+        <Routes>
+          <Route path="/" element={<TradingDashboard />} />
+          <Route path="/dashboard" element={<TradingDashboard />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/ai-recommendations" element={<AIRecommendations />} />
+        </Routes>
+      </ProTraderLayout>
     </Router>
   )
 }
