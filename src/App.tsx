@@ -1,34 +1,38 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import ProTraderLayout from './components/ProTraderLayout'
-import ProTraderDashboard from './components/ProTraderDashboard'
-import { Portfolio } from './pages/Portfolio'
-import { AIRecommendations } from './pages/AIRecommendations'
 import './App.css'
 
 function App() {
-  try {
-    return (
-      <Router>
-        <ProTraderLayout>
-          <Routes>
-            <Route path="/" element={<ProTraderDashboard />} />
-            <Route path="/dashboard" element={<ProTraderDashboard />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/ai-recommendations" element={<AIRecommendations />} />
-          </Routes>
-        </ProTraderLayout>
-      </Router>
-    )
-  } catch (error) {
-    console.error('App error:', error)
-    return (
-      <div style={{ padding: '20px', color: 'white', backgroundColor: '#1f2937' }}>
-        <h1>🎄 Christmas Trading Dashboard</h1>
-        <p>Loading application...</p>
-        <p>Error: {String(error)}</p>
+  console.log('App component rendering...')
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      color: 'white', 
+      backgroundColor: '#1f2937',
+      minHeight: '100vh',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <h1 style={{ color: '#10B981', marginBottom: '20px' }}>
+        🎄 Christmas Trading Dashboard - Test
+      </h1>
+      <p>✅ React is working!</p>
+      <p>✅ Components are rendering!</p>
+      <p>✅ JavaScript is executing!</p>
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '15px', 
+        backgroundColor: '#374151', 
+        borderRadius: '8px' 
+      }}>
+        <h3>System Check:</h3>
+        <ul>
+          <li>✅ HTML loaded</li>
+          <li>✅ CSS applied</li>
+          <li>✅ React mounted</li>
+          <li>✅ JavaScript running</li>
+        </ul>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 export default App
