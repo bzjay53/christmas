@@ -181,30 +181,20 @@ export const StockPerformanceChart: React.FC = () => {
   );
 };
 
-// Christmas 테마 장식 컴포넌트
+// Christmas 테마 장식 컴포넌트 (최적화됨)
 export const ChristmasDecorations: React.FC = () => {
   return (
     <>
-      {/* 눈송이 애니메이션 */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-white opacity-30 animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              fontSize: `${Math.random() * 10 + 10}px`
-            }}
-          >
-            ❄️
-          </div>
-        ))}
-      </div>
+      {/* Christmas lights border - 간단하고 정적 */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-green-500 via-yellow-500 to-red-500 opacity-30 z-10"></div>
       
-      {/* Christmas lights border */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-green-500 via-yellow-500 to-red-500 opacity-20"></div>
+      {/* 고정된 크리스마스 장식 - 움직이지 않음 */}
+      <div className="fixed top-4 right-4 pointer-events-none z-10 opacity-20">
+        <span className="text-2xl">🎄</span>
+      </div>
+      <div className="fixed bottom-4 left-4 pointer-events-none z-10 opacity-20">
+        <span className="text-2xl">🎁</span>
+      </div>
     </>
   );
 };
