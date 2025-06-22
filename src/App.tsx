@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import ProTraderLayout from './components/ProTraderLayout'
-import TradingDashboard from './components/TradingDashboard'
+import ProTraderDashboard from './components/ProTraderDashboard'
 import { Portfolio } from './pages/Portfolio'
 import { AIRecommendations } from './pages/AIRecommendations'
 import './App.css'
@@ -10,8 +10,8 @@ function App() {
     <Router>
       <ProTraderLayout>
         <Routes>
-          <Route path="/" element={<TradingDashboard />} />
-          <Route path="/dashboard" element={<TradingDashboard />} />
+          <Route path="/" element={<ProTraderDashboard />} />
+          <Route path="/dashboard" element={<ProTraderDashboard />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/ai-recommendations" element={<AIRecommendations />} />
         </Routes>

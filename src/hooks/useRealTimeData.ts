@@ -18,27 +18,22 @@ export interface PortfolioData {
   holdings: StockData[];
 }
 
-// Mock 실시간 데이터 생성기
-const generateMockData = (symbol: string): StockData => {
-  const basePrice = {
-    'AAPL': 186.25,
-    'GOOGL': 146.80,
-    'MSFT': 338.50,
-    'NVDA': 415.60,
-    'TSLA': 245.75,
-  }[symbol] || 100;
-
-  const variance = (Math.random() - 0.5) * 2; // -1 to 1
-  const price = basePrice + variance;
-  const change = variance;
-  const changePercent = (change / basePrice) * 100;
+// 안정적인 Mock 데이터 생성기 (미친듯이 변하지 않음)
+const generateStableData = (symbol: string): StockData => {
+  const baseData = {
+    'AAPL': { price: 186.25, change: 2.45, changePercent: 1.33 },
+    'GOOGL': { price: 146.80, change: -1.20, changePercent: -0.81 },
+    'MSFT': { price: 338.50, change: 4.75, changePercent: 1.42 },
+    'NVDA': { price: 415.60, change: 8.90, changePercent: 2.19 },
+    'TSLA': { price: 245.75, change: -3.25, changePercent: -1.30 },
+  }[symbol] || { price: 100, change: 0, changePercent: 0 };
 
   return {
     symbol,
-    price,
-    change,
-    changePercent,
-    volume: Math.floor(Math.random() * 1000000),
+    price: baseData.price,
+    change: baseData.change,
+    changePercent: baseData.changePercent,
+    volume: Math.floor(Math.random() * 500000) + 500000, // 500K-1M 범위로 제한
     lastUpdate: new Date().toLocaleTimeString()
   };
 };
@@ -51,15 +46,15 @@ export const useRealTimeData = (symbols: string[]) => {
   useEffect(() => {
     setIsConnected(true);
     
-    // 초기 데이터 로드
-    const initialData = symbols.map(generateMockData);
+    // 초기 데이터 로드 (안정적인 데이터)
+    const initialData = symbols.map(generateStableData);
     setData(initialData);
 
-    // 5초마다 데이터 업데이트 (실제로는 WebSocket 사용)
+    // 데이터 업데이트 빈도를 줄임 (30초마다) - 나중에 실제 API 연동시 부드럽게 업데이트
     const interval = setInterval(() => {
-      const updatedData = symbols.map(generateMockData);
+      const updatedData = symbols.map(generateStableData);
       setData(updatedData);
-    }, 5000);
+    }, 30000); // 30초로 변경
 
     return () => {
       clearInterval(interval);
@@ -70,46 +65,34 @@ export const useRealTimeData = (symbols: string[]) => {
   return { data, isConnected };
 };
 
-// 포트폴리오 훅
+// 안정적인 포트폴리오 훅 (고정된 수량으로)
 export const usePortfolio = () => {
   const symbols = ['AAPL', 'GOOGL', 'MSFT', 'NVDA', 'TSLA'];
   const { data: stockData, isConnected } = useRealTimeData(symbols);
   
-  const [portfolio, setPortfolio] = useState<PortfolioData>({
-    totalValue: 0,
-    totalChange: 0,
-    totalChangePercent: 0,
+  // 고정된 포트폴리오 값 (어지럽게 변하지 않음)
+  const [portfolio] = useState<PortfolioData>({
+    totalValue: 105550.91,
+    totalChange: 1575.60,
+    totalChangePercent: 1.52,
     holdings: []
   });
 
+  const [dynamicHoldings, setDynamicHoldings] = useState<StockData[]>([]);
+
   useEffect(() => {
     if (stockData.length > 0) {
-      const holdings = stockData.map(stock => ({
-        ...stock,
-        // Mock holding quantities
-        quantity: Math.floor(Math.random() * 100) + 10
-      }));
-
-      const totalValue = holdings.reduce((sum, holding) => 
-        sum + (holding.price * (holding as any).quantity), 0
-      );
-      
-      const totalChange = holdings.reduce((sum, holding) => 
-        sum + (holding.change * (holding as any).quantity), 0
-      );
-
-      const totalChangePercent = totalValue > 0 ? (totalChange / (totalValue - totalChange)) * 100 : 0;
-
-      setPortfolio({
-        totalValue,
-        totalChange,
-        totalChangePercent,
-        holdings: stockData
-      });
+      setDynamicHoldings(stockData);
     }
   }, [stockData]);
 
-  return { portfolio, isConnected };
+  return { 
+    portfolio: {
+      ...portfolio,
+      holdings: dynamicHoldings
+    }, 
+    isConnected 
+  };
 };
 
 // AI 추천 데이터 훅

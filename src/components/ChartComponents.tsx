@@ -14,18 +14,18 @@ import {
   Cell
 } from 'recharts';
 
-// 포트폴리오 성과 차트 데이터
+// 포트폴리오 성과 차트 데이터 (스크린샷과 유사한 형태)
 const portfolioData = [
-  { date: '09:30', value: 58000, volume: 1200 },
-  { date: '10:00', value: 59200, volume: 1500 },
-  { date: '10:30', value: 58800, volume: 1100 },
-  { date: '11:00', value: 60100, volume: 1800 },
-  { date: '11:30', value: 61200, volume: 2100 },
-  { date: '12:00', value: 60800, volume: 1600 },
-  { date: '12:30', value: 62300, volume: 2400 },
-  { date: '13:00', value: 63100, volume: 2000 },
-  { date: '13:30', value: 62700, volume: 1700 },
-  { date: '14:00', value: 63800, volume: 2300 },
+  { date: '09:30', value: 140, volume: 1200 },
+  { date: '10:00', value: 145, volume: 1500 },
+  { date: '10:30', value: 142, volume: 1100 },
+  { date: '11:00', value: 148, volume: 1800 },
+  { date: '11:30', value: 152, volume: 2100 },
+  { date: '12:00', value: 149, volume: 1600 },
+  { date: '12:30', value: 155, volume: 2400 },
+  { date: '13:00', value: 158, volume: 2000 },
+  { date: '13:30', value: 156, volume: 1700 },
+  { date: '14:00', value: 160, volume: 2300 },
 ];
 
 // 섹터 배분 데이터
