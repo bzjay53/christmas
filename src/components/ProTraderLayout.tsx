@@ -12,11 +12,11 @@ const ProTraderLayout: React.FC<ProTraderLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const sidebarItems = [
-    { icon: TrendingUp, label: 'Dashboard', id: 'Dashboard', path: '/dashboard' },
-    { icon: PieChart, label: 'Portfolio', id: 'Portfolio', path: '/portfolio' },
-    { icon: Brain, label: 'AI Recommendations', id: 'AI', path: '/ai-recommendations' },
-    { icon: Bell, label: 'Alerts', id: 'Alerts', path: '/alerts' },
-    { icon: Settings, label: 'Settings', id: 'Settings', path: '/settings' },
+    { icon: TrendingUp, label: '대시보드', id: 'Dashboard', path: '/dashboard' },
+    { icon: PieChart, label: '포트폴리오', id: 'Portfolio', path: '/portfolio' },
+    { icon: Brain, label: 'AI 추천', id: 'AI', path: '/ai-recommendations' },
+    { icon: Bell, label: '알림', id: 'Alerts', path: '/alerts' },
+    { icon: Settings, label: '설정', id: 'Settings', path: '/settings' },
   ];
 
   const getActiveTab = () => {
@@ -66,15 +66,15 @@ const ProTraderLayout: React.FC<ProTraderLayoutProps> = ({ children }) => {
               <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search symbols..."
+                placeholder="종목 검색..."
                 className="bg-slate-700 text-white pl-10 pr-4 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none w-80"
               />
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-md">Market Open</span>
-            <span className="text-slate-400">Last updated: 오후 1:41:34</span>
+            <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-md">장중</span>
+            <span className="text-slate-400">마지막 업데이트: 오후 1:41:34</span>
           </div>
         </header>
 

@@ -27,11 +27,11 @@ const ProTraderDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-900 text-white">
+    <>
       <ChristmasDecorations />
       
       {/* Main Content - Taking most space like in screenshot */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden">
         
         {/* Charts Section - Main focal point */}
         <div className="flex-1 grid grid-cols-3 gap-4 p-6">
@@ -66,7 +66,7 @@ const ProTraderDashboard: React.FC = () => {
             {/* Volume Chart */}
             <div className="bg-slate-800 rounded-lg border border-slate-700 h-48">
               <div className="p-4 border-b border-slate-700">
-                <h4 className="text-slate-400 font-medium">Volume</h4>
+                <h4 className="text-slate-400 font-medium">거래량</h4>
               </div>
               <div className="p-4 h-32">
                 <VolumeChart />
@@ -84,12 +84,12 @@ const ProTraderDashboard: React.FC = () => {
               
               <div className="space-y-3">
                 <div>
-                  <div className="text-slate-400 text-sm">Total Value</div>
+                  <div className="text-slate-400 text-sm">총 자산</div>
                   <div className="text-2xl font-bold text-white">$105,550.91</div>
                 </div>
                 
                 <div>
-                  <div className="text-slate-400 text-sm">P&L</div>
+                  <div className="text-slate-400 text-sm">손익</div>
                   <div className="text-lg font-bold text-green-500">
                     $1,575.5
                     <span className="text-sm ml-2">+2.75%</span>
@@ -101,13 +101,13 @@ const ProTraderDashboard: React.FC = () => {
             {/* Market Movers - exactly like screenshot */}
             <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold">Market Movers</h3>
+                <h3 className="text-white font-semibold">주요 종목</h3>
                 <div className="flex space-x-2">
                   <button className="bg-white text-black px-3 py-1 rounded text-xs font-medium">
-                    Top Gainers
+                    상승 종목
                   </button>
                   <button className="text-slate-400 px-3 py-1 rounded text-xs">
-                    Top Losers
+                    하락 종목
                   </button>
                 </div>
               </div>
@@ -134,20 +134,20 @@ const ProTraderDashboard: React.FC = () => {
 
             {/* Quick Trade Panel */}
             <div className="bg-slate-800 rounded-lg border border-slate-700 p-4">
-              <h3 className="text-white font-semibold mb-4">🎁 Quick Trade</h3>
+              <h3 className="text-white font-semibold mb-4">🎁 빠른 거래</h3>
               
               <div className="flex space-x-2 mb-4">
                 <button className="flex-1 bg-green-600 text-white py-2 rounded font-medium hover:bg-green-700">
-                  Buy
+                  매수
                 </button>
                 <button className="flex-1 bg-slate-700 text-white py-2 rounded font-medium hover:bg-slate-600">
-                  Sell
+                  매도
                 </button>
               </div>
               
               <div className="space-y-3">
                 <div>
-                  <label className="block text-slate-400 text-sm mb-1">Symbol</label>
+                  <label className="block text-slate-400 text-sm mb-1">종목코드</label>
                   <input
                     type="text"
                     placeholder="AAPL"
@@ -155,7 +155,7 @@ const ProTraderDashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 text-sm mb-1">Quantity</label>
+                  <label className="block text-slate-400 text-sm mb-1">수량</label>
                   <input
                     type="number"
                     placeholder="0"
@@ -163,15 +163,15 @@ const ProTraderDashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 text-sm mb-1">Price</label>
+                  <label className="block text-slate-400 text-sm mb-1">가격</label>
                   <input
                     type="text"
-                    placeholder="Market"
+                    placeholder="시장가"
                     className="w-full bg-slate-700 text-white p-2 rounded border border-slate-600 focus:border-green-500 focus:outline-none text-sm"
                   />
                 </div>
                 <button className="w-full bg-green-600 text-white py-2 rounded font-medium hover:bg-green-700">
-                  Place Buy Order
+                  매수 주문하기
                 </button>
               </div>
             </div>
@@ -185,19 +185,19 @@ const ProTraderDashboard: React.FC = () => {
           {/* Holdings Table */}
           <div className="bg-slate-800 rounded-lg border border-slate-700">
             <div className="p-4 border-b border-slate-700">
-              <h3 className="text-white font-semibold">Holdings</h3>
+              <h3 className="text-white font-semibold">보유 종목</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-700">
-                    <th className="text-left py-3 px-4 text-slate-400 text-sm">Symbol</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Shares</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Avg Price</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Current</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Market Value</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">P&L</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">%</th>
+                    <th className="text-left py-3 px-4 text-slate-400 text-sm">종목코드</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">보유주식</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">평균가</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">현재가</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">평가금액</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">손익</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">수익률</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,19 +224,19 @@ const ProTraderDashboard: React.FC = () => {
           {/* Recent Orders Table */}
           <div className="bg-slate-800 rounded-lg border border-slate-700">
             <div className="p-4 border-b border-slate-700">
-              <h3 className="text-white font-semibold">Recent Orders</h3>
+              <h3 className="text-white font-semibold">최근 주문</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-700">
-                    <th className="text-left py-3 px-4 text-slate-400 text-sm">Order ID</th>
-                    <th className="text-left py-3 px-4 text-slate-400 text-sm">Symbol</th>
-                    <th className="text-left py-3 px-4 text-slate-400 text-sm">Type</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Qty</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Price</th>
-                    <th className="text-left py-3 px-4 text-slate-400 text-sm">Status</th>
-                    <th className="text-right py-3 px-4 text-slate-400 text-sm">Time</th>
+                    <th className="text-left py-3 px-4 text-slate-400 text-sm">주문번호</th>
+                    <th className="text-left py-3 px-4 text-slate-400 text-sm">종목코드</th>
+                    <th className="text-left py-3 px-4 text-slate-400 text-sm">구분</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">수량</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">가격</th>
+                    <th className="text-left py-3 px-4 text-slate-400 text-sm">상태</th>
+                    <th className="text-right py-3 px-4 text-slate-400 text-sm">시간</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -248,7 +248,7 @@ const ProTraderDashboard: React.FC = () => {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           order.type === 'Buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                         }`}>
-                          {order.type}
+                          {order.type === 'Buy' ? '매수' : '매도'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-white text-right">{order.qty}</td>
@@ -257,7 +257,7 @@ const ProTraderDashboard: React.FC = () => {
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           order.status === 'Filled' ? 'bg-green-600 text-white' : 'bg-orange-600 text-white'
                         }`}>
-                          {order.status}
+                          {order.status === 'Filled' ? '체결' : '대기'}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-slate-400 text-right text-sm">{order.time}</td>
@@ -269,7 +269,7 @@ const ProTraderDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
