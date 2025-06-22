@@ -101,6 +101,17 @@
             justify-content: center;
             color: #9CA3AF;
         }
+        .chart-container-small {
+            width: 100%;
+            height: 180px;
+            max-height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-container-small canvas {
+            max-width: 100% !important;
+            max-height: 180px !important;
+        }
         .sidebar-panels {
             display: flex;
             flex-direction: column;
@@ -282,7 +293,9 @@
                     <!-- 포트폴리오 성과 차트 -->
                     <div class="panel">
                         <div class="panel-title">📈 포트폴리오 성과</div>
-                        <canvas id="portfolioChart" style="height: 150px;"></canvas>
+                        <div class="chart-container-small">
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
                     </div>
 
                     <!-- 빠른 거래 -->
@@ -592,17 +605,30 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 10,
+                            left: 10,
+                            right: 10
+                        }
+                    },
                     interaction: {
                         intersect: false
+                    },
+                    animation: {
+                        animateRotate: false,
+                        animateScale: false
                     },
                     plugins: {
                         legend: {
                             position: 'bottom',
                             labels: { 
                                 color: '#E5E7EB',
-                                font: { size: 11 },
-                                padding: 8,
-                                usePointStyle: true
+                                font: { size: 10 },
+                                padding: 6,
+                                usePointStyle: true,
+                                boxWidth: 12
                             }
                         }
                     }
