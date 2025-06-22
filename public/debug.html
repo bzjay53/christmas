@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎄 Christmas Trading - Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1f2937, #374151);
+            color: white;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #10B981;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #374151;
+        }
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .test-button {
+            background: #10B981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎄 Christmas Trading - 시스템 진단</h1>
+        
+        <div class="test-item">
+            <span>HTML 로딩:</span>
+            <span class="success">✅ 성공</span>
+        </div>
+        
+        <div class="test-item">
+            <span>CSS 스타일:</span>
+            <span class="success">✅ 성공</span>
+        </div>
+        
+        <div class="test-item">
+            <span>JavaScript 실행:</span>
+            <span id="js-test" class="error">❌ 테스트 중...</span>
+        </div>
+        
+        <div class="test-item">
+            <span>네트워크 상태:</span>
+            <span id="network-test" class="error">❌ 테스트 중...</span>
+        </div>
+        
+        <div class="test-item">
+            <span>로컬스토리지:</span>
+            <span id="storage-test" class="error">❌ 테스트 중...</span>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>테스트 결과:</h3>
+            <div id="results"></div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="test-button" onclick="testReactLoading()">React 로딩 테스트</button>
+            <button class="test-button" onclick="testNetworkAssets()">Asset 로딩 테스트</button>
+            <button class="test-button" onclick="goToMainApp()">메인 앱으로 이동</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎄 Debug page loaded successfully');
+        
+        // JavaScript 테스트
+        document.getElementById('js-test').innerHTML = '<span class="success">✅ 성공</span>';
+        
+        // Network 테스트
+        fetch(window.location.origin + '/assets/')
+            .then(response => {
+                document.getElementById('network-test').innerHTML = '<span class="success">✅ 성공</span>';
+            })
+            .catch(error => {
+                document.getElementById('network-test').innerHTML = '<span class="error">❌ 실패: ' + error.message + '</span>';
+            });
+        
+        // LocalStorage 테스트
+        try {
+            localStorage.setItem('test', 'value');
+            localStorage.removeItem('test');
+            document.getElementById('storage-test').innerHTML = '<span class="success">✅ 성공</span>';
+        } catch (error) {
+            document.getElementById('storage-test').innerHTML = '<span class="error">❌ 실패: ' + error.message + '</span>';
+        }
+        
+        function testReactLoading() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div style="background: #374151; padding: 15px; border-radius: 5px; margin: 10px 0;">';
+            results.innerHTML += '<h4>React 테스트:</h4>';
+            
+            // Check if React is available
+            if (typeof React !== 'undefined') {
+                results.innerHTML += '<p class="success">✅ React 라이브러리 로드됨</p>';
+            } else {
+                results.innerHTML += '<p class="error">❌ React 라이브러리 없음</p>';
+            }
+            
+            // Check if main app bundle exists
+            fetch('/assets/index-BP4N_BeU.js')
+                .then(response => {
+                    if (response.ok) {
+                        results.innerHTML += '<p class="success">✅ 메인 JS 번들 존재</p>';
+                    } else {
+                        results.innerHTML += '<p class="error">❌ 메인 JS 번들 없음 (Status: ' + response.status + ')</p>';
+                    }
+                })
+                .catch(error => {
+                    results.innerHTML += '<p class="error">❌ JS 번들 로딩 실패: ' + error.message + '</p>';
+                });
+                
+            results.innerHTML += '</div>';
+        }
+        
+        function testNetworkAssets() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div style="background: #374151; padding: 15px; border-radius: 5px; margin: 10px 0;">';
+            results.innerHTML += '<h4>Asset 로딩 테스트:</h4>';
+            
+            const assets = [
+                '/assets/index-BP4N_BeU.js',
+                '/assets/index-BgJ_0uTD.css'
+            ];
+            
+            assets.forEach(asset => {
+                fetch(asset)
+                    .then(response => {
+                        if (response.ok) {
+                            results.innerHTML += '<p class="success">✅ ' + asset + ' 로드 성공</p>';
+                        } else {
+                            results.innerHTML += '<p class="error">❌ ' + asset + ' 로드 실패 (Status: ' + response.status + ')</p>';
+                        }
+                    })
+                    .catch(error => {
+                        results.innerHTML += '<p class="error">❌ ' + asset + ' 네트워크 오류: ' + error.message + '</p>';
+                    });
+            });
+            
+            results.innerHTML += '</div>';
+        }
+        
+        function goToMainApp() {
+            window.location.href = '/';
+        }
+        
+        // Auto-run tests on load
+        setTimeout(() => {
+            testReactLoading();
+        }, 1000);
+    </script>
+</body>
+</html>
