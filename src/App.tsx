@@ -1,12 +1,14 @@
-import { useEffect } from 'react'
+// import { useEffect } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
-import { testSupabaseConnection } from './lib/supabase'
+// import { testSupabaseConnection } from './lib/supabase'
 import './styles/static-dashboard.css'
 
 function App() {
-  console.log('🎄 Christmas Trading React App - Supabase Integration')
+  console.log('🎄 Christmas Trading React App - Build Test Mode')
   
+  // Temporarily disable Supabase to fix deployment
+  /*
   useEffect(() => {
     // Supabase 연결 테스트
     const initializeSupabase = async () => {
@@ -20,6 +22,7 @@ function App() {
     
     initializeSupabase()
   }, [])
+  */
   
   return (
     <>
