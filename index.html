@@ -1,737 +1,150 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎄 Christmas Trading - ProTrader Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎄 Christmas Trading Platform</title>
+    <meta name="description" content="크리스마스 테마의 혁신적인 트레이딩 플랫폼 - Firebase 백엔드와 실시간 차트를 통한 현대적인 투자 경험" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://christmas-protocol.netlify.app/" />
+    <meta property="og:title" content="🎄 Christmas Trading Platform" />
+    <meta property="og:description" content="크리스마스 테마의 혁신적인 트레이딩 플랫폼" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://christmas-protocol.netlify.app/" />
+    <meta property="twitter:title" content="🎄 Christmas Trading Platform" />
+    <meta property="twitter:description" content="크리스마스 테마의 혁신적인 트레이딩 플랫폼" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Christmas theme styles -->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            color: white;
-            overflow-x: hidden;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading spinner */
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+      }
+      
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #374151;
+        border-top: 4px solid #10B981;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      .loading-text {
+        color: #9CA3AF;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      
+      .loading-subtext {
+        color: #6B7280;
+        font-size: 14px;
+        text-align: center;
+        max-width: 400px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Christmas snowflakes */
+      .snowflake {
+        position: fixed;
+        top: -10px;
+        z-index: 1000;
+        user-select: none;
+        pointer-events: none;
+        animation: snowfall linear infinite;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 1rem;
+      }
+      
+      @keyframes snowfall {
+        to {
+          transform: translateY(100vh);
         }
-        .dashboard {
-            display: flex;
-            height: 100vh;
-        }
-        .sidebar {
-            width: 250px;
-            background: #1e293b;
-            border-right: 1px solid #374151;
-            padding: 20px;
-        }
-        .logo {
-            color: #10B981;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 30px;
-        }
-        .nav-item {
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .nav-item:hover { background: #374151; }
-        .nav-item.active { background: #10B981; color: black; }
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .header {
-            background: #1e293b;
-            padding: 20px;
-            border-bottom: 1px solid #374151;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .portfolio-summary {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-        .portfolio-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #10B981;
-        }
-        .portfolio-change {
-            color: #10B981;
-            font-size: 1.1rem;
-        }
-        .content-area {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            padding: 20px;
-            overflow: auto;
-        }
-        .chart-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .chart-container {
-            background: #1e293b;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            padding: 20px;
-            height: 400px;
-        }
-        .chart-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: #E5E7EB;
-        }
-        .chart-placeholder {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(45deg, #374151, #4B5563);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #9CA3AF;
-        }
-        .chart-container-small {
-            width: 100%;
-            height: 180px;
-            max-height: 180px;
-            position: relative;
-            overflow: hidden;
-        }
-        .chart-container-small canvas {
-            max-width: 100% !important;
-            max-height: 180px !important;
-        }
-        .sidebar-panels {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .panel {
-            background: #1e293b;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .panel-title {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #E5E7EB;
-        }
-        .market-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #374151;
-        }
-        .market-item:last-child { border-bottom: none; }
-        .price-positive { color: #10B981; }
-        .price-negative { color: #EF4444; }
-        .quick-trade {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .btn-buy { background: #10B981; color: white; }
-        .btn-sell { background: #6B7280; color: white; }
-        .input-group {
-            margin-bottom: 12px;
-        }
-        .input-group label {
-            display: block;
-            color: #9CA3AF;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 8px 12px;
-            background: #374151;
-            border: 1px solid #4B5563;
-            border-radius: 6px;
-            color: white;
-        }
-        .tables-section {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .table-container {
-            background: #1e293b;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .table-header {
-            background: #374151;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .table th, .table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #374151;
-        }
-        .table th {
-            background: #374151;
-            color: #9CA3AF;
-            font-size: 0.9rem;
-        }
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            z-index: 1000;
-            user-select: none;
-            pointer-events: none;
-            color: rgba(255, 255, 255, 0.6);
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-10vh) rotate(0deg); }
-            100% { transform: translateY(110vh) rotate(360deg); }
-        }
+      }
     </style>
-</head>
-<body>
-    <div class="dashboard">
-        <!-- 사이드바 -->
-        <div class="sidebar">
-            <div class="logo">🎄 Christmas Trading</div>
-            <nav>
-                <div class="nav-item active">📊 대시보드</div>
-                <div class="nav-item">💼 포트폴리오</div>
-                <div class="nav-item">🤖 AI 추천</div>
-                <div class="nav-item">🔔 알림</div>
-                <div class="nav-item">⚙️ 설정</div>
-            </nav>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Loading screen shown until React loads -->
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🎄 Christmas Trading Platform</div>
+        <div class="loading-subtext">
+          Firebase 백엔드 연결 중...<br>
+          실시간 차트 데이터 준비 중...
         </div>
-
-        <!-- 메인 콘텐츠 -->
-        <div class="main-content">
-            <!-- 헤더 -->
-            <div class="header">
-                <div class="portfolio-summary">
-                    <div>
-                        <div class="portfolio-value">🎄 Christmas Portfolio $105,550.91</div>
-                        <div class="portfolio-change">+$1,575.60 (+1.52%)</div>
-                    </div>
-                </div>
-                <div style="color: #9CA3AF; font-size: 0.9rem;">
-                    마지막 업데이트: 오후 1:41:34 | 장중
-                </div>
-            </div>
-
-            <!-- 콘텐츠 영역 -->
-            <div class="content-area">
-                <!-- 차트 섹션 -->
-                <div class="chart-section">
-                    <!-- 메인 주요 지수 차트 -->
-                    <div class="chart-container">
-                        <div class="chart-title">🌏 주요 지수 (KOSPI, NASDAQ, S&P500)</div>
-                        <canvas id="majorIndicesChart" style="height: 300px;"></canvas>
-                    </div>
-                    
-                    <!-- Apple 주식 차트 -->
-                    <div class="chart-container" style="height: 250px;">
-                        <div class="chart-title">📈 AAPL - Apple Inc. $150.25 (+2.45%)</div>
-                        <canvas id="appleStockChart" style="height: 180px;"></canvas>
-                    </div>
-                    
-                    <!-- 거래량 차트 -->
-                    <div class="chart-container" style="height: 200px;">
-                        <div class="chart-title">📊 거래량</div>
-                        <canvas id="volumeChart" style="height: 120px;"></canvas>
-                    </div>
-                </div>
-
-                <!-- 사이드 패널들 -->
-                <div class="sidebar-panels">
-                    <!-- 주요 종목 -->
-                    <div class="panel">
-                        <div class="panel-title">주요 종목</div>
-                        <div class="market-item">
-                            <span>AAPL</span>
-                            <span class="price-positive">$150.25 (+1.67%)</span>
-                        </div>
-                        <div class="market-item">
-                            <span>MSFT</span>
-                            <span class="price-positive">$378.85 (+0.82%)</span>
-                        </div>
-                        <div class="market-item">
-                            <span>GOOGL</span>
-                            <span class="price-negative">$138.45 (-0.45%)</span>
-                        </div>
-                        <div class="market-item">
-                            <span>TSLA</span>
-                            <span class="price-positive">$245.75 (+2.73%)</span>
-                        </div>
-                    </div>
-
-                    <!-- 포트폴리오 성과 차트 -->
-                    <div class="panel">
-                        <div class="panel-title">📈 포트폴리오 성과</div>
-                        <div class="chart-container-small">
-                            <canvas id="portfolioChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 빠른 거래 -->
-                    <div class="panel">
-                        <div class="panel-title">🎁 빠른 거래</div>
-                        <div class="quick-trade">
-                            <button class="btn btn-buy">매수</button>
-                            <button class="btn btn-sell">매도</button>
-                        </div>
-                        <div class="input-group">
-                            <label>종목코드</label>
-                            <input type="text" placeholder="AAPL" value="AAPL">
-                        </div>
-                        <div class="input-group">
-                            <label>수량</label>
-                            <input type="number" placeholder="0" value="10">
-                        </div>
-                        <div class="input-group">
-                            <label>가격</label>
-                            <input type="text" placeholder="시장가" value="시장가">
-                        </div>
-                        <button class="btn btn-buy" style="width: 100%;">매수 주문하기</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 테이블 섹션 -->
-            <div class="tables-section">
-                <!-- 보유 종목 -->
-                <div class="table-container">
-                    <div class="table-header">보유 종목</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>종목코드</th>
-                                <th>보유주식</th>
-                                <th>평균가</th>
-                                <th>현재가</th>
-                                <th>손익</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>AAPL</td>
-                                <td>100</td>
-                                <td>$145.30</td>
-                                <td class="price-positive">$150.25</td>
-                                <td class="price-positive">+$495.00</td>
-                            </tr>
-                            <tr>
-                                <td>MSFT</td>
-                                <td>50</td>
-                                <td>$375.20</td>
-                                <td class="price-positive">$378.85</td>
-                                <td class="price-positive">+$182.50</td>
-                            </tr>
-                            <tr>
-                                <td>GOOGL</td>
-                                <td>25</td>
-                                <td>$140.00</td>
-                                <td class="price-negative">$138.45</td>
-                                <td class="price-negative">-$38.75</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 최근 주문 -->
-                <div class="table-container">
-                    <div class="table-header">최근 주문</div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>종목코드</th>
-                                <th>구분</th>
-                                <th>수량</th>
-                                <th>가격</th>
-                                <th>상태</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>AAPL</td>
-                                <td><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">매수</span></td>
-                                <td>10</td>
-                                <td>$150.00</td>
-                                <td><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">체결</span></td>
-                            </tr>
-                            <tr>
-                                <td>MSFT</td>
-                                <td><span style="background: #EF4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">매도</span></td>
-                                <td>5</td>
-                                <td>$378.50</td>
-                                <td><span style="background: #F59E0B; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">대기</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-
-    <!-- 차트 및 인터랙션 스크립트 -->
+    
+    <!-- Christmas snowfall effect -->
     <script>
-        // 차트 테마 설정
-        Chart.defaults.color = '#E5E7EB';
-        Chart.defaults.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-        Chart.defaults.borderColor = '#10B981';
-
-        // 1. 주요 지수 차트 (KOSPI, NASDAQ, S&P500)
-        function createMajorIndicesChart() {
-            const ctx = document.getElementById('majorIndicesChart').getContext('2d');
-            
-            // 기존 차트가 있으면 삭제
-            if (chartInstances.majorIndices) {
-                chartInstances.majorIndices.destroy();
-            }
-            
-            // 시뮬레이션 데이터 (7일간)
-            const labels = ['12/18', '12/19', '12/20', '12/21', '12/22', '12/23', '12/24'];
-            
-            chartInstances.majorIndices = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'KOSPI',
-                            data: [2580, 2595, 2610, 2625, 2640, 2655, 2670],
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'NASDAQ',
-                            data: [17800, 17850, 17900, 17950, 18000, 18050, 18100],
-                            borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'S&P500',
-                            data: [5950, 5960, 5970, 5980, 5990, 6000, 6010],
-                            borderColor: '#F59E0B',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { color: '#E5E7EB' }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        },
-                        y: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        }
-                    }
-                }
-            });
+      // Simple snowfall effect during loading
+      function createSnowflake() {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.innerHTML = '❄';
+        snowflake.style.left = Math.random() * 100 + 'vw';
+        snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+        snowflake.style.opacity = Math.random();
+        document.body.appendChild(snowflake);
+        
+        setTimeout(() => {
+          snowflake.remove();
+        }, 5000);
+      }
+      
+      // Create snowflakes periodically
+      const snowInterval = setInterval(() => {
+        if (Math.random() < 0.3) {
+          createSnowflake();
         }
-
-        // 2. Apple 주식 차트
-        function createAppleStockChart() {
-            const ctx = document.getElementById('appleStockChart').getContext('2d');
-            
-            // 기존 차트가 있으면 삭제
-            if (chartInstances.appleStock) {
-                chartInstances.appleStock.destroy();
-            }
-            
-            // 시뮬레이션 데이터 (1일 시간별)
-            const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
-            const data = [148.50, 149.20, 150.10, 149.80, 150.25, 150.60, 150.25];
-            
-            chartInstances.appleStock = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'AAPL 주가',
-                        data: data,
-                        borderColor: '#10B981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        },
-                        y: {
-                            grid: { color: '#374151' },
-                            ticks: { 
-                                color: '#9CA3AF',
-                                callback: function(value) {
-                                    return '$' + value.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 3. 거래량 차트
-        function createVolumeChart() {
-            const ctx = document.getElementById('volumeChart').getContext('2d');
-            
-            // 기존 차트가 있으면 삭제
-            if (chartInstances.volume) {
-                chartInstances.volume.destroy();
-            }
-            
-            const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
-            const data = [1200000, 980000, 1500000, 1100000, 1350000, 1600000, 1800000];
-            
-            chartInstances.volume = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '거래량',
-                        data: data,
-                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                        borderColor: '#10B981',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            grid: { color: '#374151' },
-                            ticks: { color: '#9CA3AF' }
-                        },
-                        y: {
-                            grid: { color: '#374151' },
-                            ticks: { 
-                                color: '#9CA3AF',
-                                callback: function(value) {
-                                    return (value / 1000000).toFixed(1) + 'M';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 차트 인스턴스 저장 변수
-        let chartInstances = {
-            majorIndices: null,
-            appleStock: null,
-            volume: null,
-            portfolio: null
-        };
-
-        // 4. 포트폴리오 성과 차트 (도넛 차트)
-        function createPortfolioChart() {
-            const ctx = document.getElementById('portfolioChart').getContext('2d');
-            
-            // 기존 차트가 있으면 삭제
-            if (chartInstances.portfolio) {
-                chartInstances.portfolio.destroy();
-            }
-            
-            chartInstances.portfolio = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', '현금'],
-                    datasets: [{
-                        data: [35, 25, 20, 15, 5],
-                        backgroundColor: [
-                            '#10B981',
-                            '#3B82F6', 
-                            '#F59E0B',
-                            '#EF4444',
-                            '#6B7280'
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#1e293b'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            top: 10,
-                            bottom: 10,
-                            left: 10,
-                            right: 10
-                        }
-                    },
-                    interaction: {
-                        intersect: false
-                    },
-                    animation: {
-                        animateRotate: false,
-                        animateScale: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { 
-                                color: '#E5E7EB',
-                                font: { size: 10 },
-                                padding: 6,
-                                usePointStyle: true,
-                                boxWidth: 12
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 실시간 업데이트 시뮬레이션
-        function simulateRealTimeUpdates() {
-            setInterval(() => {
-                // 포트폴리오 값 업데이트
-                const portfolioValue = document.querySelector('.portfolio-value');
-                const currentValue = 105550.91;
-                const variation = (Math.random() - 0.5) * 100;
-                const newValue = currentValue + variation;
-                
-                if (portfolioValue) {
-                    portfolioValue.textContent = `🎄 Christmas Portfolio $${newValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                }
-                
-                // Apple 주가 업데이트 (차트 제목)
-                const appleTitle = document.querySelector('.chart-container .chart-title');
-                if (appleTitle && appleTitle.textContent.includes('AAPL')) {
-                    const currentPrice = 150.25;
-                    const priceVariation = (Math.random() - 0.5) * 2;
-                    const newPrice = currentPrice + priceVariation;
-                    const changePercent = ((newPrice - 148.50) / 148.50 * 100).toFixed(2);
-                    
-                    appleTitle.textContent = `📈 AAPL - Apple Inc. $${newPrice.toFixed(2)} (${changePercent > 0 ? '+' : ''}${changePercent}%)`;
-                }
-            }, 30000); // 30초마다 업데이트
-        }
-
-        // 눈 내리는 효과
-        function createSnowflake() {
-            const snowflake = document.createElement('div');
-            snowflake.className = 'snowflake';
-            snowflake.innerHTML = Math.random() > 0.5 ? '❄️' : '⭐';
-            snowflake.style.left = Math.random() * 100 + 'vw';
-            snowflake.style.animationDuration = Math.random() * 5 + 5 + 's';
-            snowflake.style.opacity = Math.random() * 0.6 + 0.4;
-            document.body.appendChild(snowflake);
-
-            setTimeout(() => {
-                snowflake.remove();
-            }, 10000);
-        }
-
-        // 버튼 기능
-        function initializeButtons() {
-            // 매수/매도 버튼 클릭 효과
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1)';
-                    }, 100);
-                });
-            });
-
-            // 매수 주문 버튼
-            const orderButton = document.querySelector('.btn-buy[style*="width: 100%"]');
-            if (orderButton) {
-                orderButton.addEventListener('click', function() {
-                    const symbol = document.querySelector('input[value="AAPL"]').value;
-                    const quantity = document.querySelector('input[value="10"]').value;
-                    
-                    this.textContent = '주문 처리 중...';
-                    this.style.background = '#6B7280';
-                    
-                    setTimeout(() => {
-                        this.textContent = '✅ 주문 완료!';
-                        this.style.background = '#10B981';
-                        
-                        setTimeout(() => {
-                            this.textContent = '매수 주문하기';
-                        }, 2000);
-                    }, 1500);
-                });
-            }
-        }
-
-        // 모든 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎄 Christmas Trading Dashboard with Real Charts!');
-            
-            // 차트 생성
-            setTimeout(() => {
-                createMajorIndicesChart();
-                createAppleStockChart();
-                createVolumeChart();
-                createPortfolioChart();
-            }, 500);
-            
-            // 기능 초기화
-            initializeButtons();
-            simulateRealTimeUpdates();
-            
-            // 눈 내리기 시작
-            setInterval(createSnowflake, 1000);
-            
-            console.log('🎄 All charts and features loaded successfully!');
-        });
+      }, 300);
+      
+      // Stop snowfall when React app loads
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          clearInterval(snowInterval);
+        }, 2000);
+      });
     </script>
-</body>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
