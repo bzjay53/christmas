@@ -1,15 +1,15 @@
 import { useEffect } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
-import SupabaseTestPanel from './components/SupabaseTestPanel'
+import LiveStocksChart from './components/charts/LiveStocksChart'
 import { testSupabaseConnection } from './lib/supabase'
 import './styles/static-dashboard.css'
 
 function App() {
-  console.log('🎄 Christmas Trading React App - Supabase Integration v2.1')
+  console.log('🎄 Christmas Trading React App - Live Data Integration v2.2')
   
   useEffect(() => {
-    // Supabase 연결 테스트 (안전하게 재활성화)
+    // Supabase 연결 테스트
     const initializeSupabase = async () => {
       try {
         const result = await testSupabaseConnection()
@@ -28,8 +28,12 @@ function App() {
   
   return (
     <>
-      <SupabaseTestPanel />
-      <StaticDashboardReact />
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-green-50 to-red-50">
+        <div className="container mx-auto px-4 py-6">
+          <LiveStocksChart />
+          <StaticDashboardReact />
+        </div>
+      </div>
       <ChristmasSnowEffect />
     </>
   )
