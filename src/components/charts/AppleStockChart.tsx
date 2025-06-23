@@ -1,8 +1,8 @@
-// 🌏 주요 지수 차트 - 정적 HTML 버전과 동일
+// 📈 Apple 주식 차트 - 정적 HTML 버전과 동일
 import React, { useRef, useEffect } from 'react';
 import Chart from 'chart.js/auto';
 
-const MajorIndicesChartJS: React.FC = () => {
+const AppleStockChart: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
 
@@ -19,44 +19,27 @@ const MajorIndicesChartJS: React.FC = () => {
       const ctx = canvasRef.current!.getContext('2d')!;
       
       // 정적 HTML의 데이터와 동일
-      const labels = ['12/18', '12/19', '12/20', '12/21', '12/22', '12/23', '12/24'];
+      const labels = ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'];
+      const data = [148.50, 149.20, 150.10, 149.80, 150.25, 150.60, 150.25];
       
       chartRef.current = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'KOSPI',
-              data: [2580, 2595, 2610, 2625, 2640, 2655, 2670],
-              borderColor: '#10B981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              tension: 0.4
-            },
-            {
-              label: 'NASDAQ',
-              data: [17800, 17850, 17900, 17950, 18000, 18050, 18100],
-              borderColor: '#3B82F6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4
-            },
-            {
-              label: 'S&P500',
-              data: [5950, 5960, 5970, 5980, 5990, 6000, 6010],
-              borderColor: '#F59E0B',
-              backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              tension: 0.4
-            }
-          ]
+          datasets: [{
+            label: 'AAPL 주가',
+            data: data,
+            borderColor: '#10B981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: {
-              position: 'top',
-              labels: { color: '#E5E7EB' }
-            }
+            legend: { display: false }
           },
           scales: {
             x: {
@@ -65,13 +48,16 @@ const MajorIndicesChartJS: React.FC = () => {
             },
             y: {
               grid: { color: '#374151' },
-              ticks: { color: '#9CA3AF' }
+              ticks: { 
+                color: '#9CA3AF',
+                callback: function(value: any) {
+                  return '$' + value.toFixed(2);
+                }
+              }
             }
           }
         }
       });
-      
-      console.log('🎄 Major Indices Chart created successfully');
     }, 500);
 
     return () => {
@@ -87,12 +73,12 @@ const MajorIndicesChartJS: React.FC = () => {
     <canvas 
       ref={canvasRef}
       style={{ 
-        height: '300px',
-        maxHeight: '300px',
+        height: '180px',
+        maxHeight: '180px',
         maxWidth: '100%'
       }}
     />
   );
 };
 
-export default MajorIndicesChartJS;
+export default AppleStockChart;

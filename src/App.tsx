@@ -1,24 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import ProTraderLayout from './components/ProTraderLayout'
-import ProTraderDashboard from './components/ProTraderDashboard'
-import { Portfolio } from './pages/Portfolio'
-import { AIRecommendations } from './pages/AIRecommendations'
-import './App.css'
+import StaticDashboardReact from './components/StaticDashboardReact'
+import ChristmasSnowEffect from './components/ChristmasSnowEffect'
+import './styles/static-dashboard.css'
 
 function App() {
-  console.log('🎄 App component rendering...');
+  console.log('🎄 Christmas Trading React App - Static Version');
   
   return (
-    <Router>
-      <ProTraderLayout>
-        <Routes>
-          <Route path="/" element={<ProTraderDashboard />} />
-          <Route path="/dashboard" element={<ProTraderDashboard />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/ai-recommendations" element={<AIRecommendations />} />
-        </Routes>
-      </ProTraderLayout>
-    </Router>
+    <>
+      <StaticDashboardReact />
+      <ChristmasSnowEffect />
+    </>
   )
 }
 
