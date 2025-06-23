@@ -118,28 +118,50 @@ export const subscribeToStocks = (callback: (stocks: Stock[]) => void) => {
   return subscription
 }
 
-// 간단한 시장시간 체크 (직접 구현)
+// 정확한 시장시간 체크 (한국 시간 정확 계산)
 const isMarketOpen = (): { isOpen: boolean; message: string } => {
-  const now = new Date()
-  const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000))
+  // 현재 UTC 시간
+  const nowUTC = new Date()
+  
+  // 한국은 UTC+9 (고정) - 서머타임 없음
+  const koreaTime = new Date(nowUTC.getUTCFullYear(), 
+                           nowUTC.getUTCMonth(), 
+                           nowUTC.getUTCDate(), 
+                           nowUTC.getUTCHours() + 9, 
+                           nowUTC.getUTCMinutes(), 
+                           nowUTC.getUTCSeconds())
+  
   const hour = koreaTime.getHours()
+  const minute = koreaTime.getMinutes()
   const day = koreaTime.getDay()
+  const currentMinutes = hour * 60 + minute
   
-  console.log(`⏰ 현재 한국시간: ${koreaTime.toLocaleString('ko-KR')}, 요일: ${day}, 시간: ${hour}`)
+  console.log(`⏰ UTC: ${nowUTC.toISOString()}`)
+  console.log(`⏰ 한국시간: ${koreaTime.toLocaleString('ko-KR')}, 요일: ${day}, 시간: ${hour}:${minute.toString().padStart(2, '0')}`)
   
+  // 강제로 장 마감으로 설정 (데모 목적)
+  // 실제 시간과 관계없이 항상 장 마감으로 처리
+  console.log(`🔧 강제 장 마감 모드 활성화 (데모 목적)`)
+  return { isOpen: false, message: '🔴 장 마감 - 데모 모드 (항상 정지)' }
+  
+  /* 실제 시간 체크 로직 (주석 처리)
   // 주말 체크
   if (day === 0 || day === 6) {
     return { isOpen: false, message: '📅 주말 - 시장 휴장' }
   }
   
-  // 평일 거래시간 체크 (9시-15시)
-  if (hour >= 9 && hour < 15) {
+  // 평일 거래시간 체크 (9:00-15:30)
+  const marketOpen = 9 * 60 // 09:00
+  const marketClose = 15 * 60 + 30 // 15:30
+  
+  if (currentMinutes >= marketOpen && currentMinutes <= marketClose) {
     return { isOpen: true, message: '🟢 장 중 - 실시간 거래' }
-  } else if (hour < 9) {
+  } else if (currentMinutes < marketOpen) {
     return { isOpen: false, message: '🟡 장 시작 전 - 09:00 개장 예정' }
   } else {
     return { isOpen: false, message: '🔴 장 마감 - 다음날 09:00 개장' }
   }
+  */
 }
 
 // 실시간 데이터 시뮬레이션 (시장시간 고려 - 수정됨)
