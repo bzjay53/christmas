@@ -77,26 +77,31 @@ Step 1.3: 기능 검증
 - 모든 차트 동작 확인
 ```
 
-### **Phase 2: Supabase 기본 설정 (1일)**
+### **Phase 2: Supabase 기본 설정 (1일)** ✅ **진행 중**
 ```
 우선순위: 높음
 목표: 데이터베이스 기반 구축
 
-Step 2.1: Supabase 프로젝트 생성
-- 새 프로젝트 설정
-- PostgreSQL 인스턴스 생성
-- API 키 획득
+Step 2.1: Supabase 프로젝트 연동 ✅ 완료
+- ✅ 기존 프로젝트 사용 (qehzzsxzjijfzqkysazc)
+- ✅ 환경 변수 설정 (.env)
+- ✅ API 키 설정 완료
 
-Step 2.2: 기본 테이블 설계
+Step 2.2: React 클라이언트 설치 ✅ 완료
+- ✅ @supabase/supabase-js 설치
+- ✅ 클라이언트 설정 (src/lib/supabase.ts)
+- ✅ 연결 테스트 함수 구현
+
+Step 2.3: 기본 연결 테스트 🔄 진행 중
+- ✅ React 앱에 연결 테스트 통합
+- 🔄 Vercel 환경 변수 설정 필요
+- ⏳ 배포 후 연결 테스트
+
+Step 2.4: 기본 테이블 설계 ⏳ 대기
 - Users 테이블 (사용자 정보)
 - Portfolios 테이블 (포트폴리오)
 - Stocks 테이블 (종목 정보)
 - Orders 테이블 (주문 내역)
-
-Step 2.3: React 연동 테스트
-- Supabase 클라이언트 설치
-- 기본 연결 테스트
-- 데이터 CRUD 테스트
 ```
 
 ### **Phase 3: 실시간 데이터 연동 (2-3일)**
