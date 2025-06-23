@@ -96,6 +96,61 @@ export const getStock = async (symbol: string): Promise<{ data: Stock | null; er
   }
 }
 
+// Supabase에서 주식 가격 업데이트 (시뮬레이션)
+export const updateStockPricesInSupabase = async (): Promise<{ data: Stock[] | null; error: any }> => {
+  try {
+    console.log('📊 Supabase 주식 가격 업데이트 시작...')
+    
+    // 먼저 현재 데이터 조회
+    const { data: currentStocks, error: fetchError } = await supabase
+      .from('stocks')
+      .select('*')
+    
+    if (fetchError || !currentStocks) {
+      console.error('❌ 현재 주식 데이터 조회 실패:', fetchError)
+      return { data: null, error: fetchError }
+    }
+    
+    // 각 주식의 가격을 랜덤하게 업데이트
+    const updatePromises = currentStocks.map(async (stock) => {
+      const changePercent = (Math.random() - 0.5) * 2 // -1% ~ +1% 변동
+      const priceChange = Math.round(stock.current_price * changePercent / 100)
+      const newPrice = Math.max(
+        stock.current_price + priceChange, 
+        stock.current_price * 0.98 // 최소 2% 하락 제한
+      )
+      
+      const { data, error } = await supabase
+        .from('stocks')
+        .update({
+          current_price: newPrice,
+          price_change: priceChange,
+          price_change_percent: Math.round(changePercent * 100) / 100,
+          last_updated: new Date().toISOString()
+        })
+        .eq('symbol', stock.symbol)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error(`❌ ${stock.symbol} 업데이트 실패:`, error)
+        return stock // 실패시 기존 데이터 반환
+      }
+      
+      return data
+    })
+    
+    const updatedStocks = await Promise.all(updatePromises)
+    console.log(`✅ ${updatedStocks.length}개 주식 가격 업데이트 완료`)
+    
+    return { data: updatedStocks, error: null }
+    
+  } catch (err) {
+    console.error('❌ Supabase 주식 업데이트 에러:', err)
+    return { data: null, error: err }
+  }
+}
+
 // 실시간 주식 데이터 구독
 export const subscribeToStocks = (callback: (stocks: Stock[]) => void) => {
   console.log('🔄 주식 실시간 구독 시작...')
@@ -139,10 +194,10 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
   console.log(`⏰ UTC: ${nowUTC.toISOString()}`)
   console.log(`⏰ 한국시간: ${koreaTime.toLocaleString('ko-KR')}, 요일: ${day}, 시간: ${hour}:${minute.toString().padStart(2, '0')}`)
   
-  // 강제로 장 마감으로 설정 (데모 목적)
-  // 실제 시간과 관계없이 항상 장 마감으로 처리
-  console.log(`🔧 강제 장 마감 모드 활성화 (데모 목적)`)
-  return { isOpen: false, message: '🔴 장 마감 - 데모 모드 (항상 정지)' }
+  // 테스트를 위해 일시적으로 장을 열어둠 (실제 시간 무시)
+  // TODO: 실제 배포시에는 실제 시간 체크로 변경 필요
+  console.log(`🔧 테스트 모드: 장 시간 강제 활성화 (Supabase 연동 테스트용)`)
+  return { isOpen: true, message: '🟢 테스트 모드 - 장 시간 (Supabase 연동 테스트)' }
   
   /* 실제 시간 체크 로직 (주석 처리)
   // 주말 체크
@@ -180,28 +235,38 @@ export const startDataSimulation = (callback: (stocks: Stock[]) => void, marketS
     
     // 장이 열려있을 때만 데이터 업데이트
     if (marketStatus.isOpen) {
-      // Mock 데이터의 가격을 랜덤하게 변경
-      const updatedStocks = mockStocks.map(stock => {
-        const changePercent = (Math.random() - 0.5) * 2 // -1% ~ +1% 변동
-        const priceChange = Math.round(stock.current_price * changePercent / 100)
-        const newPrice = stock.current_price + priceChange
-        
-        return {
-          ...stock,
-          current_price: Math.max(newPrice, stock.current_price * 0.98),
-          price_change: priceChange,
-          price_change_percent: Math.round(changePercent * 100) / 100,
-          last_updated: new Date().toISOString()
+      // 실제 Supabase 데이터 업데이트 시뮬레이션
+      updateStockPricesInSupabase().then(({ data }) => {
+        if (data) {
+          callback(data)
+          console.log('📈 Supabase 장중 데이터 업데이트:', data.map(s => `${s.symbol}: ₩${s.current_price.toLocaleString()}`))
         }
+      }).catch(err => {
+        console.error('❌ Supabase 업데이트 실패, Mock 데이터 사용:', err)
+        // Fallback to mock data update
+        const updatedStocks = mockStocks.map(stock => {
+          const changePercent = (Math.random() - 0.5) * 2 // -1% ~ +1% 변동
+          const priceChange = Math.round(stock.current_price * changePercent / 100)
+          const newPrice = stock.current_price + priceChange
+          
+          return {
+            ...stock,
+            current_price: Math.max(newPrice, stock.current_price * 0.98),
+            price_change: priceChange,
+            price_change_percent: Math.round(changePercent * 100) / 100,
+            last_updated: new Date().toISOString()
+          }
+        })
+        
+        mockStocks.splice(0, mockStocks.length, ...updatedStocks)
+        callback(updatedStocks)
       })
-      
-      mockStocks.splice(0, mockStocks.length, ...updatedStocks)
-      callback(updatedStocks)
-      
-      console.log('📈 장중 데이터 업데이트:', updatedStocks.map(s => `${s.symbol}: ₩${s.current_price.toLocaleString()}`))
     } else {
       console.log('⏸️ 장 마감 - 데이터 업데이트 중지')
-      // 장 마감시에는 콜백 호출하지 않음 (차트 업데이트 안함)
+      // 장 마감시에는 최신 Supabase 데이터만 조회 (업데이트하지 않음)
+      getAllStocks().then(({ data }) => {
+        if (data) callback(data)
+      })
     }
   }
   
@@ -218,5 +283,6 @@ export default {
   getAllStocks,
   getStock,
   subscribeToStocks,
+  updateStockPricesInSupabase,
   startDataSimulation
 }
