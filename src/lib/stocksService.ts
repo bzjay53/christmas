@@ -194,12 +194,8 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
   console.log(`⏰ UTC: ${nowUTC.toISOString()}`)
   console.log(`⏰ 한국시간: ${koreaTime.toLocaleString('ko-KR')}, 요일: ${day}, 시간: ${hour}:${minute.toString().padStart(2, '0')}`)
   
-  // 테스트를 위해 일시적으로 장을 열어둠 (실제 시간 무시)
-  // TODO: 실제 배포시에는 실제 시간 체크로 변경 필요
-  console.log(`🔧 테스트 모드: 장 시간 강제 활성화 (Supabase 연동 테스트용)`)
-  return { isOpen: true, message: '🟢 테스트 모드 - 장 시간 (Supabase 연동 테스트)' }
+  // 실제 한국 주식시장 시간 체크 (평일 09:00-15:30 KST)
   
-  /* 실제 시간 체크 로직 (주석 처리)
   // 주말 체크
   if (day === 0 || day === 6) {
     return { isOpen: false, message: '📅 주말 - 시장 휴장' }
@@ -216,7 +212,6 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
   } else {
     return { isOpen: false, message: '🔴 장 마감 - 다음날 09:00 개장' }
   }
-  */
 }
 
 // 실시간 데이터 시뮬레이션 (시장시간 고려 - 수정됨)

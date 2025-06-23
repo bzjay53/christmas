@@ -171,23 +171,6 @@ const LiveStocksChart: React.FC = () => {
       <div className="relative h-64">
         <canvas ref={canvasRef} className="w-full h-full"></canvas>
       </div>
-
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {stocks.slice(0, 3).map((stock) => (
-          <div key={stock.symbol} className="bg-gray-50 rounded p-3 text-center">
-            <div className="font-bold text-gray-800">{stock.name}</div>
-            <div className="text-lg font-bold text-blue-600">
-              ₩{stock.current_price?.toLocaleString()}
-            </div>
-            <div className={`text-sm ${
-              stock.price_change >= 0 ? 'text-red-500' : 'text-blue-500'
-            }`}>
-              {stock.price_change >= 0 ? '+' : ''}{stock.price_change?.toLocaleString()} 
-              ({stock.price_change_percent}%)
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
