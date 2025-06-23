@@ -20,7 +20,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// 연결 테스트 함수
+// 연결 테스트 함수 (개선된 버전)
 export const testSupabaseConnection = async () => {
   try {
     // 빌드 시점에는 테스트 스킵
@@ -30,23 +30,32 @@ export const testSupabaseConnection = async () => {
     
     console.log('🔄 Supabase 연결 테스트 시작...')
     
+    // 더 안전한 연결 테스트: auth 상태 확인
+    const { data: authData, error: authError } = await supabase.auth.getSession()
+    
+    if (authError) {
+      console.warn('🎄 ⚠️  Auth 에러 (정상 - 로그인 전):', authError.message)
+    }
+    
+    // 테이블 목록 조회로 연결 테스트 (더 안전함)
     const { data, error } = await supabase
-      .from('_test_connection')
+      .from('nonexistent_table_test')
       .select('*')
       .limit(1)
     
-    if (error && error.code === 'PGRST116') {
-      // 테이블이 없어도 연결은 성공
-      console.log('✅ Supabase 연결 성공! (테이블 없음 - 정상)')
-      return { success: true, message: 'Supabase connected successfully' }
+    // 404 또는 테이블 없음 에러는 연결 성공을 의미
+    if (error && (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist'))) {
+      console.log('✅ Supabase 연결 성공! (서버 응답 정상)')
+      return { success: true, message: 'Supabase connected - server responding' }
     }
     
-    if (error) {
+    // 다른 에러는 실제 연결 문제
+    if (error && error.code !== 'PGRST116') {
       console.error('❌ Supabase 연결 실패:', error)
       return { success: false, error }
     }
     
-    console.log('✅ Supabase 연결 및 데이터 조회 성공!')
+    console.log('✅ Supabase 연결 및 테이블 조회 성공!')
     return { success: true, data }
     
   } catch (err) {
