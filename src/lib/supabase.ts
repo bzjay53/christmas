@@ -23,6 +23,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // 연결 테스트 함수
 export const testSupabaseConnection = async () => {
   try {
+    // 빌드 시점에는 테스트 스킵
+    if (typeof window === 'undefined') {
+      return { success: true, message: 'Build time - skipped' }
+    }
+    
     console.log('🔄 Supabase 연결 테스트 시작...')
     
     const { data, error } = await supabase
