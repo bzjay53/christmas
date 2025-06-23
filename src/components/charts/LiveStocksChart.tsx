@@ -139,28 +139,31 @@ const LiveStocksChart: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+    <div className="rounded-lg shadow-lg p-6 mb-6" style={{ 
+      background: 'var(--bg-panel)', 
+      border: '1px solid var(--border-primary)' 
+    }}>
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
             🎄 크리스마스 트레이딩 - 실시간 주식
           </h3>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
             📊 {stocks.length}개 종목 | 🔄 {lastUpdate}
           </div>
         </div>
         
         {marketStatus && (
           <div className="flex items-center gap-2 text-sm">
-            <span className={`px-2 py-1 rounded text-xs font-medium ${
-              marketStatus.isOpen 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-gray-100 text-gray-600'
-            }`}>
+            <span className="px-2 py-1 rounded text-xs font-medium" style={{
+              backgroundColor: marketStatus.isOpen ? 'var(--christmas-green-bg)' : 'var(--bg-card)',
+              color: marketStatus.isOpen ? 'var(--christmas-green)' : 'var(--text-muted)',
+              border: `1px solid ${marketStatus.isOpen ? 'var(--christmas-green)' : 'var(--border-secondary)'}`
+            }}>
               {marketStatus.statusMessage}
             </span>
             {!marketStatus.isOpen && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 💡 실제 거래시간: 평일 09:00-15:30
               </span>
             )}

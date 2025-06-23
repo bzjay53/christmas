@@ -2,8 +2,11 @@ import { useEffect } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
 import LiveStocksChart from './components/charts/LiveStocksChart'
+import ThemeToggle from './components/ThemeToggle'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { testSupabaseConnection } from './lib/supabase'
 import './styles/static-dashboard.css'
+import './styles/themes.css'
 
 function App() {
   console.log('🎄 Christmas Trading React App - Live Data Integration v2.2')
@@ -27,15 +30,20 @@ function App() {
   }, [])
   
   return (
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-green-50 to-red-50">
+    <ThemeProvider defaultTheme="dark">
+      <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+        {/* Theme Toggle Button */}
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
+        
         <div className="container mx-auto px-4 py-6">
           <LiveStocksChart />
           <StaticDashboardReact />
         </div>
       </div>
       <ChristmasSnowEffect />
-    </>
+    </ThemeProvider>
   )
 }
 
