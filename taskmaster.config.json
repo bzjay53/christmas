@@ -1,0 +1,31 @@
+{
+  "projectRoot": "/root/dev/christmas-trading",
+  "providers": {
+    "anthropic": {
+      "enabled": true,
+      "model": "claude-sonnet-4-20250514"
+    },
+    "openai": {
+      "enabled": true,
+      "model": "gpt-4"
+    },
+    "google": {
+      "enabled": true,
+      "model": "gemini-1.5-pro"
+    },
+    "perplexity": {
+      "enabled": true,
+      "model": "llama-3.1-sonar-huge-128k-online"
+    }
+  },
+  "features": {
+    "codeGeneration": true,
+    "taskPlanning": true,
+    "projectAnalysis": true,
+    "fileManagement": true
+  },
+  "logging": {
+    "level": "error",
+    "enabled": false
+  }
+}
