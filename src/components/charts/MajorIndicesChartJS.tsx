@@ -19,38 +19,52 @@ const MajorIndicesChartJS: React.FC<MajorIndicesChartJSProps> = ({
     dataSource: 'fallback' as 'live' | 'fallback'
   });
 
-  // 🔄 실시간 데이터 로드
+  // 🔄 실시간 데이터 로드 (일단 fallback 데이터로 시작)
   useEffect(() => {
-    const loadMarketData = async () => {
+    // 즉시 fallback 데이터로 로딩 완료
+    setMarketData(prev => ({
+      ...prev,
+      loading: false,
+      lastUpdated: new Date().toISOString(),
+      dataSource: 'fallback'
+    }));
+
+    // 백그라운드에서 API 데이터 시도 (UI 블로킹 방지)
+    const loadMarketDataBackground = async () => {
       try {
-        console.log('🔄 Fetching live market data...');
+        console.log('🔄 Fetching live market data in background...');
         
-        // 병렬로 모든 마켓 데이터 가져오기
+        // 타임아웃이 있는 fetch
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        );
+
+        // 병렬로 모든 마켓 데이터 가져오기 (5초 타임아웃)
         const [kospiResponse, nasdaqResponse, sp500Response] = await Promise.allSettled([
-          getMarketData.kospi(),
-          getMarketData.nasdaq(), 
-          getMarketData.sp500()
+          Promise.race([getMarketData.kospi(), timeoutPromise]),
+          Promise.race([getMarketData.nasdaq(), timeoutPromise]),
+          Promise.race([getMarketData.sp500(), timeoutPromise])
         ]);
 
         const newData = { ...marketData };
         let hasLiveData = false;
 
         if (kospiResponse.status === 'fulfilled') {
-          newData.kospi = kospiResponse.value.data;
-          if (kospiResponse.value.source === 'live') hasLiveData = true;
-          console.log('✅ KOSPI data loaded:', kospiResponse.value.source);
+          newData.kospi = (kospiResponse.value as any).data;
+          if ((kospiResponse.value as any).source === 'live') hasLiveData = true;
+          console.log('✅ KOSPI data loaded:', (kospiResponse.value as any).source);
         }
 
         if (nasdaqResponse.status === 'fulfilled') {
-          newData.nasdaq = nasdaqResponse.value.data;
-          if (nasdaqResponse.value.source === 'live') hasLiveData = true;
-          console.log('✅ NASDAQ data loaded:', nasdaqResponse.value.source);
+          newData.nasdaq = (nasdaqResponse.value as any).data;
+          if ((nasdaqResponse.value as any).source === 'live') hasLiveData = true;
+          console.log('✅ NASDAQ data loaded:', (nasdaqResponse.value as any).source);
         }
 
         if (sp500Response.status === 'fulfilled') {
-          newData.sp500 = sp500Response.value.data;
-          if (sp500Response.value.source === 'live') hasLiveData = true;
-          console.log('✅ S&P500 data loaded:', sp500Response.value.source);
+          newData.sp500 = (sp500Response.value as any).data;
+          if ((sp500Response.value as any).source === 'live') hasLiveData = true;
+          console.log('✅ S&P500 data loaded:', (sp500Response.value as any).source);
         }
 
         setMarketData({
@@ -64,19 +78,14 @@ const MajorIndicesChartJS: React.FC<MajorIndicesChartJSProps> = ({
         
       } catch (error) {
         console.error('❌ Failed to load market data:', error);
-        setMarketData(prev => ({
-          ...prev,
-          loading: false,
-          dataSource: 'fallback'
-        }));
+        // 실패해도 fallback 데이터가 이미 설정되어 있음
       }
     };
 
-    loadMarketData();
+    // 2초 후에 백그라운드 로딩 시작
+    const backgroundTimeout = setTimeout(loadMarketDataBackground, 2000);
 
-    // 🔄 5분마다 데이터 갱신
-    const interval = setInterval(loadMarketData, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => clearTimeout(backgroundTimeout);
   }, []);
 
   // 차트 데이터 생성
