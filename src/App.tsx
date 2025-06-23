@@ -5,7 +5,7 @@ import ChristmasSnowEffect from './components/ChristmasSnowEffect'
 import './styles/static-dashboard.css'
 
 function App() {
-  console.log('🎄 Christmas Trading React App - Build Test Mode')
+  console.log('🎄 Christmas Trading React App - Fresh Deployment v2.0')
   
   // Temporarily disable Supabase to fix deployment
   /*
