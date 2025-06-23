@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
+import SupabaseTestPanel from './components/SupabaseTestPanel'
 import { testSupabaseConnection } from './lib/supabase'
 import './styles/static-dashboard.css'
 
@@ -27,6 +28,7 @@ function App() {
   
   return (
     <>
+      <SupabaseTestPanel />
       <StaticDashboardReact />
       <ChristmasSnowEffect />
     </>
