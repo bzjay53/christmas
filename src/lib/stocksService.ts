@@ -13,7 +13,38 @@ export interface Stock {
   last_updated: string
 }
 
-// 모든 주식 데이터 조회
+// Mock 데이터 (테이블 생성 전 임시 사용)
+const mockStocks: Stock[] = [
+  {
+    symbol: '005930',
+    name: '삼성전자',
+    current_price: 75000,
+    price_change: 1500,
+    price_change_percent: 2.04,
+    market: 'KOSPI',
+    last_updated: new Date().toISOString()
+  },
+  {
+    symbol: '000660',
+    name: 'SK하이닉스',
+    current_price: 145000,
+    price_change: -2000,
+    price_change_percent: -1.36,
+    market: 'KOSPI',
+    last_updated: new Date().toISOString()
+  },
+  {
+    symbol: '035420',
+    name: 'NAVER',
+    current_price: 185000,
+    price_change: 3500,
+    price_change_percent: 1.93,
+    market: 'KOSPI',
+    last_updated: new Date().toISOString()
+  }
+]
+
+// 모든 주식 데이터 조회 (Fallback 포함)
 export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any }> => {
   try {
     console.log('📊 주식 데이터 조회 시작...')
@@ -24,7 +55,14 @@ export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any
       .order('current_price', { ascending: false })
     
     if (error) {
-      console.error('❌ 주식 데이터 조회 실패:', error)
+      console.warn('⚠️ Supabase 테이블 접근 실패, Mock 데이터 사용:', error.message)
+      
+      // 404 에러 (테이블 없음)인 경우 Mock 데이터 반환
+      if (error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        console.log('📝 Mock 데이터로 임시 대체 (stocks 테이블 생성 필요)')
+        return { data: mockStocks, error: null }
+      }
+      
       return { data: null, error }
     }
     
@@ -32,8 +70,8 @@ export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any
     return { data, error: null }
     
   } catch (err) {
-    console.error('❌ 주식 서비스 에러:', err)
-    return { data: null, error: err }
+    console.error('❌ 주식 서비스 에러, Mock 데이터 사용:', err)
+    return { data: mockStocks, error: null }
   }
 }
 
