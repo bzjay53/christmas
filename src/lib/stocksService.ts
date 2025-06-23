@@ -118,32 +118,55 @@ export const subscribeToStocks = (callback: (stocks: Stock[]) => void) => {
   return subscription
 }
 
-// 실시간 데이터 시뮬레이션 (Mock 모드용)
-export const startDataSimulation = (callback: (stocks: Stock[]) => void) => {
-  console.log('🔄 실시간 데이터 시뮬레이션 시작...')
-  
-  return setInterval(() => {
-    // Mock 데이터의 가격을 랜덤하게 변경
-    const updatedStocks = mockStocks.map(stock => {
-      const changePercent = (Math.random() - 0.5) * 4 // -2% ~ +2% 변동
-      const priceChange = Math.round(stock.current_price * changePercent / 100)
-      const newPrice = stock.current_price + priceChange
+// 실시간 데이터 시뮬레이션 (시장시간 고려)
+export const startDataSimulation = (callback: (stocks: Stock[]) => void, marketStatusCallback?: (status: any) => void) => {
+  // 동적 import로 marketHours 로드 (빌드 시점 에러 방지)
+  const updateData = async () => {
+    try {
+      const { getMarketStatus } = await import('./marketHours')
+      const marketStatus = getMarketStatus()
       
-      return {
-        ...stock,
-        current_price: Math.max(newPrice, stock.current_price * 0.95), // 최대 5% 하락 제한
-        price_change: priceChange,
-        price_change_percent: Math.round(changePercent * 100) / 100,
-        last_updated: new Date().toISOString()
+      if (marketStatusCallback) {
+        marketStatusCallback(marketStatus)
       }
-    })
-    
-    // mockStocks 업데이트
-    mockStocks.splice(0, mockStocks.length, ...updatedStocks)
-    callback(updatedStocks)
-    
-    console.log('📈 Mock 데이터 업데이트:', updatedStocks.map(s => `${s.symbol}: ₩${s.current_price.toLocaleString()}`))
-  }, 5000) // 5초마다 업데이트
+      
+      // 장이 열려있을 때만 데이터 업데이트
+      if (marketStatus.isOpen) {
+        // Mock 데이터의 가격을 랜덤하게 변경
+        const updatedStocks = mockStocks.map(stock => {
+          const changePercent = (Math.random() - 0.5) * 2 // -1% ~ +1% 변동 (더 현실적)
+          const priceChange = Math.round(stock.current_price * changePercent / 100)
+          const newPrice = stock.current_price + priceChange
+          
+          return {
+            ...stock,
+            current_price: Math.max(newPrice, stock.current_price * 0.98), // 최대 2% 하락 제한
+            price_change: priceChange,
+            price_change_percent: Math.round(changePercent * 100) / 100,
+            last_updated: new Date().toISOString()
+          }
+        })
+        
+        // mockStocks 업데이트
+        mockStocks.splice(0, mockStocks.length, ...updatedStocks)
+        callback(updatedStocks)
+        
+        console.log('📈 실시간 업데이트:', updatedStocks.map(s => `${s.symbol}: ₩${s.current_price.toLocaleString()}`))
+      } else {
+        console.log('⏸️ 장 마감 - 데이터 업데이트 중지:', marketStatus.statusMessage)
+      }
+    } catch (error) {
+      console.error('❌ 시장 상태 확인 에러:', error)
+    }
+  }
+  
+  console.log('🔄 스마트 실시간 시뮬레이션 시작 (시장시간 고려)...')
+  
+  // 즉시 한 번 실행
+  updateData()
+  
+  // 10초마다 업데이트 (더 현실적)
+  return setInterval(updateData, 10000)
 }
 
 export default {

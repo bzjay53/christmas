@@ -10,6 +10,7 @@ const LiveStocksChart: React.FC = () => {
   const chartRef = useRef<Chart | null>(null)
   const [stocks, setStocks] = useState<Stock[]>([])
   const [lastUpdate, setLastUpdate] = useState<string>('')
+  const [marketStatus, setMarketStatus] = useState<any>(null)
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -40,14 +41,19 @@ const LiveStocksChart: React.FC = () => {
       }
     })
 
-    // Mock 데이터 시뮬레이션 시작 (5초마다 업데이트)
-    const simulationInterval = startDataSimulation((updatedStocks) => {
-      setStocks(updatedStocks)
-      setLastUpdate(new Date().toLocaleTimeString())
-      if (chartRef.current) {
-        updateChart(updatedStocks)
+    // Mock 데이터 시뮬레이션 시작 (시장시간 고려)
+    const simulationInterval = startDataSimulation(
+      (updatedStocks) => {
+        setStocks(updatedStocks)
+        setLastUpdate(new Date().toLocaleTimeString())
+        if (chartRef.current) {
+          updateChart(updatedStocks)
+        }
+      },
+      (status) => {
+        setMarketStatus(status)
       }
-    })
+    )
 
     return () => {
       if (chartRef.current) {
@@ -134,13 +140,32 @@ const LiveStocksChart: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-      <div className="mb-4 flex justify-between items-center">
-        <h3 className="text-lg font-bold text-gray-800">
-          🎄 크리스마스 트레이딩 - 실시간 주식
-        </h3>
-        <div className="text-sm text-gray-500">
-          📊 {stocks.length}개 종목 | 🔄 {lastUpdate}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-bold text-gray-800">
+            🎄 크리스마스 트레이딩 - 실시간 주식
+          </h3>
+          <div className="text-sm text-gray-500">
+            📊 {stocks.length}개 종목 | 🔄 {lastUpdate}
+          </div>
         </div>
+        
+        {marketStatus && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className={`px-2 py-1 rounded text-xs font-medium ${
+              marketStatus.isOpen 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {marketStatus.statusMessage}
+            </span>
+            {!marketStatus.isOpen && (
+              <span className="text-xs text-gray-500">
+                💡 실제 거래시간: 평일 09:00-15:30
+              </span>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="relative h-64">
