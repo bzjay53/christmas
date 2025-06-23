@@ -10,7 +10,7 @@ const initializeFirebase = () => {
 
     try {
         // 서비스 계정 키 파일 경로
-        const serviceAccountPath = path.join(__dirname, '../../firebase-service-account.json');
+        const serviceAccountPath = path.join(__dirname, '../../config/houseparty-protocol-70821-firebase-adminsdk-fbsvc-d2ac57e86b.json');
         
         // 환경 변수 또는 서비스 계정 파일 사용
         let credential;

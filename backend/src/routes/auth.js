@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyIdToken, createUser, getUser, updateUser } = require('../config/firebase');
-const authMiddleware = require('../middleware/auth');
+const { authMiddleware } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const logger = require('winston');
 

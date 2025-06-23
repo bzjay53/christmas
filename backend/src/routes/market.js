@@ -1,6 +1,6 @@
 const express = require('express');
 const marketService = require('../services/marketService');
-const cacheMiddleware = require('../middleware/cache');
+const { cacheMiddleware } = require('../middleware/cache');
 const logger = require('winston');
 
 const router = express.Router();
