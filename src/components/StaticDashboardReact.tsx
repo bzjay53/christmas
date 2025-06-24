@@ -12,6 +12,18 @@ const StaticDashboardReact: React.FC = () => {
   const [stockCode, setStockCode] = useState('005930'); // 삼성전자
   const [quantity, setQuantity] = useState(10);
   const [tradeMessage, setTradeMessage] = useState('');
+  const [selectedChart, setSelectedChart] = useState('major'); // 차트 선택 상태
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
+
+  const handleThemeToggle = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    console.log(`🎨 테마 변경: ${theme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드'}`);
+  };
+
+  const handleChartSelect = (chartType: string) => {
+    setSelectedChart(chartType);
+    console.log(`📊 차트 변경: ${chartType}`);
+  };
 
   const handleTrade = async (orderType: 'buy' | 'sell') => {
     setIsTrading(true);
@@ -75,8 +87,36 @@ const StaticDashboardReact: React.FC = () => {
                 <div className="portfolio-change">+$1,575.60 (+1.52%)</div>
               </div>
             </div>
-            <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
-              마지막 업데이트: 오후 1:41:34 | 장중
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+                마지막 업데이트: 오후 1:41:34 | 장중
+              </div>
+              {/* 테마 토글 버튼 */}
+              <button
+                onClick={handleThemeToggle}
+                className="theme-toggle-btn"
+                style={{
+                  padding: '8px 12px',
+                  background: theme === 'dark' ? '#374151' : '#F3F4F6',
+                  border: `1px solid ${theme === 'dark' ? '#10B981' : '#6B7280'}`,
+                  borderRadius: '6px',
+                  color: theme === 'dark' ? '#10B981' : '#374151',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = theme === 'dark' ? '#10B981' : '#6B7280';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = theme === 'dark' ? '#374151' : '#F3F4F6';
+                  e.currentTarget.style.color = theme === 'dark' ? '#10B981' : '#374151';
+                }}
+              >
+                {theme === 'dark' ? '☀️ 라이트' : '🌙 다크'}
+              </button>
             </div>
           </div>
 
@@ -84,10 +124,76 @@ const StaticDashboardReact: React.FC = () => {
           <div className="content-area">
             {/* 차트 섹션 */}
             <div className="chart-section">
-              {/* 메인 주요 지수 차트 */}
-              <div className="chart-container">
-                <div className="chart-title">🌏 주요 지수 (KOSPI, NASDAQ, S&P500)</div>
-                <MajorIndicesChartJS />
+              {/* 메인 주요 지수 차트 - 좌우 버튼 포함 */}
+              <div className="chart-container-with-controls">
+                {/* 좌측 컨트롤 버튼들 */}
+                <div className="chart-left-controls">
+                  <button 
+                    className={`chart-control-btn ${selectedChart === 'major' ? 'active' : ''}`}
+                    onClick={() => handleChartSelect('major')}
+                  >
+                    🌏<br/>주요지수
+                  </button>
+                  <button 
+                    className={`chart-control-btn ${selectedChart === 'kospi' ? 'active' : ''}`}
+                    onClick={() => handleChartSelect('kospi')}
+                  >
+                    📊<br/>KOSPI
+                  </button>
+                  <button 
+                    className={`chart-control-btn ${selectedChart === 'nasdaq' ? 'active' : ''}`}
+                    onClick={() => handleChartSelect('nasdaq')}
+                  >
+                    🇺🇸<br/>NASDAQ
+                  </button>
+                  <button 
+                    className={`chart-control-btn ${selectedChart === 'sp500' ? 'active' : ''}`}
+                    onClick={() => handleChartSelect('sp500')}
+                  >
+                    💼<br/>S&P500
+                  </button>
+                </div>
+
+                {/* 중앙 차트 영역 */}
+                <div className="chart-container">
+                  <div className="chart-title">
+                    {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
+                    {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
+                    {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
+                    {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
+                  </div>
+                  <MajorIndicesChartJS />
+                </div>
+
+                {/* 우측 컨트롤 버튼들 */}
+                <div className="chart-right-controls">
+                  <button 
+                    className="chart-control-btn action-btn buy-btn"
+                    onClick={() => handleTrade('buy')}
+                    disabled={isTrading}
+                  >
+                    💰<br/>즉시매수
+                  </button>
+                  <button 
+                    className="chart-control-btn action-btn sell-btn"
+                    onClick={() => handleTrade('sell')}
+                    disabled={isTrading}
+                  >
+                    💸<br/>즉시매도
+                  </button>
+                  <button 
+                    className="chart-control-btn info-btn"
+                    onClick={() => alert('📊 실시간 분석 정보를 표시합니다')}
+                  >
+                    📈<br/>분석
+                  </button>
+                  <button 
+                    className="chart-control-btn info-btn"
+                    onClick={() => alert('⏰ 알림 설정 기능입니다')}
+                  >
+                    🔔<br/>알림
+                  </button>
+                </div>
               </div>
               
               {/* Apple 주식 차트 */}
