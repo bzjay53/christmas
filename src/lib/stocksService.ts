@@ -178,21 +178,17 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
   // 현재 UTC 시간
   const nowUTC = new Date()
   
-  // 한국은 UTC+9 (고정) - 서머타임 없음
-  const koreaTime = new Date(nowUTC.getUTCFullYear(), 
-                           nowUTC.getUTCMonth(), 
-                           nowUTC.getUTCDate(), 
-                           nowUTC.getUTCHours() + 9, 
-                           nowUTC.getUTCMinutes(), 
-                           nowUTC.getUTCSeconds())
+  // 한국시간으로 정확히 변환 (UTC+9)
+  const koreaTime = new Date(nowUTC.getTime() + (9 * 60 * 60 * 1000))
   
-  const hour = koreaTime.getHours()
-  const minute = koreaTime.getMinutes()
-  const day = koreaTime.getDay()
+  const hour = koreaTime.getUTCHours() // UTC 기준으로 가져와야 한국시간이 맞음
+  const minute = koreaTime.getUTCMinutes()
+  const day = koreaTime.getUTCDay()
   const currentMinutes = hour * 60 + minute
   
   console.log(`⏰ UTC: ${nowUTC.toISOString()}`)
-  console.log(`⏰ 한국시간: ${koreaTime.toLocaleString('ko-KR')}, 요일: ${day}, 시간: ${hour}:${minute.toString().padStart(2, '0')}`)
+  console.log(`⏰ 한국시간: ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}, 요일: ${day} (${['일', '월', '화', '수', '목', '금', '토'][day]})`)
+  console.log(`⏰ 현재 분 계산: ${currentMinutes} (장 시간: 540-930)`)
   
   // 실제 한국 주식시장 시간 체크 (평일 09:00-15:30 KST)
   
@@ -202,10 +198,13 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
   }
   
   // 평일 거래시간 체크 (9:00-15:30)
-  const marketOpen = 9 * 60 // 09:00
-  const marketClose = 15 * 60 + 30 // 15:30
+  const marketOpen = 9 * 60 // 09:00 = 540분
+  const marketClose = 15 * 60 + 30 // 15:30 = 930분
+  
+  console.log(`🔍 시장 상태 분석: 현재 ${currentMinutes}분, 시장 ${marketOpen}-${marketClose}분`)
   
   if (currentMinutes >= marketOpen && currentMinutes <= marketClose) {
+    console.log(`✅ 장중 확인! 현재 ${hour}:${minute.toString().padStart(2, '0')}`)
     return { isOpen: true, message: '🟢 장 중 - 실시간 거래' }
   } else if (currentMinutes < marketOpen) {
     return { isOpen: false, message: '🟡 장 시작 전 - 09:00 개장 예정' }

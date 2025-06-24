@@ -52,47 +52,52 @@
    ☀️ LIGHT THEME (새로운 밝은 스타일)
    =========================================== */
 [data-theme="light"] {
-  /* Background Colors */
-  --bg-primary: linear-gradient(135deg, #ffffff, #f8fafc);
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --bg-panel: #ffffff;
-  --bg-card: #f8fafc;
-  --bg-hover: #f1f5f9;
-  --bg-active: #e2e8f0;
+  /* Background Colors - 전문적이고 세련된 그라데이션 */
+  --bg-primary: linear-gradient(135deg, #fefefe 0%, #f8fafc 30%, #ffffff 70%, #f1f5f9 100%);
+  --bg-secondary: rgba(255, 255, 255, 0.95);
+  --bg-tertiary: rgba(248, 250, 252, 0.9);
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(248, 250, 252, 0.7);
+  --bg-hover: rgba(241, 245, 249, 0.8);
+  --bg-active: rgba(226, 232, 240, 0.9);
 
-  /* Text Colors */
-  --text-primary: #1f2937;
-  --text-secondary: #374151;
-  --text-tertiary: #6b7280;
-  --text-muted: #9ca3af;
-  --text-accent: #059669;
+  /* Text Colors - 높은 가독성과 계층감 */
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-tertiary: #475569;
+  --text-muted: #64748b;
+  --text-accent: #047857;
 
-  /* Border Colors */
-  --border-primary: #e5e7eb;
-  --border-secondary: #d1d5db;
-  --border-hover: #9ca3af;
+  /* Border Colors - 미묘하고 우아한 경계 */
+  --border-primary: rgba(226, 232, 240, 0.6);
+  --border-secondary: rgba(203, 213, 225, 0.4);
+  --border-hover: rgba(148, 163, 184, 0.6);
 
-  /* Christmas Colors - Light Mode */
+  /* Christmas Colors - Light Mode (생생하고 전문적) */
   --christmas-red: #dc2626;
-  --christmas-red-bg: #fef2f2;
+  --christmas-red-bg: rgba(254, 242, 242, 0.7);
   --christmas-red-hover: #b91c1c;
-  --christmas-green: #16a34a;
-  --christmas-green-bg: #f0fdf4;
-  --christmas-green-hover: #15803d;
+  --christmas-green: #047857;
+  --christmas-green-bg: rgba(236, 253, 245, 0.7);
+  --christmas-green-hover: #065f46;
   --christmas-gold: #d97706;
-  --christmas-gold-bg: #fffbeb;
+  --christmas-gold-bg: rgba(255, 251, 235, 0.7);
   --christmas-gold-hover: #b45309;
 
-  /* Profit/Loss Colors */
-  --profit-color: #059669;
+  /* Profit/Loss Colors - 선명한 대비 */
+  --profit-color: #047857;
   --loss-color: #dc2626;
-  --neutral-color: #6b7280;
+  --neutral-color: #64748b;
 
-  /* Shadow Colors */
-  --shadow-sm: rgba(0, 0, 0, 0.1);
-  --shadow-md: rgba(0, 0, 0, 0.15);
-  --shadow-lg: rgba(0, 0, 0, 0.25);
+  /* Shadow Colors - 자연스럽고 깊이있는 그림자 */
+  --shadow-sm: rgba(15, 23, 42, 0.08);
+  --shadow-md: rgba(15, 23, 42, 0.12);
+  --shadow-lg: rgba(15, 23, 42, 0.16);
+
+  /* 고급 효과 변수 */
+  --glassmorphism-bg: rgba(255, 255, 255, 0.25);
+  --card-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --hover-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
 }
 
 /* ===========================================
@@ -148,16 +153,27 @@ body {
   color: var(--text-primary);
 }
 
-/* Panels and Cards */
+/* Panels and Cards - 고급스러운 글래스모피즘 효과 */
 .panel, .chart-container {
   background: var(--bg-panel);
   border: 1px solid var(--border-primary);
   color: var(--text-primary);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.panel:hover, .chart-container:hover {
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px);
 }
 
 .chart-placeholder {
   background: linear-gradient(45deg, var(--bg-card), var(--bg-hover));
   color: var(--text-muted);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Text Colors */
