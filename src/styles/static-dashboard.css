@@ -11,6 +11,67 @@ body {
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
   overflow-x: hidden;
+  transition: all 0.3s ease;
+}
+
+/* 🌞 라이트 테마 */
+body.light-theme {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  color: #1e293b;
+}
+
+body.light-theme .dashboard {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+}
+
+body.light-theme .sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+}
+
+body.light-theme .main-content {
+  background: transparent;
+}
+
+body.light-theme .header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.light-theme .chart-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+body.light-theme .panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+body.light-theme .table-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+body.light-theme .table th {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+body.light-theme .input-group input {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+body.light-theme .chart-title {
+  color: #1e293b;
+}
+
+body.light-theme .panel-title {
+  color: #1e293b;
 }
 
 .dashboard {

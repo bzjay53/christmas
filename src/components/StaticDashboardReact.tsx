@@ -16,8 +16,14 @@ const StaticDashboardReact: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
 
   const handleThemeToggle = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    console.log(`🎨 테마 변경: ${theme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드'}`);
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    
+    // 실제 DOM에 테마 클래스 적용
+    document.body.className = newTheme === 'light' ? 'light-theme' : 'dark-theme';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    
+    console.log(`🎨 테마 변경: ${newTheme === 'light' ? '☀️ 라이트 모드' : '🌙 다크 모드'}`);
   };
 
   const handleChartSelect = (chartType: string) => {
@@ -120,211 +126,252 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
-          {/* 콘텐츠 영역 */}
-          <div className="content-area">
-            {/* 차트 섹션 - 좌우 버튼 포함 */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'stretch', 
-              gap: '15px',
-              width: '100%'
-            }}>
-              {/* 좌측 컨트롤 버튼들 */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                justifyContent: 'center',
-                minWidth: '100px',
-                maxWidth: '100px'
-              }}>
-                <button 
-                  onClick={() => handleChartSelect('major')}
-                  style={{
-                    padding: '12px 8px',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    background: selectedChart === 'major' ? '#10B981' : '#1e293b',
-                    color: selectedChart === 'major' ? 'black' : '#9CA3AF',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    minHeight: '60px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🌏<br/>주요지수
-                </button>
-                <button 
-                  onClick={() => handleChartSelect('kospi')}
-                  style={{
-                    padding: '12px 8px',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    background: selectedChart === 'kospi' ? '#10B981' : '#1e293b',
-                    color: selectedChart === 'kospi' ? 'black' : '#9CA3AF',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    minHeight: '60px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  📊<br/>KOSPI
-                </button>
-                <button 
-                  onClick={() => handleChartSelect('nasdaq')}
-                  style={{
-                    padding: '12px 8px',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    background: selectedChart === 'nasdaq' ? '#10B981' : '#1e293b',
-                    color: selectedChart === 'nasdaq' ? 'black' : '#9CA3AF',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    minHeight: '60px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🇺🇸<br/>NASDAQ
-                </button>
-                <button 
-                  onClick={() => handleChartSelect('sp500')}
-                  style={{
-                    padding: '12px 8px',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    background: selectedChart === 'sp500' ? '#10B981' : '#1e293b',
-                    color: selectedChart === 'sp500' ? 'black' : '#9CA3AF',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    minHeight: '60px',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  💼<br/>S&P500
-                </button>
-              </div>
-
-              {/* 중앙 차트 섹션 */}
-              <div className="chart-section" style={{ flex: 1 }}>
-                {/* 메인 주요 지수 차트 */}
-                <div className="chart-container">
-                  <div className="chart-title">
-                    {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
-                    {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
-                    {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
-                    {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
-                  </div>
-                  <MajorIndicesChartJS />
-                </div>
-              
-              {/* Apple 주식 차트 */}
-              <div className="chart-container" style={{ height: '250px' }}>
-                <div className="chart-title">📈 AAPL - Apple Inc. $150.25 (+2.45%)</div>
-                <AppleStockChart />
-              </div>
-              
-              {/* 거래량 차트 */}
-              <div className="chart-container" style={{ height: '200px' }}>
-                <div className="chart-title">📊 거래량</div>
-                <VolumeChart />
-              </div>
-            </div>
-
-            {/* 우측 액션 버튼들 */}
+          {/* 콘텐츠 영역 - 완전히 새로운 레이아웃 */}
+          <div style={{
+            display: 'flex',
+            height: 'calc(100vh - 100px)',
+            padding: '20px',
+            gap: '20px'
+          }}>
+            {/* 🔴 좌측 빨간 박스 영역 - 차트 선택 버튼들 */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '10px',
-              justifyContent: 'center',
-              minWidth: '100px',
-              maxWidth: '100px'
+              gap: '15px',
+              justifyContent: 'flex-start',
+              minWidth: '150px',
+              maxWidth: '150px',
+              background: '#1e293b',
+              border: '3px solid #EF4444',
+              borderRadius: '12px',
+              padding: '20px'
             }}>
+              <div style={{
+                color: '#EF4444',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                fontSize: '0.9rem',
+                marginBottom: '10px'
+              }}>차트 선택</div>
+              
+              <button 
+                onClick={() => handleChartSelect('major')}
+                style={{
+                  padding: '15px 10px',
+                  border: '2px solid #374151',
+                  borderRadius: '8px',
+                  background: selectedChart === 'major' ? '#10B981' : '#374151',
+                  color: selectedChart === 'major' ? 'black' : 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: selectedChart === 'major' ? '0 0 10px #10B981' : 'none'
+                }}
+              >
+                🌏<br/>주요지수
+              </button>
+              
+              <button 
+                onClick={() => handleChartSelect('kospi')}
+                style={{
+                  padding: '15px 10px',
+                  border: '2px solid #374151',
+                  borderRadius: '8px',
+                  background: selectedChart === 'kospi' ? '#10B981' : '#374151',
+                  color: selectedChart === 'kospi' ? 'black' : 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: selectedChart === 'kospi' ? '0 0 10px #10B981' : 'none'
+                }}
+              >
+                📊<br/>KOSPI
+              </button>
+              
+              <button 
+                onClick={() => handleChartSelect('nasdaq')}
+                style={{
+                  padding: '15px 10px',
+                  border: '2px solid #374151',
+                  borderRadius: '8px',
+                  background: selectedChart === 'nasdaq' ? '#10B981' : '#374151',
+                  color: selectedChart === 'nasdaq' ? 'black' : 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: selectedChart === 'nasdaq' ? '0 0 10px #10B981' : 'none'
+                }}
+              >
+                🇺🇸<br/>NASDAQ
+              </button>
+              
+              <button 
+                onClick={() => handleChartSelect('sp500')}
+                style={{
+                  padding: '15px 10px',
+                  border: '2px solid #374151',
+                  borderRadius: '8px',
+                  background: selectedChart === 'sp500' ? '#10B981' : '#374151',
+                  color: selectedChart === 'sp500' ? 'black' : 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: selectedChart === 'sp500' ? '0 0 10px #10B981' : 'none'
+                }}
+              >
+                💼<br/>S&P500
+              </button>
+            </div>
+
+            {/* 중앙 차트 영역 */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* 메인 실시간 주식현황 그래프 */}
+              <div className="chart-container" style={{ height: '400px' }}>
+                <div className="chart-title" style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>
+                  {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
+                  {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
+                  {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
+                  {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
+                </div>
+                <MajorIndicesChartJS />
+              </div>
+              
+              {/* 하단 작은 차트들 */}
+              <div style={{ display: 'flex', gap: '20px', height: '200px' }}>
+                <div className="chart-container" style={{ flex: 1 }}>
+                  <div className="chart-title">📈 AAPL - Apple Inc.</div>
+                  <AppleStockChart />
+                </div>
+                <div className="chart-container" style={{ flex: 1 }}>
+                  <div className="chart-title">📊 거래량</div>
+                  <VolumeChart />
+                </div>
+              </div>
+            </div>
+
+            {/* 🔴 우측 빨간 박스 영역 - 액션 버튼들 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
+              justifyContent: 'flex-start',
+              minWidth: '150px',
+              maxWidth: '150px',
+              background: '#1e293b',
+              border: '3px solid #EF4444',
+              borderRadius: '12px',
+              padding: '20px'
+            }}>
+              <div style={{
+                color: '#EF4444',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                fontSize: '0.9rem',
+                marginBottom: '10px'
+              }}>즉시 거래</div>
+              
               <button 
                 onClick={() => handleTrade('buy')}
                 disabled={isTrading}
                 style={{
-                  padding: '12px 8px',
-                  border: '1px solid #374151',
+                  padding: '15px 10px',
+                  border: '2px solid #10B981',
                   borderRadius: '8px',
                   background: '#10B981',
                   color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
                   cursor: isTrading ? 'not-allowed' : 'pointer',
                   textAlign: 'center',
-                  minHeight: '60px',
-                  transition: 'all 0.2s ease',
-                  opacity: isTrading ? 0.6 : 1
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  opacity: isTrading ? 0.6 : 1,
+                  boxShadow: '0 0 10px #10B981'
                 }}
               >
                 💰<br/>{isTrading ? '처리중...' : '즉시매수'}
               </button>
+              
               <button 
                 onClick={() => handleTrade('sell')}
                 disabled={isTrading}
                 style={{
-                  padding: '12px 8px',
-                  border: '1px solid #374151',
+                  padding: '15px 10px',
+                  border: '2px solid #EF4444',
                   borderRadius: '8px',
                   background: '#EF4444',
                   color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
                   cursor: isTrading ? 'not-allowed' : 'pointer',
                   textAlign: 'center',
-                  minHeight: '60px',
-                  transition: 'all 0.2s ease',
-                  opacity: isTrading ? 0.6 : 1
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  opacity: isTrading ? 0.6 : 1,
+                  boxShadow: '0 0 10px #EF4444'
                 }}
               >
                 💸<br/>{isTrading ? '처리중...' : '즉시매도'}
               </button>
+              
               <button 
                 onClick={() => alert('📊 실시간 분석 정보를 표시합니다')}
                 style={{
-                  padding: '12px 8px',
-                  border: '1px solid #374151',
+                  padding: '15px 10px',
+                  border: '2px solid #3B82F6',
                   borderRadius: '8px',
                   background: '#3B82F6',
                   color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  minHeight: '60px',
-                  transition: 'all 0.2s ease'
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 10px #3B82F6'
                 }}
               >
                 📈<br/>분석
               </button>
+              
               <button 
                 onClick={() => alert('⏰ 알림 설정 기능입니다')}
                 style={{
-                  padding: '12px 8px',
-                  border: '1px solid #374151',
+                  padding: '15px 10px',
+                  border: '2px solid #6366F1',
                   borderRadius: '8px',
                   background: '#6366F1',
                   color: 'white',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  minHeight: '60px',
-                  transition: 'all 0.2s ease'
+                  minHeight: '70px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 0 10px #6366F1'
                 }}
               >
                 🔔<br/>알림
               </button>
             </div>
           </div>
+
+          {/* 원래 사이드 패널들은 아래쪽으로 이동 */}
+          <div className="content-area"
+            style={{ marginTop: '20px' }}
+          >
 
             {/* 사이드 패널들 */}
             <div className="sidebar-panels">
