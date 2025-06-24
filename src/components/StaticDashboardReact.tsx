@@ -61,6 +61,124 @@ const StaticDashboardReact: React.FC = () => {
 
   return (
     <>
+      {/* 🔝 최상단 배너 - 주요 기능 버튼들 */}
+      <div style={{
+        background: '#1e293b',
+        borderBottom: '1px solid #374151',
+        padding: '15px 20px',
+        display: 'flex',
+        gap: '15px',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        zIndex: 1001
+      }}>
+        <button 
+          onClick={() => alert('🎯 투자 전략 설정')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🎯 투자 전략
+        </button>
+        
+        <button 
+          onClick={() => alert('💎 요금제 업그레이드')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          💎 요금제 안내
+        </button>
+        
+        <button 
+          onClick={() => alert('📊 백테스트 실행')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          📊 백테스트
+        </button>
+        
+        <button 
+          onClick={() => alert('🎁 친구 초대 혜택')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🎁 혜택
+        </button>
+        
+        <button 
+          onClick={() => alert('📈 주요 종목 현황')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          📈 주요 종목
+        </button>
+        
+        <button 
+          onClick={() => alert('🛡️ 안전한 거래 시스템')}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: '#10B981',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🛡️ 안전한 거래
+        </button>
+      </div>
+
       {/* Christmas 장식 */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-green-500 via-yellow-500 to-red-500 opacity-30 z-10"></div>
       <div className="fixed top-4 right-4 pointer-events-none z-10 opacity-20">
@@ -70,7 +188,7 @@ const StaticDashboardReact: React.FC = () => {
         <span className="text-2xl">🎁</span>
       </div>
 
-      <div className="dashboard">
+      <div className="dashboard" style={{ marginTop: '70px' }}>
         {/* 좌측 사이드바 - 빨간 박스 영역에 버튼 추가 */}
         <div className="sidebar">
           <div className="logo">🎄 Christmas Trading</div>
@@ -383,292 +501,466 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
-          {/* 🔴 좌측 네비게이션 패널 - 우측 빠른거래와 동일한 스타일 */}
+          {/* 좌측 네비게이션 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '140px',
+            top: '120px',
             left: '20px',
-            width: '150px',
+            width: '200px',
             zIndex: 1000,
-            background: '#1e293b',
-            border: '3px solid #EF4444',
-            borderRadius: '12px',
-            padding: '15px',
+            background: 'rgba(30, 41, 59, 0.95)',
+            borderRight: '2px solid #374151',
+            borderRadius: '8px',
+            padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px'
+            gap: '12px',
+            backdropFilter: 'blur(10px)'
           }}>
             <div style={{
-              color: '#EF4444',
+              color: '#10B981',
               fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: '0.9rem',
-              marginBottom: '5px'
+              textAlign: 'left',
+              fontSize: '1.1rem',
+              marginBottom: '10px',
+              borderBottom: '1px solid #374151',
+              paddingBottom: '8px'
             }}>🎄 메뉴</div>
             
             <button 
               onClick={() => alert('📊 대시보드')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #10B981',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
                 background: '#10B981',
                 color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
-                transition: 'all 0.3s ease'
+                textAlign: 'left',
+                minHeight: '50px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#0D9488';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#10B981';
+                e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
-              📊<br/>대시보드
+              📊 대시보드
             </button>
             
             <button 
               onClick={() => alert('💼 포트폴리오')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: '#374151',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: 'rgba(55, 65, 81, 0.8)',
+                color: '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
-                transition: 'all 0.3s ease'
+                textAlign: 'left',
+                minHeight: '50px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10B981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
-              💼<br/>포트폴리오
+              💼 포트폴리오
             </button>
             
             <button 
               onClick={() => alert('🤖 AI 추천')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: '#374151',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: 'rgba(55, 65, 81, 0.8)',
+                color: '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
-                transition: 'all 0.3s ease'
+                textAlign: 'left',
+                minHeight: '50px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10B981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
-              🤖<br/>AI 추천
+              🤖 AI 추천
             </button>
             
             <button 
               onClick={() => alert('🔔 알림')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: '#374151',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: 'rgba(55, 65, 81, 0.8)',
+                color: '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
-                transition: 'all 0.3s ease'
+                textAlign: 'left',
+                minHeight: '50px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10B981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
-              🔔<br/>알림
+              🔔 알림
             </button>
             
             <button 
               onClick={() => alert('⚙️ 설정')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: '#374151',
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: 'rgba(55, 65, 81, 0.8)',
+                color: '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
-                transition: 'all 0.3s ease'
+                textAlign: 'left',
+                minHeight: '50px',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10B981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.transform = 'translateX(4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.transform = 'translateX(0)';
               }}
             >
-              ⚙️<br/>설정
+              ⚙️ 설정
             </button>
           </div>
 
-          {/* 🔴 좌측 차트 선택 패널 - 네비게이션 아래 */}
+          {/* 좌측 차트 선택 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '520px',
+            top: '460px',
             left: '20px',
-            width: '150px',
+            width: '200px',
             zIndex: 1000,
-            background: '#1e293b',
-            border: '3px solid #EF4444',
-            borderRadius: '12px',
-            padding: '15px',
+            background: 'rgba(30, 41, 59, 0.95)',
+            borderRight: '2px solid #374151',
+            borderRadius: '8px',
+            padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px'
+            gap: '12px',
+            backdropFilter: 'blur(10px)'
           }}>
             <div style={{
-              color: '#EF4444',
+              color: '#10B981',
               fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: '0.9rem',
-              marginBottom: '5px'
+              textAlign: 'left',
+              fontSize: '1.1rem',
+              marginBottom: '10px',
+              borderBottom: '1px solid #374151',
+              paddingBottom: '8px'
             }}>📊 차트 선택</div>
             
             <button 
               onClick={() => handleChartSelect('major')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'major' ? '#10B981' : '#374151',
-                color: selectedChart === 'major' ? 'black' : 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: selectedChart === 'major' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
+                color: selectedChart === 'major' ? 'white' : '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
+                textAlign: 'left',
+                minHeight: '50px',
                 transition: 'all 0.3s ease',
-                boxShadow: selectedChart === 'major' ? '0 0 10px #10B981' : 'none'
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: selectedChart === 'major' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedChart !== 'major') {
+                  e.currentTarget.style.background = '#10B981';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedChart !== 'major') {
+                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
               }}
             >
-              🌏<br/>주요지수
+              🌏 주요지수
             </button>
             
             <button 
               onClick={() => handleChartSelect('kospi')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'kospi' ? '#10B981' : '#374151',
-                color: selectedChart === 'kospi' ? 'black' : 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: selectedChart === 'kospi' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
+                color: selectedChart === 'kospi' ? 'white' : '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
+                textAlign: 'left',
+                minHeight: '50px',
                 transition: 'all 0.3s ease',
-                boxShadow: selectedChart === 'kospi' ? '0 0 10px #10B981' : 'none'
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: selectedChart === 'kospi' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedChart !== 'kospi') {
+                  e.currentTarget.style.background = '#10B981';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedChart !== 'kospi') {
+                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
               }}
             >
-              📊<br/>KOSPI
+              📊 KOSPI
             </button>
             
             <button 
               onClick={() => handleChartSelect('nasdaq')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'nasdaq' ? '#10B981' : '#374151',
-                color: selectedChart === 'nasdaq' ? 'black' : 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: selectedChart === 'nasdaq' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
+                color: selectedChart === 'nasdaq' ? 'white' : '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
+                textAlign: 'left',
+                minHeight: '50px',
                 transition: 'all 0.3s ease',
-                boxShadow: selectedChart === 'nasdaq' ? '0 0 10px #10B981' : 'none'
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: selectedChart === 'nasdaq' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedChart !== 'nasdaq') {
+                  e.currentTarget.style.background = '#10B981';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedChart !== 'nasdaq') {
+                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
               }}
             >
-              🇺🇸<br/>NASDAQ
+              🇺🇸 NASDAQ
             </button>
             
             <button 
               onClick={() => handleChartSelect('sp500')}
               style={{
-                padding: '8px 6px',
-                border: '2px solid #374151',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'sp500' ? '#10B981' : '#374151',
-                color: selectedChart === 'sp500' ? 'black' : 'white',
-                fontSize: '0.75rem',
-                fontWeight: '700',
+                background: selectedChart === 'sp500' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
+                color: selectedChart === 'sp500' ? 'white' : '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: 'pointer',
-                textAlign: 'center',
-                minHeight: '45px',
+                textAlign: 'left',
+                minHeight: '50px',
                 transition: 'all 0.3s ease',
-                boxShadow: selectedChart === 'sp500' ? '0 0 10px #10B981' : 'none'
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: selectedChart === 'sp500' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedChart !== 'sp500') {
+                  e.currentTarget.style.background = '#10B981';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedChart !== 'sp500') {
+                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
               }}
             >
-              💼<br/>S&P500
+              💼 S&P500
             </button>
           </div>
 
-          {/* 🔴 우측 상단 빨간 박스 영역 - 정확한 위치 (이미지 기준) */}
+          {/* 우측 빠른 거래 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '140px',
+            top: '120px',
             right: '20px',
-            width: '150px',
+            width: '200px',
             zIndex: 1000,
-            background: '#1e293b',
-            border: '3px solid #EF4444',
-            borderRadius: '12px',
-            padding: '15px',
+            background: 'rgba(30, 41, 59, 0.95)',
+            borderLeft: '2px solid #374151',
+            borderRadius: '8px',
+            padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '10px'
+            gap: '12px',
+            backdropFilter: 'blur(10px)'
           }}>
             <div style={{
-              color: '#EF4444',
+              color: '#10B981',
               fontWeight: 'bold',
-              textAlign: 'center',
-              fontSize: '0.9rem',
-              marginBottom: '5px'
+              textAlign: 'left',
+              fontSize: '1.1rem',
+              marginBottom: '10px',
+              borderBottom: '1px solid #374151',
+              paddingBottom: '8px'
             }}>빠른 거래</div>
             
             <button 
               onClick={() => handleTrade('buy')}
               disabled={isTrading}
               style={{
-                padding: '10px 8px',
-                border: '2px solid #10B981',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
                 background: '#10B981',
                 color: 'white',
-                fontSize: '0.8rem',
-                fontWeight: '700',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: isTrading ? 'not-allowed' : 'pointer',
-                textAlign: 'center',
+                textAlign: 'left',
                 minHeight: '50px',
                 transition: 'all 0.3s ease',
-                opacity: isTrading ? 0.6 : 1
+                display: 'flex',
+                alignItems: 'center',
+                opacity: isTrading ? 0.6 : 1,
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isTrading) {
+                  e.currentTarget.style.background = '#0D9488';
+                  e.currentTarget.style.transform = 'translateX(-4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isTrading) {
+                  e.currentTarget.style.background = '#10B981';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
               }}
             >
-              💰<br/>{isTrading ? '처리중...' : '매수'}
+              💰 {isTrading ? '처리중...' : '매수'}
             </button>
             
             <button 
               onClick={() => handleTrade('sell')}
               disabled={isTrading}
               style={{
-                padding: '10px 8px',
-                border: '2px solid #EF4444',
+                width: '100%',
+                padding: '12px 16px',
+                border: 'none',
                 borderRadius: '6px',
-                background: '#EF4444',
-                color: 'white',
-                fontSize: '0.8rem',
-                fontWeight: '700',
+                background: 'rgba(55, 65, 81, 0.8)',
+                color: '#E5E7EB',
+                fontSize: '0.95rem',
+                fontWeight: '600',
                 cursor: isTrading ? 'not-allowed' : 'pointer',
-                textAlign: 'center',
+                textAlign: 'left',
                 minHeight: '50px',
                 transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
                 opacity: isTrading ? 0.6 : 1
               }}
+              onMouseEnter={(e) => {
+                if (!isTrading) {
+                  e.currentTarget.style.background = '#EF4444';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(-4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isTrading) {
+                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
+                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
+              }}
             >
-              💸<br/>{isTrading ? '처리중...' : '매도'}
+              💸 {isTrading ? '처리중...' : '매도'}
             </button>
           </div>
 
