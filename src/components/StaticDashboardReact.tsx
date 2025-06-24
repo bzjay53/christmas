@@ -122,39 +122,99 @@ const StaticDashboardReact: React.FC = () => {
 
           {/* 콘텐츠 영역 */}
           <div className="content-area">
-            {/* 차트 섹션 */}
-            <div className="chart-section">
-              {/* 메인 주요 지수 차트 - 좌우 버튼 포함 */}
-              <div className="chart-container-with-controls">
-                {/* 좌측 컨트롤 버튼들 */}
-                <div className="chart-left-controls">
-                  <button 
-                    className={`chart-control-btn ${selectedChart === 'major' ? 'active' : ''}`}
-                    onClick={() => handleChartSelect('major')}
-                  >
-                    🌏<br/>주요지수
-                  </button>
-                  <button 
-                    className={`chart-control-btn ${selectedChart === 'kospi' ? 'active' : ''}`}
-                    onClick={() => handleChartSelect('kospi')}
-                  >
-                    📊<br/>KOSPI
-                  </button>
-                  <button 
-                    className={`chart-control-btn ${selectedChart === 'nasdaq' ? 'active' : ''}`}
-                    onClick={() => handleChartSelect('nasdaq')}
-                  >
-                    🇺🇸<br/>NASDAQ
-                  </button>
-                  <button 
-                    className={`chart-control-btn ${selectedChart === 'sp500' ? 'active' : ''}`}
-                    onClick={() => handleChartSelect('sp500')}
-                  >
-                    💼<br/>S&P500
-                  </button>
-                </div>
+            {/* 차트 섹션 - 좌우 버튼 포함 */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'stretch', 
+              gap: '15px',
+              width: '100%'
+            }}>
+              {/* 좌측 컨트롤 버튼들 */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                justifyContent: 'center',
+                minWidth: '100px',
+                maxWidth: '100px'
+              }}>
+                <button 
+                  onClick={() => handleChartSelect('major')}
+                  style={{
+                    padding: '12px 8px',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    background: selectedChart === 'major' ? '#10B981' : '#1e293b',
+                    color: selectedChart === 'major' ? 'black' : '#9CA3AF',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    minHeight: '60px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🌏<br/>주요지수
+                </button>
+                <button 
+                  onClick={() => handleChartSelect('kospi')}
+                  style={{
+                    padding: '12px 8px',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    background: selectedChart === 'kospi' ? '#10B981' : '#1e293b',
+                    color: selectedChart === 'kospi' ? 'black' : '#9CA3AF',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    minHeight: '60px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  📊<br/>KOSPI
+                </button>
+                <button 
+                  onClick={() => handleChartSelect('nasdaq')}
+                  style={{
+                    padding: '12px 8px',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    background: selectedChart === 'nasdaq' ? '#10B981' : '#1e293b',
+                    color: selectedChart === 'nasdaq' ? 'black' : '#9CA3AF',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    minHeight: '60px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  🇺🇸<br/>NASDAQ
+                </button>
+                <button 
+                  onClick={() => handleChartSelect('sp500')}
+                  style={{
+                    padding: '12px 8px',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    background: selectedChart === 'sp500' ? '#10B981' : '#1e293b',
+                    color: selectedChart === 'sp500' ? 'black' : '#9CA3AF',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    minHeight: '60px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  💼<br/>S&P500
+                </button>
+              </div>
 
-                {/* 중앙 차트 영역 */}
+              {/* 중앙 차트 섹션 */}
+              <div className="chart-section" style={{ flex: 1 }}>
+                {/* 메인 주요 지수 차트 */}
                 <div className="chart-container">
                   <div className="chart-title">
                     {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
@@ -164,37 +224,6 @@ const StaticDashboardReact: React.FC = () => {
                   </div>
                   <MajorIndicesChartJS />
                 </div>
-
-                {/* 우측 컨트롤 버튼들 */}
-                <div className="chart-right-controls">
-                  <button 
-                    className="chart-control-btn action-btn buy-btn"
-                    onClick={() => handleTrade('buy')}
-                    disabled={isTrading}
-                  >
-                    💰<br/>즉시매수
-                  </button>
-                  <button 
-                    className="chart-control-btn action-btn sell-btn"
-                    onClick={() => handleTrade('sell')}
-                    disabled={isTrading}
-                  >
-                    💸<br/>즉시매도
-                  </button>
-                  <button 
-                    className="chart-control-btn info-btn"
-                    onClick={() => alert('📊 실시간 분석 정보를 표시합니다')}
-                  >
-                    📈<br/>분석
-                  </button>
-                  <button 
-                    className="chart-control-btn info-btn"
-                    onClick={() => alert('⏰ 알림 설정 기능입니다')}
-                  >
-                    🔔<br/>알림
-                  </button>
-                </div>
-              </div>
               
               {/* Apple 주식 차트 */}
               <div className="chart-container" style={{ height: '250px' }}>
@@ -208,6 +237,94 @@ const StaticDashboardReact: React.FC = () => {
                 <VolumeChart />
               </div>
             </div>
+
+            {/* 우측 액션 버튼들 */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              justifyContent: 'center',
+              minWidth: '100px',
+              maxWidth: '100px'
+            }}>
+              <button 
+                onClick={() => handleTrade('buy')}
+                disabled={isTrading}
+                style={{
+                  padding: '12px 8px',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  background: '#10B981',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: isTrading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  minHeight: '60px',
+                  transition: 'all 0.2s ease',
+                  opacity: isTrading ? 0.6 : 1
+                }}
+              >
+                💰<br/>{isTrading ? '처리중...' : '즉시매수'}
+              </button>
+              <button 
+                onClick={() => handleTrade('sell')}
+                disabled={isTrading}
+                style={{
+                  padding: '12px 8px',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  background: '#EF4444',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: isTrading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  minHeight: '60px',
+                  transition: 'all 0.2s ease',
+                  opacity: isTrading ? 0.6 : 1
+                }}
+              >
+                💸<br/>{isTrading ? '처리중...' : '즉시매도'}
+              </button>
+              <button 
+                onClick={() => alert('📊 실시간 분석 정보를 표시합니다')}
+                style={{
+                  padding: '12px 8px',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  background: '#3B82F6',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '60px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                📈<br/>분석
+              </button>
+              <button 
+                onClick={() => alert('⏰ 알림 설정 기능입니다')}
+                style={{
+                  padding: '12px 8px',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  background: '#6366F1',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  minHeight: '60px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                🔔<br/>알림
+              </button>
+            </div>
+          </div>
 
             {/* 사이드 패널들 */}
             <div className="sidebar-panels">
