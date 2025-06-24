@@ -270,6 +270,110 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
+          {/* 🔴 좌측 상단 빨간 박스 영역 - 차트 선택 버튼들 (우측과 동일한 스타일) */}
+          <div style={{
+            position: 'absolute',
+            top: '140px',
+            left: '300px',
+            width: '150px',
+            zIndex: 1000,
+            background: '#1e293b',
+            border: '3px solid #EF4444',
+            borderRadius: '12px',
+            padding: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{
+              color: '#EF4444',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: '0.9rem',
+              marginBottom: '5px'
+            }}>📊 차트 선택</div>
+            
+            <button 
+              onClick={() => handleChartSelect('major')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: selectedChart === 'major' ? '#10B981' : '#374151',
+                color: selectedChart === 'major' ? 'black' : 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease',
+                boxShadow: selectedChart === 'major' ? '0 0 10px #10B981' : 'none'
+              }}
+            >
+              🌏<br/>주요지수
+            </button>
+            
+            <button 
+              onClick={() => handleChartSelect('kospi')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: selectedChart === 'kospi' ? '#10B981' : '#374151',
+                color: selectedChart === 'kospi' ? 'black' : 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease',
+                boxShadow: selectedChart === 'kospi' ? '0 0 10px #10B981' : 'none'
+              }}
+            >
+              📊<br/>KOSPI
+            </button>
+            
+            <button 
+              onClick={() => handleChartSelect('nasdaq')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: selectedChart === 'nasdaq' ? '#10B981' : '#374151',
+                color: selectedChart === 'nasdaq' ? 'black' : 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease',
+                boxShadow: selectedChart === 'nasdaq' ? '0 0 10px #10B981' : 'none'
+              }}
+            >
+              🇺🇸<br/>NASDAQ
+            </button>
+            
+            <button 
+              onClick={() => handleChartSelect('sp500')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: selectedChart === 'sp500' ? '#10B981' : '#374151',
+                color: selectedChart === 'sp500' ? 'black' : 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease',
+                boxShadow: selectedChart === 'sp500' ? '0 0 10px #10B981' : 'none'
+              }}
+            >
+              💼<br/>S&P500
+            </button>
+          </div>
+
           {/* 🔴 우측 상단 빨간 박스 영역 - 정확한 위치 (이미지 기준) */}
           <div style={{
             position: 'absolute',
