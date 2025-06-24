@@ -73,16 +73,15 @@ const PortfolioChart: React.FC = () => {
           },
           plugins: {
             legend: {
-              position: 'bottom',
+              position: 'bottom' as const,
               labels: { 
                 color: 'var(--text-secondary)',
                 font: { 
-                  size: 12,
-                  weight: '500'
+                  size: 12
                 },
                 padding: 12,
                 usePointStyle: true,
-                pointStyle: 'circle',
+                pointStyle: 'circle' as const,
                 boxWidth: 8,
                 boxHeight: 8
               }
@@ -91,19 +90,18 @@ const PortfolioChart: React.FC = () => {
               backgroundColor: 'rgba(15, 23, 42, 0.95)',
               titleColor: '#ffffff',
               bodyColor: '#e2e8f0',
-              borderColor: 'var(--christmas-gold)',
+              borderColor: '#eab308',
               borderWidth: 1,
               cornerRadius: 12,
               padding: 12,
               titleFont: {
-                size: 14,
-                weight: 'bold'
+                size: 14
               },
               bodyFont: {
                 size: 13
               },
               callbacks: {
-                label: function(context) {
+                label: function(context: any) {
                   const label = context.label || '';
                   const value = context.parsed || 0;
                   return `${label}: ${value}% (₩${(value * 2000000).toLocaleString()})`;
