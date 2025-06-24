@@ -242,6 +242,119 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
+          {/* 🔝 최상단 배너 - 주요 기능 버튼들 */}
+          <div style={{
+            background: '#1e293b',
+            borderBottom: '1px solid #374151',
+            padding: '15px 20px',
+            display: 'flex',
+            gap: '15px',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}>
+            <button 
+              onClick={() => alert('🎯 투자 전략 설정')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #DC2626',
+                borderRadius: '8px',
+                background: '#DC2626',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🎯 투자 전략
+            </button>
+            
+            <button 
+              onClick={() => alert('💎 요금제 업그레이드')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #F59E0B',
+                borderRadius: '8px',
+                background: '#F59E0B',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              💎 요금제 안내
+            </button>
+            
+            <button 
+              onClick={() => alert('📊 백테스트 실행')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #3B82F6',
+                borderRadius: '8px',
+                background: '#3B82F6',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              📊 백테스트
+            </button>
+            
+            <button 
+              onClick={() => alert('🎁 친구 초대 혜택')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #8B5CF6',
+                borderRadius: '8px',
+                background: '#8B5CF6',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🎁 혜택
+            </button>
+            
+            <button 
+              onClick={() => alert('📈 주요 종목 현황')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #10B981',
+                borderRadius: '8px',
+                background: '#10B981',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              📈 주요 종목
+            </button>
+            
+            <button 
+              onClick={() => alert('🛡️ 안전한 거래 시스템')}
+              style={{
+                padding: '8px 15px',
+                border: '2px solid #6366F1',
+                borderRadius: '8px',
+                background: '#6366F1',
+                color: 'white',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🛡️ 안전한 거래
+            </button>
+          </div>
+
           {/* 📊 메인 차트 영역 - 이미지 좌표에 맞춘 정확한 레이아웃 */}
           <div className="content-area" style={{ position: 'relative', height: 'calc(100vh - 180px)' }}>
             {/* 주식 그래프 차트 (중앙) */}
@@ -270,11 +383,130 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
-          {/* 🔴 좌측 상단 빨간 박스 영역 - 차트 선택 버튼들 (우측과 동일한 스타일) */}
+          {/* 🔴 좌측 네비게이션 패널 - 우측 빠른거래와 동일한 스타일 */}
           <div style={{
             position: 'absolute',
             top: '140px',
-            left: '300px',
+            left: '20px',
+            width: '150px',
+            zIndex: 1000,
+            background: '#1e293b',
+            border: '3px solid #EF4444',
+            borderRadius: '12px',
+            padding: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}>
+            <div style={{
+              color: '#EF4444',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: '0.9rem',
+              marginBottom: '5px'
+            }}>🎄 메뉴</div>
+            
+            <button 
+              onClick={() => alert('📊 대시보드')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #10B981',
+                borderRadius: '6px',
+                background: '#10B981',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              📊<br/>대시보드
+            </button>
+            
+            <button 
+              onClick={() => alert('💼 포트폴리오')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: '#374151',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              💼<br/>포트폴리오
+            </button>
+            
+            <button 
+              onClick={() => alert('🤖 AI 추천')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: '#374151',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🤖<br/>AI 추천
+            </button>
+            
+            <button 
+              onClick={() => alert('🔔 알림')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: '#374151',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              🔔<br/>알림
+            </button>
+            
+            <button 
+              onClick={() => alert('⚙️ 설정')}
+              style={{
+                padding: '8px 6px',
+                border: '2px solid #374151',
+                borderRadius: '6px',
+                background: '#374151',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'center',
+                minHeight: '45px',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              ⚙️<br/>설정
+            </button>
+          </div>
+
+          {/* 🔴 좌측 차트 선택 패널 - 네비게이션 아래 */}
+          <div style={{
+            position: 'absolute',
+            top: '520px',
+            left: '20px',
             width: '150px',
             zIndex: 1000,
             background: '#1e293b',
@@ -440,194 +672,6 @@ const StaticDashboardReact: React.FC = () => {
             </button>
           </div>
 
-          {/* 원래 사이드 패널들은 아래쪽으로 이동 */}
-          <div className="content-area"
-            style={{ marginTop: '20px' }}
-          >
-
-            {/* 사이드 패널들 */}
-            <div className="sidebar-panels">
-              {/* 투자 전략 선택 */}
-              <div className="panel">
-                <div className="panel-title">🎯 투자 전략</div>
-                <div className="strategy-selection">
-                  <button className="strategy-btn aggressive">🔥 공격형</button>
-                  <button className="strategy-btn neutral active">⚖️ 중립형</button>
-                  <button className="strategy-btn defensive">🛡️ 방어형</button>
-                </div>
-                <div className="strategy-info">
-                  <small>현재: 중립형 (RSI 14, MACD 12,26,9)</small>
-                </div>
-              </div>
-
-              {/* 요금제 안내 (개선된 색상) */}
-              <div className="panel pricing-panel">
-                <div className="panel-title">💎 요금제 안내</div>
-                <div className="pricing-card basic">
-                  <div className="pricing-tier">기본 플랜</div>
-                  <div className="pricing-price">무료</div>
-                  <div className="pricing-features">
-                    <div>• 모의투자</div>
-                    <div>• 기본 차트</div>
-                  </div>
-                </div>
-                <div className="pricing-card premium">
-                  <div className="pricing-tier">프리미엄</div>
-                  <div className="pricing-price">월 29,000원</div>
-                  <div className="pricing-features">
-                    <div>• 실시간 AI 분석</div>
-                    <div>• 자동 거래</div>
-                    <div>• 백테스트</div>
-                  </div>
-                  <button className="upgrade-btn">업그레이드</button>
-                </div>
-              </div>
-
-              {/* 백테스트 패널 */}
-              <div className="panel">
-                <div className="panel-title">📊 백테스트</div>
-                <div className="backtest-controls">
-                  <button className="btn btn-backtest" onClick={() => alert('백테스트 기능을 실행합니다!')}>
-                    전략 백테스트
-                  </button>
-                  <button className="btn btn-backtest" onClick={() => alert('과거 성과를 분석합니다!')}>
-                    성과 분석
-                  </button>
-                  <button className="btn btn-backtest" onClick={() => alert('최적화를 진행합니다!')}>
-                    전략 최적화
-                  </button>
-                </div>
-                <div className="backtest-result">
-                  <small>최근 백테스트: +12.5% (30일)</small>
-                </div>
-              </div>
-
-              {/* 친구초대 & 쿠폰 */}
-              <div className="panel">
-                <div className="panel-title">🎁 혜택</div>
-                <div className="benefit-section">
-                  <button className="btn btn-referral" onClick={() => alert('준비 중입니다! 곧 출시될 예정입니다.')}>
-                    친구 초대하기
-                  </button>
-                  <div className="referral-info">
-                    <small>친구 1명당 10,000원 적립</small>
-                  </div>
-                  <input 
-                    type="text" 
-                    placeholder="쿠폰 코드 입력" 
-                    className="coupon-input"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        alert('현재 유효한 쿠폰이 없습니다. 곧 이벤트를 진행할 예정입니다!');
-                      }
-                    }}
-                  />
-                  <button className="btn btn-coupon" onClick={() => alert('현재 유효한 쿠폰이 없습니다!')}>
-                    쿠폰 적용
-                  </button>
-                </div>
-              </div>
-
-              {/* 주요 종목 */}
-              <div className="panel">
-                <div className="panel-title">주요 종목</div>
-                <div className="market-item">
-                  <span>AAPL</span>
-                  <span className="price-positive">$150.25 (+1.67%)</span>
-                </div>
-                <div className="market-item">
-                  <span>MSFT</span>
-                  <span className="price-positive">$378.85 (+0.82%)</span>
-                </div>
-                <div className="market-item">
-                  <span>GOOGL</span>
-                  <span className="price-negative">$138.45 (-0.45%)</span>
-                </div>
-                <div className="market-item">
-                  <span>TSLA</span>
-                  <span className="price-positive">$245.75 (+2.73%)</span>
-                </div>
-              </div>
-
-              {/* 포트폴리오 성과 차트 */}
-              <div className="panel">
-                <div className="panel-title">📈 포트폴리오 성과</div>
-                <div className="chart-container-small">
-                  <PortfolioChart />
-                </div>
-              </div>
-
-              {/* 빠른 거래 (동시 거래 방지 시스템 적용) */}
-              <div className="panel">
-                <div className="panel-title">🎁 안전한 거래</div>
-                <div className="quick-trade">
-                  <button 
-                    className="btn btn-buy" 
-                    onClick={() => handleTrade('buy')}
-                    disabled={isTrading}
-                  >
-                    {isTrading ? '처리중...' : '매수'}
-                  </button>
-                  <button 
-                    className="btn btn-sell" 
-                    onClick={() => handleTrade('sell')}
-                    disabled={isTrading}
-                  >
-                    {isTrading ? '처리중...' : '매도'}
-                  </button>
-                </div>
-                <div className="input-group">
-                  <label>종목코드</label>
-                  <input 
-                    type="text" 
-                    placeholder="005930" 
-                    value={stockCode}
-                    onChange={(e) => setStockCode(e.target.value)}
-                    disabled={isTrading}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>수량</label>
-                  <input 
-                    type="number" 
-                    placeholder="0" 
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-                    disabled={isTrading}
-                  />
-                </div>
-                <div className="input-group">
-                  <label>가격</label>
-                  <input type="text" placeholder="시장가" defaultValue="시장가" disabled />
-                </div>
-                
-                {/* 거래 결과 메시지 */}
-                {tradeMessage && (
-                  <div style={{
-                    padding: '10px',
-                    marginTop: '10px',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    backgroundColor: tradeMessage.includes('✅') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                    border: tradeMessage.includes('✅') ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
-                    color: tradeMessage.includes('✅') ? '#10B981' : '#F59E0B',
-                    whiteSpace: 'pre-line'
-                  }}>
-                    {tradeMessage}
-                  </div>
-                )}
-                
-                <button 
-                  className="btn btn-buy" 
-                  style={{ width: '100%', marginTop: '10px' }}
-                  onClick={() => handleTrade('buy')}
-                  disabled={isTrading}
-                >
-                  {isTrading ? '거래 처리중...' : '🛡️ 안전한 매수 주문'}
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* 테이블 섹션 */}
           <div className="tables-section">
