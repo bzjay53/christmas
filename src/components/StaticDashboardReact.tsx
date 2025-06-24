@@ -63,8 +63,8 @@ const StaticDashboardReact: React.FC = () => {
     <>
       {/* 🔝 최상단 배너 - 주요 기능 버튼들 */}
       <div style={{
-        background: '#1e293b',
-        borderBottom: '1px solid #374151',
+        background: theme === 'dark' ? '#1e293b' : '#ffffff',
+        borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
         padding: '15px 20px',
         display: 'flex',
         gap: '15px',
@@ -74,7 +74,8 @@ const StaticDashboardReact: React.FC = () => {
         top: '0',
         left: '0',
         right: '0',
-        zIndex: 1001
+        zIndex: 1001,
+        transition: 'all 0.3s ease'
       }}>
         <button 
           onClick={() => alert('🎯 투자 전략 설정')}
@@ -177,6 +178,24 @@ const StaticDashboardReact: React.FC = () => {
         >
           🛡️ 안전한 거래
         </button>
+        
+        {/* 테마 토글 버튼 - 배너로 이동 */}
+        <button
+          onClick={handleThemeToggle}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: theme === 'dark' ? '#374151' : '#F3F4F6',
+            color: theme === 'dark' ? '#10B981' : '#374151',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {theme === 'dark' ? '☀️ 라이트' : '🌙 다크'}
+        </button>
       </div>
 
       {/* Christmas 장식 */}
@@ -191,44 +210,79 @@ const StaticDashboardReact: React.FC = () => {
       <div className="dashboard" style={{ marginTop: '70px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
-          {/* 헤더 */}
-          <div className="header">
-            <div className="portfolio-summary">
-              <div>
-                <div className="portfolio-value">🎄 Christmas Portfolio $105,550.91</div>
-                <div className="portfolio-change">+$1,575.60 (+1.52%)</div>
-              </div>
+          {/* 상단 시장 정보 헤더 */}
+          <div style={{
+            background: theme === 'dark' ? '#1e293b' : '#ffffff',
+            borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+            padding: '20px',
+            color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ 
+              textAlign: 'center',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              marginBottom: '10px'
+            }}>
+              🎄 크리스마스 트레이딩 - 실시간 주식
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ color: '#9CA3AF', fontSize: '0.9rem' }}>
+            <div style={{ 
+              textAlign: 'center',
+              fontSize: '1rem',
+              marginBottom: '8px'
+            }}>
+              📊 3개 종목 | 🔄 오후 6:28:18
+            </div>
+            <div style={{ 
+              textAlign: 'center',
+              fontSize: '0.9rem',
+              color: '#EF4444',
+              marginBottom: '5px'
+            }}>
+              🔴 장 마감 - 다음날 09:00 개장
+            </div>
+            <div style={{ 
+              textAlign: 'center',
+              fontSize: '0.8rem',
+              color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
+            }}>
+              💡 실제 거래시간: 평일 09:00-15:30
+            </div>
+          </div>
+
+          {/* 포트폴리오 요약 헤더 */}
+          <div style={{
+            background: theme === 'dark' ? '#374151' : '#f8fafc',
+            padding: '15px 20px',
+            borderBottom: `1px solid ${theme === 'dark' ? '#4B5563' : '#e2e8f0'}`,
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: theme === 'dark' ? '#10B981' : '#059669'
+                }}>
+                  🎄 Christmas Portfolio $105,550.91
+                </div>
+                <div style={{
+                  fontSize: '1.1rem',
+                  color: '#10B981'
+                }}>
+                  +$1,575.60 (+1.52%)
+                </div>
+              </div>
+              <div style={{
+                color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
+                fontSize: '0.9rem'
+              }}>
                 마지막 업데이트: 오후 1:41:34 | 장중
               </div>
-              {/* 테마 토글 버튼 */}
-              <button
-                onClick={handleThemeToggle}
-                className="theme-toggle-btn"
-                style={{
-                  padding: '8px 12px',
-                  background: theme === 'dark' ? '#374151' : '#F3F4F6',
-                  border: `1px solid ${theme === 'dark' ? '#10B981' : '#6B7280'}`,
-                  borderRadius: '6px',
-                  color: theme === 'dark' ? '#10B981' : '#374151',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = theme === 'dark' ? '#10B981' : '#6B7280';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = theme === 'dark' ? '#374151' : '#F3F4F6';
-                  e.currentTarget.style.color = theme === 'dark' ? '#10B981' : '#374151';
-                }}
-              >
-                {theme === 'dark' ? '☀️ 라이트' : '🌙 다크'}
-              </button>
             </div>
           </div>
 
@@ -268,14 +322,15 @@ const StaticDashboardReact: React.FC = () => {
             left: '20px',
             width: '200px',
             zIndex: 1000,
-            background: 'rgba(30, 41, 59, 0.95)',
-            borderRight: '2px solid #374151',
+            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+            borderRight: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
             borderRadius: '8px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
           }}>
             <div style={{
               color: '#10B981',
@@ -450,18 +505,19 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 차트 선택 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '540px',
+            top: '620px',
             left: '20px',
             width: '200px',
             zIndex: 1000,
-            background: 'rgba(30, 41, 59, 0.95)',
-            borderRight: '2px solid #374151',
+            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+            borderRight: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
             borderRadius: '8px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
           }}>
             <div style={{
               color: '#10B981',
@@ -629,14 +685,15 @@ const StaticDashboardReact: React.FC = () => {
             right: '20px',
             width: '200px',
             zIndex: 1000,
-            background: 'rgba(30, 41, 59, 0.95)',
-            borderLeft: '2px solid #374151',
+            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+            borderLeft: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
             borderRadius: '8px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
           }}>
             <div style={{
               color: '#10B981',
