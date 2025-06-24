@@ -70,6 +70,87 @@ const StaticDashboardReact: React.FC = () => {
 
             {/* 사이드 패널들 */}
             <div className="sidebar-panels">
+              {/* 투자 전략 선택 */}
+              <div className="panel">
+                <div className="panel-title">🎯 투자 전략</div>
+                <div className="strategy-selection">
+                  <button className="strategy-btn aggressive">🔥 공격형</button>
+                  <button className="strategy-btn neutral active">⚖️ 중립형</button>
+                  <button className="strategy-btn defensive">🛡️ 방어형</button>
+                </div>
+                <div className="strategy-info">
+                  <small>현재: 중립형 (RSI 14, MACD 12,26,9)</small>
+                </div>
+              </div>
+
+              {/* 요금제 안내 (개선된 색상) */}
+              <div className="panel pricing-panel">
+                <div className="panel-title">💎 요금제 안내</div>
+                <div className="pricing-card basic">
+                  <div className="pricing-tier">기본 플랜</div>
+                  <div className="pricing-price">무료</div>
+                  <div className="pricing-features">
+                    <div>• 모의투자</div>
+                    <div>• 기본 차트</div>
+                  </div>
+                </div>
+                <div className="pricing-card premium">
+                  <div className="pricing-tier">프리미엄</div>
+                  <div className="pricing-price">월 29,000원</div>
+                  <div className="pricing-features">
+                    <div>• 실시간 AI 분석</div>
+                    <div>• 자동 거래</div>
+                    <div>• 백테스트</div>
+                  </div>
+                  <button className="upgrade-btn">업그레이드</button>
+                </div>
+              </div>
+
+              {/* 백테스트 패널 */}
+              <div className="panel">
+                <div className="panel-title">📊 백테스트</div>
+                <div className="backtest-controls">
+                  <button className="btn btn-backtest" onClick={() => alert('백테스트 기능을 실행합니다!')}>
+                    전략 백테스트
+                  </button>
+                  <button className="btn btn-backtest" onClick={() => alert('과거 성과를 분석합니다!')}>
+                    성과 분석
+                  </button>
+                  <button className="btn btn-backtest" onClick={() => alert('최적화를 진행합니다!')}>
+                    전략 최적화
+                  </button>
+                </div>
+                <div className="backtest-result">
+                  <small>최근 백테스트: +12.5% (30일)</small>
+                </div>
+              </div>
+
+              {/* 친구초대 & 쿠폰 */}
+              <div className="panel">
+                <div className="panel-title">🎁 혜택</div>
+                <div className="benefit-section">
+                  <button className="btn btn-referral" onClick={() => alert('준비 중입니다! 곧 출시될 예정입니다.')}>
+                    친구 초대하기
+                  </button>
+                  <div className="referral-info">
+                    <small>친구 1명당 10,000원 적립</small>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="쿠폰 코드 입력" 
+                    className="coupon-input"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        alert('현재 유효한 쿠폰이 없습니다. 곧 이벤트를 진행할 예정입니다!');
+                      }
+                    }}
+                  />
+                  <button className="btn btn-coupon" onClick={() => alert('현재 유효한 쿠폰이 없습니다!')}>
+                    쿠폰 적용
+                  </button>
+                </div>
+              </div>
+
               {/* 주요 종목 */}
               <div className="panel">
                 <div className="panel-title">주요 종목</div>
