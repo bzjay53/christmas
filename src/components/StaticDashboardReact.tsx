@@ -1,11 +1,46 @@
 // 🎄 정적 HTML을 정확히 복사한 React 컴포넌트
-import React from 'react';
+import React, { useState } from 'react';
 import MajorIndicesChartJS from './charts/MajorIndicesChartJS';
 import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
 import PortfolioChart from './charts/PortfolioChart';
+import APIConnectionTest from './APIConnectionTest';
+import { safePlaceOrder } from '../lib/stocksService';
 
 const StaticDashboardReact: React.FC = () => {
+  const [isTrading, setIsTrading] = useState(false);
+  const [stockCode, setStockCode] = useState('005930'); // 삼성전자
+  const [quantity, setQuantity] = useState(10);
+  const [tradeMessage, setTradeMessage] = useState('');
+
+  const handleTrade = async (orderType: 'buy' | 'sell') => {
+    setIsTrading(true);
+    setTradeMessage('');
+
+    const userId = 'user_' + Math.random().toString(36).substr(2, 9); // 임시 사용자 ID
+    
+    try {
+      const result = await safePlaceOrder(userId, stockCode, orderType, quantity);
+      
+      if (result.success) {
+        setTradeMessage(`✅ ${result.message}`);
+      } else {
+        setTradeMessage(`⚠️ ${result.message}`);
+        
+        // 대안 종목이 있으면 표시
+        if (result.alternatives && result.alternatives.length > 0) {
+          const altText = result.alternatives.map(alt => 
+            `${alt.name}(${alt.symbol})`).join(', ');
+          setTradeMessage(prev => prev + `\n💡 대안 종목: ${altText}`);
+        }
+      }
+    } catch (error) {
+      setTradeMessage(`❌ 거래 처리 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+    }
+    
+    setIsTrading(false);
+  };
+
   return (
     <>
       {/* Christmas 장식 */}
@@ -180,26 +215,74 @@ const StaticDashboardReact: React.FC = () => {
                 </div>
               </div>
 
-              {/* 빠른 거래 */}
+              {/* 빠른 거래 (동시 거래 방지 시스템 적용) */}
               <div className="panel">
-                <div className="panel-title">🎁 빠른 거래</div>
+                <div className="panel-title">🎁 안전한 거래</div>
                 <div className="quick-trade">
-                  <button className="btn btn-buy">매수</button>
-                  <button className="btn btn-sell">매도</button>
+                  <button 
+                    className="btn btn-buy" 
+                    onClick={() => handleTrade('buy')}
+                    disabled={isTrading}
+                  >
+                    {isTrading ? '처리중...' : '매수'}
+                  </button>
+                  <button 
+                    className="btn btn-sell" 
+                    onClick={() => handleTrade('sell')}
+                    disabled={isTrading}
+                  >
+                    {isTrading ? '처리중...' : '매도'}
+                  </button>
                 </div>
                 <div className="input-group">
                   <label>종목코드</label>
-                  <input type="text" placeholder="AAPL" defaultValue="AAPL" />
+                  <input 
+                    type="text" 
+                    placeholder="005930" 
+                    value={stockCode}
+                    onChange={(e) => setStockCode(e.target.value)}
+                    disabled={isTrading}
+                  />
                 </div>
                 <div className="input-group">
                   <label>수량</label>
-                  <input type="number" placeholder="0" defaultValue="10" />
+                  <input 
+                    type="number" 
+                    placeholder="0" 
+                    value={quantity}
+                    onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                    disabled={isTrading}
+                  />
                 </div>
                 <div className="input-group">
                   <label>가격</label>
-                  <input type="text" placeholder="시장가" defaultValue="시장가" />
+                  <input type="text" placeholder="시장가" defaultValue="시장가" disabled />
                 </div>
-                <button className="btn btn-buy" style={{ width: '100%' }}>매수 주문하기</button>
+                
+                {/* 거래 결과 메시지 */}
+                {tradeMessage && (
+                  <div style={{
+                    padding: '10px',
+                    marginTop: '10px',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    backgroundColor: tradeMessage.includes('✅') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                    border: tradeMessage.includes('✅') ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                    color: tradeMessage.includes('✅') ? '#10B981' : '#F59E0B',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {tradeMessage}
+                  </div>
+                )}
+                
+                <button 
+                  className="btn btn-buy" 
+                  style={{ width: '100%', marginTop: '10px' }}
+                  onClick={() => handleTrade('buy')}
+                  disabled={isTrading}
+                >
+                  {isTrading ? '거래 처리중...' : '🛡️ 안전한 매수 주문'}
+                </button>
               </div>
             </div>
           </div>
@@ -276,6 +359,11 @@ const StaticDashboardReact: React.FC = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* API 연결 테스트 섹션 */}
+          <div className="api-test-section">
+            <APIConnectionTest />
           </div>
         </div>
       </div>

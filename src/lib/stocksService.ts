@@ -1,7 +1,9 @@
 // 🎄 Christmas Trading - Stocks Service
-// Supabase와 주식 데이터 연동
+// Supabase와 주식 데이터 연동 + 한국투자증권 API 통합
 
 import { supabase } from './supabase'
+import { koreaInvestmentAPI, type StockData } from './koreaInvestmentAPI'
+import { tradingConflictManager, type TradeRequest, type TradeConflict } from './tradingConflictManager'
 
 export interface Stock {
   symbol: string
@@ -44,11 +46,49 @@ const mockStocks: Stock[] = [
   }
 ]
 
-// 모든 주식 데이터 조회 (Fallback 포함)
+// 모든 주식 데이터 조회 (한국투자증권 API + Fallback)
 export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any }> => {
   try {
     console.log('📊 주식 데이터 조회 시작...')
     
+    // 환경변수로 실제 API 사용 여부 결정
+    // API 키가 placeholder가 아닌 실제 값이고, MOCK 모드가 false일 때만 실제 API 사용
+    const hasRealAPIKeys = import.meta.env.VITE_KOREA_INVESTMENT_APP_KEY && 
+                          import.meta.env.VITE_KOREA_INVESTMENT_APP_SECRET &&
+                          !import.meta.env.VITE_KOREA_INVESTMENT_APP_KEY.includes('placeholder')
+    const useMockData = import.meta.env.VITE_ENABLE_MOCK_DATA === 'true' || !hasRealAPIKeys
+    
+    if (!useMockData) {
+      // 한국투자증권 실제 API 사용
+      try {
+        console.log('🏦 한국투자증권 API로 실제 데이터 조회...')
+        
+        const stockCodes = ['005930', '000660', '035420', '005380', '006400']
+        const realStocks = await koreaInvestmentAPI.getMultipleStocks(stockCodes)
+        
+        const formattedStocks: Stock[] = realStocks.map(stock => ({
+          symbol: stock.symbol,
+          name: stock.name,
+          current_price: stock.current_price,
+          price_change: stock.price_change,
+          price_change_percent: stock.price_change_percent,
+          market: 'KOSPI',
+          last_updated: stock.last_updated
+        }))
+        
+        console.log(`✅ 한국투자증권 API 데이터 조회 성공: ${formattedStocks.length}개 종목`)
+        
+        // Supabase에 실제 데이터 저장 (옵션)
+        await saveStocksToSupabase(formattedStocks)
+        
+        return { data: formattedStocks, error: null }
+      } catch (apiError) {
+        console.warn('⚠️ 한국투자증권 API 실패, Supabase 조회로 전환:', apiError)
+        // API 실패시 Supabase 데이터 조회
+      }
+    }
+    
+    // Supabase 데이터 조회
     const { data, error } = await supabase
       .from('stocks')
       .select('*')
@@ -66,12 +106,43 @@ export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any
       return { data: null, error }
     }
     
-    console.log(`✅ 주식 데이터 조회 성공: ${data?.length}개 종목`)
+    console.log(`✅ Supabase 데이터 조회 성공: ${data?.length}개 종목`)
     return { data, error: null }
     
   } catch (err) {
     console.error('❌ 주식 서비스 에러, Mock 데이터 사용:', err)
     return { data: mockStocks, error: null }
+  }
+}
+
+// Supabase에 실제 데이터 저장하는 헬퍼 함수
+const saveStocksToSupabase = async (stocks: Stock[]): Promise<void> => {
+  try {
+    console.log('💾 Supabase에 실제 데이터 저장 중...')
+    
+    for (const stock of stocks) {
+      const { error } = await supabase
+        .from('stocks')
+        .upsert({
+          symbol: stock.symbol,
+          name: stock.name,
+          current_price: stock.current_price,
+          price_change: stock.price_change,
+          price_change_percent: stock.price_change_percent,
+          market: stock.market,
+          last_updated: stock.last_updated
+        }, {
+          onConflict: 'symbol'
+        })
+      
+      if (error) {
+        console.warn(`⚠️ ${stock.symbol} 저장 실패:`, error.message)
+      }
+    }
+    
+    console.log('✅ Supabase 데이터 저장 완료')
+  } catch (error) {
+    console.warn('⚠️ Supabase 저장 중 오류:', error)
   }
 }
 
@@ -268,10 +339,86 @@ export const startDataSimulation = (callback: (stocks: Stock[]) => void, marketS
   return setInterval(updateData, 1000)
 }
 
+// 안전한 거래 요청 처리 (동시 거래 방지)
+export const safePlaceOrder = async (
+  userId: string, 
+  stockCode: string, 
+  orderType: 'buy' | 'sell', 
+  quantity: number, 
+  price?: number
+): Promise<{ success: boolean; message: string; conflict?: TradeConflict; alternatives?: any[] }> => {
+  try {
+    console.log(`🛡️ 안전한 거래 요청: ${userId} -> ${stockCode} ${orderType} ${quantity}주`)
+
+    const tradeRequest: TradeRequest = {
+      userId,
+      stockCode,
+      orderType,
+      quantity,
+      price,
+      timestamp: Date.now()
+    }
+
+    // 1. 충돌 감지
+    const conflict = await tradingConflictManager.detectTradeConflict(tradeRequest)
+    
+    if (conflict) {
+      console.log(`⚠️ 거래 충돌 감지:`, conflict)
+      
+      // 대안 종목 추천
+      const alternatives = await tradingConflictManager.getAlternativeStocks(stockCode)
+      
+      return {
+        success: false,
+        message: `거래 제한: ${conflict.message}`,
+        conflict,
+        alternatives
+      }
+    }
+
+    // 2. 시간 분산 권장
+    const recommendedDelay = tradingConflictManager.getOptimalTradingDelay(stockCode)
+    if (recommendedDelay > 2000) {
+      console.log(`⏰ 권장 지연 시간: ${recommendedDelay}ms`)
+    }
+
+    // 3. 거래 요청 등록
+    await tradingConflictManager.registerTradeRequest(tradeRequest)
+
+    // 4. 실제 주문 처리 (시뮬레이션)
+    // 실제 환경에서는 koreaInvestmentAPI.placeBuyOrder() 또는 placeSellOrder() 호출
+    console.log(`✅ 주문 처리 시뮬레이션: ${stockCode} ${orderType} ${quantity}주`)
+    
+    // 5. 거래 완료 처리
+    setTimeout(() => {
+      tradingConflictManager.completeTradeRequest(userId, stockCode)
+    }, 5000) // 5초 후 완료 처리
+
+    return {
+      success: true,
+      message: `주문이 성공적으로 처리되었습니다. ${recommendedDelay > 2000 ? `(${recommendedDelay/1000}초 지연 권장)` : ''}`
+    }
+
+  } catch (error) {
+    console.error('❌ 안전한 거래 처리 실패:', error)
+    return {
+      success: false,
+      message: `거래 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+    }
+  }
+}
+
+// 활성 거래 현황 조회
+export const getActiveTradingStatus = () => {
+  return tradingConflictManager.getActiveTradeStatus()
+}
+
 export default {
   getAllStocks,
   getStock,
   subscribeToStocks,
   updateStockPricesInSupabase,
-  startDataSimulation
+  startDataSimulation,
+  safePlaceOrder,
+  getActiveTradingStatus
 }
