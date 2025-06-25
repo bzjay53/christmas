@@ -1,5 +1,5 @@
 // 🎄 정적 HTML을 정확히 복사한 React 컴포넌트
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import MajorIndicesChartJS from './charts/MajorIndicesChartJS';
 import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
@@ -77,6 +77,17 @@ const StaticDashboardReact: React.FC = () => {
   const handleLoginFormChange = (field: 'email' | 'password', value: string) => {
     setLoginForm(prev => ({ ...prev, [field]: value }));
   };
+
+  // 눈송이 데이터를 한 번만 생성 (토글 시 동일한 눈송이 유지)
+  const snowflakes = useMemo(() => {
+    return Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      fontSize: Math.random() * 0.8 + 0.5,
+      animationDuration: Math.random() * 8 + 5,
+      animationDelay: Math.random() * 5
+    }));
+  }, []);
 
   const handleTrade = async (orderType: 'buy' | 'sell') => {
     setIsTrading(true);
@@ -298,18 +309,18 @@ const StaticDashboardReact: React.FC = () => {
         <span className="text-2xl">🎁</span>
       </div>
 
-      {/* 눈 내리는 효과 */}
+      {/* 눈 내리는 효과 - 고정된 눈송이 데이터 사용 */}
       {isSnowEnabled && (
         <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
-          {Array.from({ length: 50 }, (_, i) => (
+          {snowflakes.map((snowflake) => (
             <div
-              key={i}
+              key={snowflake.id}
               className="absolute text-white opacity-80"
               style={{
-                left: `${Math.random() * 100}%`,
-                fontSize: `${Math.random() * 0.8 + 0.5}rem`,
-                animation: `snowfall ${Math.random() * 8 + 5}s linear infinite`,
-                animationDelay: `${Math.random() * 5}s`
+                left: `${snowflake.left}%`,
+                fontSize: `${snowflake.fontSize}rem`,
+                animation: `snowfall ${snowflake.animationDuration}s linear infinite`,
+                animationDelay: `${snowflake.animationDelay}s`
               }}
             >
               ❄
@@ -330,7 +341,7 @@ const StaticDashboardReact: React.FC = () => {
         </div>
       )}
 
-      <div className="dashboard" style={{ marginTop: isMobile ? '130px' : '90px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '120px' : '70px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
@@ -342,7 +353,7 @@ const StaticDashboardReact: React.FC = () => {
             padding: '25px 20px',
             color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            marginTop: '10px', // 배너와 추가 간격
+            marginTop: '0px', // 배너와 간격 최소화
             boxShadow: theme === 'dark' 
               ? '0 2px 10px rgba(0, 0, 0, 0.2)' 
               : '0 2px 10px rgba(0, 0, 0, 0.05)'
@@ -539,12 +550,12 @@ const StaticDashboardReact: React.FC = () => {
             </div>
           </div>
 
-          {/* 좌측 네비게이션 패널 - 자연스러운 디자인 */}
+          {/* 좌측 통합 사이드바 - 메뉴 + 차트 선택 */}
           {!isMobile && <div style={{
-            position: 'absolute',
-            top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
+            position: 'fixed',
+            top: '250px',
             left: '20px',
-            width: '200px',
+            width: '220px',
             zIndex: 1000,
             background: theme === 'dark' 
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
@@ -554,20 +565,23 @@ const StaticDashboardReact: React.FC = () => {
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
+            gap: '8px',
             backdropFilter: 'blur(15px)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             boxShadow: theme === 'dark' 
               ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-              : '0 8px 32px rgba(0, 0, 0, 0.12)'
+              : '0 8px 32px rgba(0, 0, 0, 0.12)',
+            maxHeight: 'calc(100vh - 380px)',
+            overflowY: 'auto'
           }}>
+            {/* 메뉴 섹션 */}
             <div style={{
               color: '#10B981',
               fontWeight: 'bold',
               textAlign: 'left',
               fontSize: '1.1rem',
-              marginBottom: '10px',
-              borderBottom: '1px solid #374151',
+              marginBottom: '8px',
+              borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
             }}>🎄 메뉴</div>
             
@@ -575,28 +589,30 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => alert('📊 대시보드')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
                 background: '#10B981',
                 color: 'white',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
                 boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#0D9488';
+                e.currentTarget.style.background = theme === 'dark' ? '#059669' : '#0D9488';
                 e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = '#10B981';
                 e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
               }}
             >
               📊 대시보드
@@ -606,16 +622,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => alert('💼 포트폴리오')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
                 background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center'
@@ -624,11 +640,13 @@ const StaticDashboardReact: React.FC = () => {
                 e.currentTarget.style.background = '#10B981';
                 e.currentTarget.style.color = 'white';
                 e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                 e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               💼 포트폴리오
@@ -638,16 +656,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => alert('🤖 AI 추천')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
                 background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center'
@@ -656,11 +674,13 @@ const StaticDashboardReact: React.FC = () => {
                 e.currentTarget.style.background = '#10B981';
                 e.currentTarget.style.color = 'white';
                 e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                 e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               🤖 AI 추천
@@ -670,16 +690,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => alert('🔔 알림')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
                 background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center'
@@ -688,11 +708,13 @@ const StaticDashboardReact: React.FC = () => {
                 e.currentTarget.style.background = '#10B981';
                 e.currentTarget.style.color = 'white';
                 e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                 e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               🔔 알림
@@ -702,16 +724,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => alert('⚙️ 설정')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
                 background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center'
@@ -720,46 +742,33 @@ const StaticDashboardReact: React.FC = () => {
                 e.currentTarget.style.background = '#10B981';
                 e.currentTarget.style.color = 'white';
                 e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                e.currentTarget.style.color = '#E5E7EB';
+                e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                 e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               ⚙️ 설정
             </button>
-          </div>}
 
-          {/* 좌측 차트 선택 패널 - 자연스러운 디자인 */}
-          {!isMobile && <div style={{
-            position: 'absolute',
-            top: '660px', // 시장 정보 헤더 조정에 맞춰 위치 조정
-            left: '20px',
-            width: '200px',
-            zIndex: 1000,
-            background: theme === 'dark' 
-              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
-              : 'linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.95))',
-            borderRight: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            borderRadius: '12px',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            backdropFilter: 'blur(15px)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: theme === 'dark' 
-              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
-              : '0 8px 32px rgba(0, 0, 0, 0.12)'
-          }}>
+            {/* 구분선 */}
+            <div style={{
+              height: '1px',
+              background: theme === 'dark' ? '#374151' : '#e2e8f0',
+              margin: '12px 0 8px 0'
+            }}></div>
+
+            {/* 차트 선택 섹션 */}
             <div style={{
               color: '#10B981',
               fontWeight: 'bold',
               textAlign: 'left',
               fontSize: '1.1rem',
-              marginBottom: '10px',
-              borderBottom: '1px solid #374151',
+              marginBottom: '8px',
+              borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
             }}>📊 차트 선택</div>
             
@@ -767,16 +776,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => handleChartSelect('major')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'major' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
-                color: selectedChart === 'major' ? 'white' : '#E5E7EB',
-                fontSize: '0.95rem',
+                background: selectedChart === 'major' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
+                color: selectedChart === 'major' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
@@ -804,16 +813,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => handleChartSelect('kospi')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'kospi' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
-                color: selectedChart === 'kospi' ? 'white' : '#E5E7EB',
-                fontSize: '0.95rem',
+                background: selectedChart === 'kospi' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
+                color: selectedChart === 'kospi' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
@@ -841,16 +850,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => handleChartSelect('nasdaq')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'nasdaq' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
-                color: selectedChart === 'nasdaq' ? 'white' : '#E5E7EB',
-                fontSize: '0.95rem',
+                background: selectedChart === 'nasdaq' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
+                color: selectedChart === 'nasdaq' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
@@ -878,16 +887,16 @@ const StaticDashboardReact: React.FC = () => {
               onClick={() => handleChartSelect('sp500')}
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'sp500' ? '#10B981' : 'rgba(55, 65, 81, 0.8)',
-                color: selectedChart === 'sp500' ? 'white' : '#E5E7EB',
-                fontSize: '0.95rem',
+                background: selectedChart === 'sp500' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
+                color: selectedChart === 'sp500' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
+                fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 textAlign: 'left',
-                minHeight: '50px',
+                minHeight: '42px',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
@@ -912,115 +921,12 @@ const StaticDashboardReact: React.FC = () => {
             </button>
           </div>}
 
-          {/* 우측 빠른 거래 패널 - 자연스러운 디자인 */}
+          {/* 우측 통합 사이드바 - 빠른 거래 + 포트폴리오 요약 */}
           {!isMobile && <div style={{
-            position: 'absolute',
-            top: '200px',
+            position: 'fixed',
+            top: '170px',
             right: '20px',
-            width: '200px',
-            zIndex: 1000,
-            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
-            borderLeft: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            borderRadius: '8px',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
-          }}>
-            <div style={{
-              color: '#10B981',
-              fontWeight: 'bold',
-              textAlign: 'left',
-              fontSize: '1.1rem',
-              marginBottom: '10px',
-              borderBottom: '1px solid #374151',
-              paddingBottom: '8px'
-            }}>빠른 거래</div>
-            
-            <button 
-              onClick={() => handleTrade('buy')}
-              disabled={isTrading}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: 'none',
-                borderRadius: '6px',
-                background: '#10B981',
-                color: 'white',
-                fontSize: '0.95rem',
-                fontWeight: '600',
-                cursor: isTrading ? 'not-allowed' : 'pointer',
-                textAlign: 'left',
-                minHeight: '50px',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                opacity: isTrading ? 0.6 : 1,
-                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                if (!isTrading) {
-                  e.currentTarget.style.background = '#0D9488';
-                  e.currentTarget.style.transform = 'translateX(-4px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isTrading) {
-                  e.currentTarget.style.background = '#10B981';
-                  e.currentTarget.style.transform = 'translateX(0)';
-                }
-              }}
-            >
-              💰 {isTrading ? '처리중...' : '매수'}
-            </button>
-            
-            <button 
-              onClick={() => handleTrade('sell')}
-              disabled={isTrading}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: 'none',
-                borderRadius: '6px',
-                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
-                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-                fontSize: '0.95rem',
-                fontWeight: '600',
-                cursor: isTrading ? 'not-allowed' : 'pointer',
-                textAlign: 'left',
-                minHeight: '50px',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                opacity: isTrading ? 0.6 : 1
-              }}
-              onMouseEnter={(e) => {
-                if (!isTrading) {
-                  e.currentTarget.style.background = '#EF4444';
-                  e.currentTarget.style.color = 'white';
-                  e.currentTarget.style.transform = 'translateX(-4px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isTrading) {
-                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
-                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
-                  e.currentTarget.style.transform = 'translateX(0)';
-                }
-              }}
-            >
-              💸 {isTrading ? '처리중...' : '매도'}
-            </button>
-          </div>}
-
-          {/* 우측 포트폴리오 요약 패널 - 고정 위치 */}
-          {!isMobile && <div style={{
-            position: 'absolute',
-            top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
-            right: '20px',
-            width: '280px',
+            width: '300px',
             zIndex: 1000,
             background: theme === 'dark' 
               ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
@@ -1030,112 +936,237 @@ const StaticDashboardReact: React.FC = () => {
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '15px',
+            gap: '12px',
             backdropFilter: 'blur(15px)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            maxHeight: 'calc(100vh - 350px)',
+            maxHeight: 'calc(100vh - 220px)',
             overflowY: 'auto',
             boxShadow: theme === 'dark' 
               ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
               : '0 8px 32px rgba(0, 0, 0, 0.12)'
           }}>
+            {/* 빠른 거래 섹션 */}
             <div style={{
               color: '#10B981',
               fontWeight: 'bold',
               textAlign: 'left',
               fontSize: '1.1rem',
-              marginBottom: '10px',
+              marginBottom: '8px',
+              borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              paddingBottom: '8px'
+            }}>💰 빠른 거래</div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+              <button 
+                onClick={() => handleTrade('buy')}
+                disabled={isTrading}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#10B981',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: isTrading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  minHeight: '45px',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isTrading ? 0.6 : 1,
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isTrading) {
+                    e.currentTarget.style.background = theme === 'dark' ? '#059669' : '#0D9488';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isTrading) {
+                    e.currentTarget.style.background = '#10B981';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
+                  }
+                }}
+              >
+                💰 {isTrading ? '처리중...' : '매수'}
+              </button>
+              
+              <button 
+                onClick={() => handleTrade('sell')}
+                disabled={isTrading}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: isTrading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  minHeight: '45px',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: isTrading ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!isTrading) {
+                    e.currentTarget.style.background = theme === 'dark' ? '#DC2626' : '#EF4444';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isTrading) {
+                    e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                    e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                💸 {isTrading ? '처리중...' : '매도'}
+              </button>
+            </div>
+
+            {/* 구분선 */}
+            <div style={{
+              height: '1px',
+              background: theme === 'dark' ? '#374151' : '#e2e8f0',
+              margin: '8px 0'
+            }}></div>
+
+            {/* 포트폴리오 요약 섹션 */}
+            <div style={{
+              color: '#10B981',
+              fontWeight: 'bold',
+              textAlign: 'left',
+              fontSize: '1.1rem',
+              marginBottom: '8px',
               borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
             }}>📊 포트폴리오 요약</div>
             
             {/* 총자산 정보 */}
             <div style={{
-              padding: '15px',
+              padding: '12px',
               background: theme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
               borderRadius: '8px',
-              border: `1px solid ${theme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`
+              border: `1px solid ${theme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`,
+              marginBottom: '10px'
             }}>
-              <div style={{ fontSize: '0.9rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280', marginBottom: '5px' }}>총자산</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#10B981' }}>$105,550.91</div>
-              <div style={{ fontSize: '0.9rem', color: '#10B981' }}>+$1,575.60 (+1.52%)</div>
+              <div style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280', marginBottom: '4px' }}>총자산</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#10B981' }}>$105,550.91</div>
+              <div style={{ fontSize: '0.8rem', color: '#10B981' }}>+$1,575.60 (+1.52%)</div>
             </div>
 
             {/* 투자 종목 요약 */}
             <div style={{
-              padding: '15px',
+              padding: '12px',
               background: theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(248, 250, 252, 0.8)',
               borderRadius: '8px',
-              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              marginBottom: '10px'
             }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>보유 종목</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>AAPL</span>
-                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>100주 (+3.4%)</span>
+              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>보유 종목</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>AAPL</span>
+                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>100주 (+3.4%)</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>MSFT</span>
-                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>50주 (+1.0%)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>MSFT</span>
+                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>50주 (+1.0%)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>GOOGL</span>
-                <span style={{ fontSize: '0.8rem', color: '#EF4444' }}>25주 (-1.1%)</span>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>GOOGL</span>
+                <span style={{ fontSize: '0.75rem', color: '#EF4444' }}>25주 (-1.1%)</span>
               </div>
             </div>
 
             {/* 오늘 거래 요약 */}
             <div style={{
-              padding: '15px',
+              padding: '12px',
               background: theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(248, 250, 252, 0.8)',
               borderRadius: '8px',
-              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              marginBottom: '10px'
             }}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>오늘 거래</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매수</span>
-                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>2건</span>
+              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>오늘 거래</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매수</span>
+                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>2건</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매도</span>
-                <span style={{ fontSize: '0.8rem', color: '#EF4444' }}>1건</span>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매도</span>
+                <span style={{ fontSize: '0.75rem', color: '#EF4444' }}>1건</span>
               </div>
             </div>
 
             {/* 빠른 액션 버튼들 */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 onClick={() => alert('📊 상세 분석 보기')}
                 style={{
-                  width: '100%',
-                  padding: '10px',
+                  flex: 1,
+                  padding: '8px 10px',
                   border: 'none',
                   borderRadius: '6px',
                   background: '#3B82F6',
                   color: 'white',
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease'
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = theme === 'dark' ? '#1D4ED8' : '#2563EB';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#3B82F6';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
-                📊 상세 분석
+                📊 분석
               </button>
               <button 
                 onClick={() => alert('📈 AI 추천')}
                 style={{
-                  width: '100%',
-                  padding: '10px',
+                  flex: 1,
+                  padding: '8px 10px',
                   border: 'none',
                   borderRadius: '6px',
                   background: '#8B5CF6',
                   color: 'white',
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease'
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = theme === 'dark' ? '#6D28D9' : '#7C3AED';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#8B5CF6';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
-                🤖 AI 추천
+                🤖 AI
               </button>
             </div>
           </div>}
