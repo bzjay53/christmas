@@ -14,6 +14,10 @@ const StaticDashboardReact: React.FC = () => {
   const [tradeMessage, setTradeMessage] = useState('');
   const [selectedChart, setSelectedChart] = useState('major'); // 차트 선택 상태
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
+  const [isSnowEnabled, setIsSnowEnabled] = useState(true); // 눈 효과 상태
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' }); // 로그인 폼
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -29,6 +33,36 @@ const StaticDashboardReact: React.FC = () => {
   const handleChartSelect = (chartType: string) => {
     setSelectedChart(chartType);
     console.log(`📊 차트 변경: ${chartType}`);
+  };
+
+  const handleSnowToggle = () => {
+    setIsSnowEnabled(!isSnowEnabled);
+    console.log(`❄️ 눈 효과: ${!isSnowEnabled ? '켜짐' : '꺼짐'}`);
+  };
+
+  const handleLogin = () => {
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+    } else {
+      setIsLoggedIn(false);
+      setLoginForm({ email: '', password: '' });
+      console.log('🚪 로그아웃 완료');
+    }
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginForm.email && loginForm.password) {
+      setIsLoggedIn(true);
+      setShowLoginModal(false);
+      console.log(`👋 ${loginForm.email}로 로그인 완료`);
+    } else {
+      alert('이메일과 비밀번호를 입력해주세요.');
+    }
+  };
+
+  const handleLoginFormChange = (field: 'email' | 'password', value: string) => {
+    setLoginForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleTrade = async (orderType: 'buy' | 'sell') => {
@@ -63,7 +97,9 @@ const StaticDashboardReact: React.FC = () => {
     <>
       {/* 🔝 최상단 배너 - 주요 기능 버튼들 */}
       <div style={{
-        background: theme === 'dark' ? '#1e293b' : '#ffffff',
+        background: theme === 'dark' 
+          ? 'linear-gradient(135deg, #0f172a, #1e293b)' 
+          : 'linear-gradient(135deg, #ffffff, #f8fafc)',
         borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
         padding: '15px 20px',
         display: 'flex',
@@ -75,7 +111,10 @@ const StaticDashboardReact: React.FC = () => {
         left: '0',
         right: '0',
         zIndex: 1001,
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: theme === 'dark' 
+          ? '0 4px 20px rgba(0, 0, 0, 0.4)' 
+          : '0 4px 20px rgba(0, 0, 0, 0.08)'
       }}>
         <button 
           onClick={() => alert('🎯 투자 전략 설정')}
@@ -196,6 +235,42 @@ const StaticDashboardReact: React.FC = () => {
         >
           {theme === 'dark' ? '☀️ 라이트' : '🌙 다크'}
         </button>
+
+        {/* 눈 효과 토글 버튼 */}
+        <button
+          onClick={handleSnowToggle}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: isSnowEnabled ? '#3B82F6' : '#6B7280',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {isSnowEnabled ? '❄️ 눈 끄기' : '❄️ 눈 켜기'}
+        </button>
+
+        {/* 로그인/로그아웃 버튼 */}
+        <button
+          onClick={handleLogin}
+          style={{
+            padding: '8px 15px',
+            border: 'none',
+            borderRadius: '8px',
+            background: isLoggedIn ? '#EF4444' : '#8B5CF6',
+            color: 'white',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {isLoggedIn ? '🚪 로그아웃' : '👤 로그인'}
+        </button>
       </div>
 
       {/* Christmas 장식 */}
@@ -207,16 +282,54 @@ const StaticDashboardReact: React.FC = () => {
         <span className="text-2xl">🎁</span>
       </div>
 
-      <div className="dashboard" style={{ marginTop: '70px', width: '100%', paddingLeft: '0' }}>
+      {/* 눈 내리는 효과 */}
+      {isSnowEnabled && (
+        <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
+          {Array.from({ length: 50 }, (_, i) => (
+            <div
+              key={i}
+              className="absolute text-white opacity-80"
+              style={{
+                left: `${Math.random() * 100}%`,
+                fontSize: `${Math.random() * 0.8 + 0.5}rem`,
+                animation: `snowfall ${Math.random() * 8 + 5}s linear infinite`,
+                animationDelay: `${Math.random() * 5}s`
+              }}
+            >
+              ❄
+            </div>
+          ))}
+          <style>{`
+            @keyframes snowfall {
+              0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+              }
+              100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0.3;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
+      <div className="dashboard" style={{ marginTop: '90px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
-          {/* 상단 시장 정보 헤더 */}
+          {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
           <div style={{
-            background: theme === 'dark' ? '#1e293b' : '#ffffff',
+            background: theme === 'dark' 
+              ? 'linear-gradient(135deg, #1e293b, #334155)' 
+              : 'linear-gradient(135deg, #ffffff, #f1f5f9)',
             borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            padding: '20px',
+            padding: '25px 20px',
             color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            marginTop: '10px', // 배너와 추가 간격
+            boxShadow: theme === 'dark' 
+              ? '0 2px 10px rgba(0, 0, 0, 0.2)' 
+              : '0 2px 10px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{ 
               textAlign: 'center',
@@ -252,10 +365,15 @@ const StaticDashboardReact: React.FC = () => {
 
           {/* 포트폴리오 요약 헤더 */}
           <div style={{
-            background: theme === 'dark' ? '#374151' : '#f8fafc',
+            background: theme === 'dark' 
+              ? 'linear-gradient(135deg, #374151, #475569)' 
+              : 'linear-gradient(135deg, #f8fafc, #e2e8f0)',
             padding: '15px 20px',
             borderBottom: `1px solid ${theme === 'dark' ? '#4B5563' : '#e2e8f0'}`,
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: theme === 'dark' 
+              ? 'inset 0 1px 3px rgba(0, 0, 0, 0.2)' 
+              : 'inset 0 1px 3px rgba(0, 0, 0, 0.05)'
           }}>
             <div style={{
               display: 'flex',
@@ -279,36 +397,117 @@ const StaticDashboardReact: React.FC = () => {
               </div>
               <div style={{
                 color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
-                fontSize: '0.9rem'
+                fontSize: '0.9rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '4px'
               }}>
-                마지막 업데이트: 오후 1:41:34 | 장중
+                {isLoggedIn && (
+                  <div style={{ 
+                    fontSize: '0.8rem', 
+                    color: '#10B981',
+                    fontWeight: '600'
+                  }}>
+                    👤 {loginForm.email || 'user@example.com'}님 접속중
+                  </div>
+                )}
+                <div>마지막 업데이트: 오후 1:41:34 | 장중</div>
               </div>
             </div>
           </div>
 
 
-          {/* 📊 메인 차트 영역 - 이미지 좌표에 맞춘 정확한 레이아웃 */}
-          <div className="content-area" style={{ position: 'relative', height: 'calc(100vh - 180px)' }}>
-            {/* 주식 그래프 차트 (중앙) */}
-            <div className="chart-section">
-              <div className="chart-container" style={{ height: '400px' }}>
-                <div className="chart-title" style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>
-                  {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
-                  {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
-                  {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
-                  {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
-                </div>
+          {/* 📊 메인 차트 영역 - 전체 화면 최대 활용 */}
+          <div style={{ 
+            position: 'relative', 
+            width: '100%',
+            minHeight: 'calc(100vh - 250px)',
+            padding: '20px 320px 20px 260px', // 좌우 사이드바 공간 확보하되 차트는 최대 활용
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}>
+            {/* 메인 실시간 주식 차트 - 전체 화면 최대 활용 */}
+            <div style={{
+              background: theme === 'dark' 
+                ? 'linear-gradient(135deg, #1e293b, #334155)' 
+                : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              borderRadius: '12px',
+              padding: '30px',
+              height: '600px', // 더 큰 메인 차트
+              width: '100%',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: theme === 'dark' 
+                ? '0 8px 32px rgba(0, 0, 0, 0.3)' 
+                : '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 'bold',
+                marginBottom: '20px',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+              }}>
+                {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
+                {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
+                {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
+                {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
+              </div>
+              <div style={{ height: 'calc(100% - 60px)' }}>
                 <MajorIndicesChartJS />
               </div>
-              
-              {/* 하단 작은 차트들 */}
-              <div style={{ display: 'flex', gap: '20px', height: '200px' }}>
-                <div className="chart-container" style={{ flex: 1 }}>
-                  <div className="chart-title">📈 AAPL - Apple Inc.</div>
+            </div>
+            
+            {/* 하단 보조 차트들 - 가로로 배치, 더 큰 크기 */}
+            <div style={{ display: 'flex', gap: '25px', height: '400px' }}>
+              <div style={{
+                flex: 1,
+                background: theme === 'dark' 
+                  ? 'linear-gradient(135deg, #1e293b, #334155)' 
+                  : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+                border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                borderRadius: '12px',
+                padding: '25px',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: theme === 'dark' 
+                  ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
+                  : '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ 
+                  fontSize: '1.3rem', 
+                  fontWeight: 'bold',
+                  marginBottom: '20px',
+                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+                }}>
+                  📈 AAPL - Apple Inc.
+                </div>
+                <div style={{ height: 'calc(100% - 60px)' }}>
                   <AppleStockChart />
                 </div>
-                <div className="chart-container" style={{ flex: 1 }}>
-                  <div className="chart-title">📊 거래량</div>
+              </div>
+              <div style={{
+                flex: 1,
+                background: theme === 'dark' 
+                  ? 'linear-gradient(135deg, #1e293b, #334155)' 
+                  : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+                border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                borderRadius: '12px',
+                padding: '25px',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: theme === 'dark' 
+                  ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
+                  : '0 4px 20px rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ 
+                  fontSize: '1.3rem', 
+                  fontWeight: 'bold',
+                  marginBottom: '20px',
+                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+                }}>
+                  📊 거래량
+                </div>
+                <div style={{ height: 'calc(100% - 60px)' }}>
                   <VolumeChart />
                 </div>
               </div>
@@ -318,19 +517,24 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 네비게이션 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '200px',
+            top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
             left: '20px',
             width: '200px',
             zIndex: 1000,
-            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+            background: theme === 'dark' 
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
+              : 'linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.95))',
             borderRight: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            borderRadius: '8px',
+            borderRadius: '12px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
+            backdropFilter: 'blur(15px)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: theme === 'dark' 
+              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
+              : '0 8px 32px rgba(0, 0, 0, 0.12)'
           }}>
             <div style={{
               color: '#10B981',
@@ -380,8 +584,8 @@ const StaticDashboardReact: React.FC = () => {
                 padding: '12px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: 'rgba(55, 65, 81, 0.8)',
-                color: '#E5E7EB',
+                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                 fontSize: '0.95rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -412,8 +616,8 @@ const StaticDashboardReact: React.FC = () => {
                 padding: '12px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: 'rgba(55, 65, 81, 0.8)',
-                color: '#E5E7EB',
+                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                 fontSize: '0.95rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -444,8 +648,8 @@ const StaticDashboardReact: React.FC = () => {
                 padding: '12px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: 'rgba(55, 65, 81, 0.8)',
-                color: '#E5E7EB',
+                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                 fontSize: '0.95rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -476,8 +680,8 @@ const StaticDashboardReact: React.FC = () => {
                 padding: '12px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: 'rgba(55, 65, 81, 0.8)',
-                color: '#E5E7EB',
+                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                 fontSize: '0.95rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -505,19 +709,24 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 차트 선택 패널 - 자연스러운 디자인 */}
           <div style={{
             position: 'absolute',
-            top: '620px',
+            top: '660px', // 시장 정보 헤더 조정에 맞춰 위치 조정
             left: '20px',
             width: '200px',
             zIndex: 1000,
-            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+            background: theme === 'dark' 
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
+              : 'linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.95))',
             borderRight: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            borderRadius: '8px',
+            borderRadius: '12px',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
+            backdropFilter: 'blur(15px)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: theme === 'dark' 
+              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
+              : '0 8px 32px rgba(0, 0, 0, 0.12)'
           }}>
             <div style={{
               color: '#10B981',
@@ -557,8 +766,8 @@ const StaticDashboardReact: React.FC = () => {
               }}
               onMouseLeave={(e) => {
                 if (selectedChart !== 'major') {
-                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
@@ -594,8 +803,8 @@ const StaticDashboardReact: React.FC = () => {
               }}
               onMouseLeave={(e) => {
                 if (selectedChart !== 'kospi') {
-                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
@@ -631,8 +840,8 @@ const StaticDashboardReact: React.FC = () => {
               }}
               onMouseLeave={(e) => {
                 if (selectedChart !== 'nasdaq') {
-                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
@@ -668,8 +877,8 @@ const StaticDashboardReact: React.FC = () => {
               }}
               onMouseLeave={(e) => {
                 if (selectedChart !== 'sp500') {
-                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
@@ -750,8 +959,8 @@ const StaticDashboardReact: React.FC = () => {
                 padding: '12px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: 'rgba(55, 65, 81, 0.8)',
-                color: '#E5E7EB',
+                background: theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                 fontSize: '0.95rem',
                 fontWeight: '600',
                 cursor: isTrading ? 'not-allowed' : 'pointer',
@@ -771,8 +980,8 @@ const StaticDashboardReact: React.FC = () => {
               }}
               onMouseLeave={(e) => {
                 if (!isTrading) {
-                  e.currentTarget.style.background = 'rgba(55, 65, 81, 0.8)';
-                  e.currentTarget.style.color = '#E5E7EB';
+                  e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
+                  e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
@@ -781,6 +990,130 @@ const StaticDashboardReact: React.FC = () => {
             </button>
           </div>
 
+          {/* 우측 포트폴리오 요약 패널 - 고정 위치 */}
+          <div style={{
+            position: 'absolute',
+            top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
+            right: '20px',
+            width: '280px',
+            zIndex: 1000,
+            background: theme === 'dark' 
+              ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(51, 65, 85, 0.95))' 
+              : 'linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.95))',
+            borderLeft: `2px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+            borderRadius: '12px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+            backdropFilter: 'blur(15px)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            maxHeight: 'calc(100vh - 350px)',
+            overflowY: 'auto',
+            boxShadow: theme === 'dark' 
+              ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
+              : '0 8px 32px rgba(0, 0, 0, 0.12)'
+          }}>
+            <div style={{
+              color: '#10B981',
+              fontWeight: 'bold',
+              textAlign: 'left',
+              fontSize: '1.1rem',
+              marginBottom: '10px',
+              borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              paddingBottom: '8px'
+            }}>📊 포트폴리오 요약</div>
+            
+            {/* 총자산 정보 */}
+            <div style={{
+              padding: '15px',
+              background: theme === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
+              borderRadius: '8px',
+              border: `1px solid ${theme === 'dark' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'}`
+            }}>
+              <div style={{ fontSize: '0.9rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280', marginBottom: '5px' }}>총자산</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#10B981' }}>$105,550.91</div>
+              <div style={{ fontSize: '0.9rem', color: '#10B981' }}>+$1,575.60 (+1.52%)</div>
+            </div>
+
+            {/* 투자 종목 요약 */}
+            <div style={{
+              padding: '15px',
+              background: theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(248, 250, 252, 0.8)',
+              borderRadius: '8px',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
+            }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>보유 종목</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>AAPL</span>
+                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>100주 (+3.4%)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>MSFT</span>
+                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>50주 (+1.0%)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>GOOGL</span>
+                <span style={{ fontSize: '0.8rem', color: '#EF4444' }}>25주 (-1.1%)</span>
+              </div>
+            </div>
+
+            {/* 오늘 거래 요약 */}
+            <div style={{
+              padding: '15px',
+              background: theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(248, 250, 252, 0.8)',
+              borderRadius: '8px',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
+            }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '10px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>오늘 거래</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매수</span>
+                <span style={{ fontSize: '0.8rem', color: '#10B981' }}>2건</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매도</span>
+                <span style={{ fontSize: '0.8rem', color: '#EF4444' }}>1건</span>
+              </div>
+            </div>
+
+            {/* 빠른 액션 버튼들 */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button 
+                onClick={() => alert('📊 상세 분석 보기')}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#3B82F6',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                📊 상세 분석
+              </button>
+              <button 
+                onClick={() => alert('📈 AI 추천')}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  background: '#8B5CF6',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                🤖 AI 추천
+              </button>
+            </div>
+          </div>
 
           {/* 테이블 섹션 */}
           <div className="tables-section">
@@ -862,6 +1195,198 @@ const StaticDashboardReact: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* 로그인 모달 */}
+      {showLoginModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000
+          }}
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div 
+            style={{
+              background: theme === 'dark' 
+                ? 'linear-gradient(135deg, #1e293b, #334155)' 
+                : 'linear-gradient(135deg, #ffffff, #f8fafc)',
+              padding: '40px',
+              borderRadius: '16px',
+              width: '400px',
+              maxWidth: '90%',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '30px',
+              color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+            }}>
+              <h2 style={{ 
+                fontSize: '1.8rem', 
+                fontWeight: 'bold', 
+                marginBottom: '8px',
+                color: '#10B981' 
+              }}>
+                🎄 Christmas Trading
+              </h2>
+              <p style={{ fontSize: '1rem', opacity: 0.8 }}>
+                로그인하여 트레이딩을 시작하세요
+              </p>
+            </div>
+
+            <form onSubmit={handleLoginSubmit}>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
+                }}>
+                  이메일
+                </label>
+                <input
+                  type="email"
+                  value={loginForm.email}
+                  onChange={(e) => handleLoginFormChange('email', e.target.value)}
+                  placeholder="your@email.com"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                    background: theme === 'dark' ? '#374151' : '#f8fafc',
+                    color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#10B981';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = theme === 'dark' ? '#374151' : '#e2e8f0';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '30px' }}>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
+                }}>
+                  비밀번호
+                </label>
+                <input
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => handleLoginFormChange('password', e.target.value)}
+                  placeholder="••••••••"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                    background: theme === 'dark' ? '#374151' : '#f8fafc',
+                    color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease',
+                    boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#10B981';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = theme === 'dark' ? '#374151' : '#e2e8f0';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  🚀 로그인
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setShowLoginModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 20px',
+                    border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                    borderRadius: '8px',
+                    background: 'transparent',
+                    color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#6B7280';
+                    e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#374151';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = theme === 'dark' ? '#374151' : '#e2e8f0';
+                    e.currentTarget.style.color = theme === 'dark' ? '#9CA3AF' : '#6B7280';
+                  }}
+                >
+                  취소
+                </button>
+              </div>
+            </form>
+
+            <div style={{
+              textAlign: 'center',
+              marginTop: '20px',
+              fontSize: '0.9rem',
+              color: theme === 'dark' ? '#6B7280' : '#9CA3AF'
+            }}>
+              <p>계정이 없으신가요? <span style={{ color: '#10B981', cursor: 'pointer' }}>회원가입</span></p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
