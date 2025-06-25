@@ -1,5 +1,5 @@
 // 🎄 정적 HTML을 정확히 복사한 React 컴포넌트
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MajorIndicesChartJS from './charts/MajorIndicesChartJS';
 import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
@@ -18,6 +18,19 @@ const StaticDashboardReact: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
   const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
   const [loginForm, setLoginForm] = useState({ email: '', password: '' }); // 로그인 폼
+  const [isMobile, setIsMobile] = useState(false); // 모바일 환경 체크
+
+  // 모바일 환경 체크
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -101,9 +114,9 @@ const StaticDashboardReact: React.FC = () => {
           ? 'linear-gradient(135deg, #0f172a, #1e293b)' 
           : 'linear-gradient(135deg, #ffffff, #f8fafc)',
         borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-        padding: '15px 20px',
+        padding: isMobile ? '10px 15px' : '15px 20px',
         display: 'flex',
-        gap: '15px',
+        gap: isMobile ? '8px' : '15px',
         flexWrap: 'wrap',
         justifyContent: 'center',
         position: 'fixed',
@@ -114,12 +127,15 @@ const StaticDashboardReact: React.FC = () => {
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         boxShadow: theme === 'dark' 
           ? '0 4px 20px rgba(0, 0, 0, 0.4)' 
-          : '0 4px 20px rgba(0, 0, 0, 0.08)'
+          : '0 4px 20px rgba(0, 0, 0, 0.08)',
+        flexDirection: isMobile ? 'column' : 'row',
+        maxHeight: isMobile ? '120px' : 'auto',
+        overflowY: isMobile ? 'auto' : 'visible'
       }}>
         <button 
           onClick={() => alert('🎯 투자 전략 설정')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -136,7 +152,7 @@ const StaticDashboardReact: React.FC = () => {
         <button 
           onClick={() => alert('💎 요금제 업그레이드')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -153,7 +169,7 @@ const StaticDashboardReact: React.FC = () => {
         <button 
           onClick={() => alert('📊 백테스트 실행')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -170,7 +186,7 @@ const StaticDashboardReact: React.FC = () => {
         <button 
           onClick={() => alert('🎁 친구 초대 혜택')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -187,7 +203,7 @@ const StaticDashboardReact: React.FC = () => {
         <button 
           onClick={() => alert('📈 주요 종목 현황')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -204,7 +220,7 @@ const StaticDashboardReact: React.FC = () => {
         <button 
           onClick={() => alert('🛡️ 안전한 거래 시스템')}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: '#10B981',
@@ -222,7 +238,7 @@ const StaticDashboardReact: React.FC = () => {
         <button
           onClick={handleThemeToggle}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: theme === 'dark' ? '#374151' : '#F3F4F6',
@@ -240,7 +256,7 @@ const StaticDashboardReact: React.FC = () => {
         <button
           onClick={handleSnowToggle}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: isSnowEnabled ? '#3B82F6' : '#6B7280',
@@ -258,7 +274,7 @@ const StaticDashboardReact: React.FC = () => {
         <button
           onClick={handleLogin}
           style={{
-            padding: '8px 15px',
+            padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
             background: isLoggedIn ? '#EF4444' : '#8B5CF6',
@@ -314,7 +330,7 @@ const StaticDashboardReact: React.FC = () => {
         </div>
       )}
 
-      <div className="dashboard" style={{ marginTop: '90px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '130px' : '90px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
@@ -423,10 +439,12 @@ const StaticDashboardReact: React.FC = () => {
             position: 'relative', 
             width: '100%',
             minHeight: 'calc(100vh - 250px)',
-            padding: '20px 320px 20px 260px', // 좌우 사이드바 공간 확보하되 차트는 최대 활용
+            padding: isMobile 
+              ? '15px 15px' // 모바일: 사이드바 없이 최소 패딩
+              : '20px 320px 20px 260px', // 데스크톱: 좌우 사이드바 공간 확보
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px'
+            gap: isMobile ? '15px' : '20px'
           }}>
             {/* 메인 실시간 주식 차트 - 전체 화면 최대 활용 */}
             <div style={{
@@ -435,8 +453,8 @@ const StaticDashboardReact: React.FC = () => {
                 : 'linear-gradient(135deg, #ffffff, #f8fafc)',
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               borderRadius: '12px',
-              padding: '30px',
-              height: '600px', // 더 큰 메인 차트
+              padding: isMobile ? '15px' : '30px',
+              height: isMobile ? '400px' : '600px', // 모바일에서 더 작은 높이
               width: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: theme === 'dark' 
@@ -460,7 +478,12 @@ const StaticDashboardReact: React.FC = () => {
             </div>
             
             {/* 하단 보조 차트들 - 가로로 배치, 더 큰 크기 */}
-            <div style={{ display: 'flex', gap: '25px', height: '400px' }}>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? '15px' : '25px', 
+              height: isMobile ? 'auto' : '400px'
+            }}>
               <div style={{
                 flex: 1,
                 background: theme === 'dark' 
@@ -468,7 +491,8 @@ const StaticDashboardReact: React.FC = () => {
                   : 'linear-gradient(135deg, #ffffff, #f8fafc)',
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
-                padding: '25px',
+                padding: isMobile ? '15px' : '25px',
+                height: isMobile ? '300px' : 'auto',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
@@ -493,7 +517,8 @@ const StaticDashboardReact: React.FC = () => {
                   : 'linear-gradient(135deg, #ffffff, #f8fafc)',
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
-                padding: '25px',
+                padding: isMobile ? '15px' : '25px',
+                height: isMobile ? '300px' : 'auto',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
@@ -515,7 +540,7 @@ const StaticDashboardReact: React.FC = () => {
           </div>
 
           {/* 좌측 네비게이션 패널 - 자연스러운 디자인 */}
-          <div style={{
+          {!isMobile && <div style={{
             position: 'absolute',
             top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
             left: '20px',
@@ -704,10 +729,10 @@ const StaticDashboardReact: React.FC = () => {
             >
               ⚙️ 설정
             </button>
-          </div>
+          </div>}
 
           {/* 좌측 차트 선택 패널 - 자연스러운 디자인 */}
-          <div style={{
+          {!isMobile && <div style={{
             position: 'absolute',
             top: '660px', // 시장 정보 헤더 조정에 맞춰 위치 조정
             left: '20px',
@@ -885,10 +910,10 @@ const StaticDashboardReact: React.FC = () => {
             >
               💼 S&P500
             </button>
-          </div>
+          </div>}
 
           {/* 우측 빠른 거래 패널 - 자연스러운 디자인 */}
-          <div style={{
+          {!isMobile && <div style={{
             position: 'absolute',
             top: '200px',
             right: '20px',
@@ -988,10 +1013,10 @@ const StaticDashboardReact: React.FC = () => {
             >
               💸 {isTrading ? '처리중...' : '매도'}
             </button>
-          </div>
+          </div>}
 
           {/* 우측 포트폴리오 요약 패널 - 고정 위치 */}
-          <div style={{
+          {!isMobile && <div style={{
             position: 'absolute',
             top: '360px', // 시장 정보 헤더 조정에 맞춰 위치 조정
             right: '20px',
@@ -1113,7 +1138,7 @@ const StaticDashboardReact: React.FC = () => {
                 🤖 AI 추천
               </button>
             </div>
-          </div>
+          </div>}
 
           {/* 테이블 섹션 */}
           <div className="tables-section">
@@ -1218,9 +1243,9 @@ const StaticDashboardReact: React.FC = () => {
               background: theme === 'dark' 
                 ? 'linear-gradient(135deg, #1e293b, #334155)' 
                 : 'linear-gradient(135deg, #ffffff, #f8fafc)',
-              padding: '40px',
+              padding: isMobile ? '25px' : '40px',
               borderRadius: '16px',
-              width: '400px',
+              width: isMobile ? '320px' : '400px',
               maxWidth: '90%',
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
