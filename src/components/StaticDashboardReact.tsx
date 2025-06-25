@@ -6,6 +6,7 @@ import VolumeChart from './charts/VolumeChart';
 import PortfolioChart from './charts/PortfolioChart';
 import APIConnectionTest from './APIConnectionTest';
 import { safePlaceOrder } from '../lib/stocksService';
+import { signIn, signUp, signOut, getCurrentUser, onAuthStateChange, type AuthUser } from '../lib/authService';
 
 interface StaticDashboardReactProps {
   isGlobalSnowEnabled?: boolean;
@@ -23,9 +24,11 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
   const [selectedChart, setSelectedChart] = useState('major'); // 차트 선택 상태
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
   const [isSnowEnabled, setIsSnowEnabled] = useState(false); // 눈 효과 상태
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
+  const [user, setUser] = useState<AuthUser | null>(null); // 로그인된 사용자
   const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' }); // 로그인 폼
+  const [loginForm, setLoginForm] = useState({ email: '', password: '', displayName: '' }); // 로그인 폼
+  const [isSignUpMode, setIsSignUpMode] = useState(false); // 회원가입 모드
+  const [authLoading, setAuthLoading] = useState(false); // 로그인 처리 중
   const [isMobile, setIsMobile] = useState(false); // 모바일 환경 체크
 
   // 모바일 환경 체크
@@ -66,28 +69,89 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
     console.log(`❄️ 눈 효과: ${newSnowState ? '켜짐' : '꺼짐'}`);
   };
 
+  // Auth 상태 초기화 및 감지
+  useEffect(() => {
+    const initAuth = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    initAuth();
+
+    const { data: { subscription } } = onAuthStateChange((user) => {
+      setUser(user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleLogin = () => {
-    if (!isLoggedIn) {
+    if (!user) {
       setShowLoginModal(true);
     } else {
-      setIsLoggedIn(false);
-      setLoginForm({ email: '', password: '' });
+      handleLogout();
+    }
+  };
+
+  const handleLogout = async () => {
+    setAuthLoading(true);
+    const result = await signOut();
+    if (result.success) {
+      setUser(null);
+      setLoginForm({ email: '', password: '', displayName: '' });
       console.log('🚪 로그아웃 완료');
     }
+    setAuthLoading(false);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loginForm.email && loginForm.password) {
-      setIsLoggedIn(true);
-      setShowLoginModal(false);
-      console.log(`👋 ${loginForm.email}로 로그인 완료`);
-    } else {
+    if (!loginForm.email || !loginForm.password) {
       alert('이메일과 비밀번호를 입력해주세요.');
+      return;
     }
+
+    setAuthLoading(true);
+    
+    try {
+      if (isSignUpMode) {
+        const result = await signUp({
+          email: loginForm.email,
+          password: loginForm.password,
+          displayName: loginForm.displayName
+        });
+        
+        if (result.success) {
+          console.log('🎉 회원가입 성공!');
+          alert('회원가입이 완료되었습니다. 이메일을 확인해주세요.');
+          setShowLoginModal(false);
+          setLoginForm({ email: '', password: '', displayName: '' });
+          setIsSignUpMode(false);
+        } else {
+          alert(`회원가입 실패: ${result.error}`);
+        }
+      } else {
+        const result = await signIn({
+          email: loginForm.email,
+          password: loginForm.password
+        });
+        
+        if (result.success) {
+          console.log(`👋 ${loginForm.email}로 로그인 완료`);
+          setShowLoginModal(false);
+          setLoginForm({ email: '', password: '', displayName: '' });
+        } else {
+          alert(`로그인 실패: ${result.error}`);
+        }
+      }
+    } catch (error) {
+      console.error('🔐 인증 에러:', error);
+      alert('인증 처리 중 오류가 발생했습니다.');
+    }
+    
+    setAuthLoading(false);
   };
 
-  const handleLoginFormChange = (field: 'email' | 'password', value: string) => {
+  const handleLoginFormChange = (field: 'email' | 'password' | 'displayName', value: string) => {
     setLoginForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -297,19 +361,21 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
         {/* 로그인/로그아웃 버튼 */}
         <button
           onClick={handleLogin}
+          disabled={authLoading}
           style={{
             padding: isMobile ? '6px 10px' : '8px 15px',
             border: 'none',
             borderRadius: '8px',
-            background: isLoggedIn ? '#EF4444' : '#8B5CF6',
+            background: user ? '#EF4444' : '#8B5CF6',
             color: 'white',
             fontSize: '0.8rem',
             fontWeight: '700',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
+            cursor: authLoading ? 'wait' : 'pointer',
+            transition: 'all 0.3s ease',
+            opacity: authLoading ? 0.7 : 1
           }}
         >
-          {isLoggedIn ? '🚪 로그아웃' : '👤 로그인'}
+          {authLoading ? '⏳' : (user ? `🚪 ${user.displayName || user.email.split('@')[0]}` : '👤 로그인')}
         </button>
       </div>
 
@@ -1324,7 +1390,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 🎄 Christmas Trading
               </h2>
               <p style={{ fontSize: '1rem', opacity: 0.8 }}>
-                로그인하여 트레이딩을 시작하세요
+                {isSignUpMode ? '새 계정을 만들어 트레이딩을 시작하세요' : '로그인하여 트레이딩을 시작하세요'}
               </p>
             </div>
 
@@ -1366,6 +1432,45 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 />
               </div>
 
+              {isSignUpMode && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: '600',
+                    color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
+                  }}>
+                    닉네임 (선택사항)
+                  </label>
+                  <input
+                    type="text"
+                    value={loginForm.displayName}
+                    onChange={(e) => handleLoginFormChange('displayName', e.target.value)}
+                    placeholder="표시될 이름"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+                      background: theme === 'dark' ? '#374151' : '#f8fafc',
+                      color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                      fontSize: '1rem',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      boxSizing: 'border-box'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#10B981';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = theme === 'dark' ? '#374151' : '#e2e8f0';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
               <div style={{ marginBottom: '30px' }}>
                 <label style={{
                   display: 'block',
@@ -1406,28 +1511,34 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               <div style={{ display: 'flex', gap: '12px' }}>
                 <button
                   type="submit"
+                  disabled={authLoading}
                   style={{
                     flex: 1,
                     padding: '12px 20px',
                     border: 'none',
                     borderRadius: '8px',
-                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    background: authLoading ? '#6B7280' : 'linear-gradient(135deg, #10B981, #059669)',
                     color: 'white',
                     fontSize: '1rem',
                     fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
+                    cursor: authLoading ? 'wait' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: authLoading ? 0.7 : 1
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)';
+                    if (!authLoading) {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)';
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
+                    if (!authLoading) {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
                   }}
                 >
-                  🚀 로그인
+                  {authLoading ? '⏳ 처리 중...' : (isSignUpMode ? '🎉 회원가입' : '🚀 로그인')}
                 </button>
                 
                 <button
@@ -1465,7 +1576,18 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               fontSize: '0.9rem',
               color: theme === 'dark' ? '#6B7280' : '#9CA3AF'
             }}>
-              <p>계정이 없으신가요? <span style={{ color: '#10B981', cursor: 'pointer' }}>회원가입</span></p>
+              <p>
+                {isSignUpMode ? '이미 계정이 있으신가요? ' : '계정이 없으신가요? '}
+                <span 
+                  style={{ color: '#10B981', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => {
+                    setIsSignUpMode(!isSignUpMode);
+                    setLoginForm({ email: '', password: '', displayName: '' });
+                  }}
+                >
+                  {isSignUpMode ? '로그인' : '회원가입'}
+                </span>
+              </p>
             </div>
           </div>
         </div>
