@@ -7,7 +7,15 @@ import PortfolioChart from './charts/PortfolioChart';
 import APIConnectionTest from './APIConnectionTest';
 import { safePlaceOrder } from '../lib/stocksService';
 
-const StaticDashboardReact: React.FC = () => {
+interface StaticDashboardReactProps {
+  isGlobalSnowEnabled?: boolean;
+  setIsGlobalSnowEnabled?: (enabled: boolean) => void;
+}
+
+const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({ 
+  isGlobalSnowEnabled, 
+  setIsGlobalSnowEnabled 
+}) => {
   const [isTrading, setIsTrading] = useState(false);
   const [stockCode, setStockCode] = useState('005930'); // 삼성전자
   const [quantity, setQuantity] = useState(10);
@@ -49,8 +57,13 @@ const StaticDashboardReact: React.FC = () => {
   };
 
   const handleSnowToggle = () => {
-    setIsSnowEnabled(!isSnowEnabled);
-    console.log(`❄️ 눈 효과: ${!isSnowEnabled ? '켜짐' : '꺼짐'}`);
+    // 로컬 눈 효과와 글로벌 눈 효과 모두 토글
+    const newSnowState = !isSnowEnabled;
+    setIsSnowEnabled(newSnowState);
+    if (setIsGlobalSnowEnabled) {
+      setIsGlobalSnowEnabled(newSnowState);
+    }
+    console.log(`❄️ 눈 효과: ${newSnowState ? '켜짐' : '꺼짐'}`);
   };
 
   const handleLogin = () => {
@@ -351,7 +364,7 @@ const StaticDashboardReact: React.FC = () => {
         }
       `}</style>
 
-      <div className="dashboard" style={{ marginTop: isMobile ? '180px' : '160px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '200px' : '200px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
@@ -563,7 +576,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 통합 사이드바 - 메뉴 + 차트 선택 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '340px',
+            top: '280px',
             left: '20px',
             width: '220px',
             zIndex: 1000,
@@ -936,7 +949,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 우측 통합 사이드바 - 빠른 거래 + 포트폴리오 요약 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '260px',
+            top: '200px',
             right: '20px',
             width: '300px',
             zIndex: 1000,

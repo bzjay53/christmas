@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
 import LiveStocksChart from './components/charts/LiveStocksChart'
@@ -10,6 +10,7 @@ import './styles/themes.css'
 
 function App() {
   console.log('🎄 Christmas Trading React App - Live Data Integration v2.2')
+  const [isGlobalSnowEnabled, setIsGlobalSnowEnabled] = useState(false)
   
   useEffect(() => {
     // Supabase 연결 테스트
@@ -39,10 +40,13 @@ function App() {
         
         <div className="container mx-auto px-4 py-6">
           <LiveStocksChart />
-          <StaticDashboardReact />
+          <StaticDashboardReact 
+            isGlobalSnowEnabled={isGlobalSnowEnabled} 
+            setIsGlobalSnowEnabled={setIsGlobalSnowEnabled} 
+          />
         </div>
       </div>
-      <ChristmasSnowEffect />
+      {isGlobalSnowEnabled && <ChristmasSnowEffect />}
     </ThemeProvider>
   )
 }
