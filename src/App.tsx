@@ -38,7 +38,7 @@ function App() {
           <ThemeToggle />
         </div>
         
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-4 py-6" style={{ marginTop: '120px' }}>
           <LiveStocksChart />
           <StaticDashboardReact 
             isGlobalSnowEnabled={isGlobalSnowEnabled} 

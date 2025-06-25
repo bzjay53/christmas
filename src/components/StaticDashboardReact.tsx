@@ -364,7 +364,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
         }
       `}</style>
 
-      <div className="dashboard" style={{ marginTop: isMobile ? '200px' : '200px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '20px' : '20px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
