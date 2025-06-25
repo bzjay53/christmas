@@ -320,6 +320,7 @@ body.light-theme .panel-title {
   font-size: 0.9rem;
 }
 
+/* 눈 효과 스타일 - 토글 가능하도록 수정 */
 .snowflake {
   position: fixed;
   top: -10px;
@@ -328,6 +329,11 @@ body.light-theme .panel-title {
   pointer-events: none;
   color: rgba(255, 255, 255, 0.6);
   animation: fall linear infinite;
+  display: none; /* 기본적으로 숨김 */
+}
+
+.snowflake.active {
+  display: block; /* 활성화 시에만 표시 */
 }
 
 @keyframes fall {

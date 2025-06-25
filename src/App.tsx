@@ -46,7 +46,7 @@ function App() {
           />
         </div>
       </div>
-      {isGlobalSnowEnabled && <ChristmasSnowEffect />}
+      <ChristmasSnowEffect enabled={isGlobalSnowEnabled} />
     </ThemeProvider>
   )
 }

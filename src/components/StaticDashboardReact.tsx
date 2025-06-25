@@ -475,7 +475,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             minHeight: 'calc(100vh - 250px)',
             padding: isMobile 
               ? '15px 15px' // 모바일: 사이드바 없이 최소 패딩
-              : '20px 320px 20px 260px', // 데스크톱: 좌우 사이드바 공간 확보
+              : '20px 340px 20px 280px', // 데스크톱: 좌우 사이드바 공간 확보 + 여유 공간
             display: 'flex',
             flexDirection: 'column',
             gap: isMobile ? '15px' : '20px'
@@ -488,7 +488,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               borderRadius: '12px',
               padding: isMobile ? '15px' : '30px',
-              height: isMobile ? '400px' : '600px', // 모바일에서 더 작은 높이
+              height: isMobile ? '400px' : '700px', // 메인 차트 더 크게
               width: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: theme === 'dark' 
@@ -516,7 +516,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               display: 'flex', 
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '15px' : '25px', 
-              height: isMobile ? 'auto' : '400px'
+              height: isMobile ? 'auto' : '500px' // 하단 차트들도 더 크게
             }}>
               <div style={{
                 flex: 1,
@@ -576,7 +576,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
           {/* 좌측 통합 사이드바 - 메뉴 + 차트 선택 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '280px',
+            top: '140px',
             left: '20px',
             width: '220px',
             zIndex: 1000,
@@ -949,7 +949,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
           {/* 우측 통합 사이드바 - 빠른 거래 + 포트폴리오 요약 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '200px',
+            top: '140px',
             right: '20px',
             width: '300px',
             zIndex: 1000,
