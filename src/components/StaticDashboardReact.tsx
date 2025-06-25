@@ -309,13 +309,13 @@ const StaticDashboardReact: React.FC = () => {
         <span className="text-2xl">🎁</span>
       </div>
 
-      {/* 눈 내리는 효과 - 고정된 눈송이 데이터 사용 */}
+      {/* 눈 내리는 효과 - 완전히 제어됨 */}
       {isSnowEnabled && (
         <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
           {snowflakes.map((snowflake) => (
             <div
               key={snowflake.id}
-              className="absolute text-white opacity-80"
+              className="absolute text-white opacity-80 snow-particle"
               style={{
                 left: `${snowflake.left}%`,
                 fontSize: `${snowflake.fontSize}rem`,
@@ -326,26 +326,32 @@ const StaticDashboardReact: React.FC = () => {
               ❄
             </div>
           ))}
-          <style>{`
-            @keyframes snowfall {
-              0% {
-                transform: translateY(-100vh) rotate(0deg);
-                opacity: 1;
-              }
-              100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0.3;
-              }
-            }
-            /* 스크롤바 숨기기 - 웹킷 브라우저 */
-            div[style*="overflowY: auto"]::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
         </div>
       )}
+      
+      {/* 전역 스타일 - 눈 효과와 스크롤바 */}
+      <style>{`
+        @keyframes snowfall {
+          0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0.3;
+          }
+        }
+        /* 스크롤바 숨기기 */
+        div[style*="overflowY: auto"]::-webkit-scrollbar {
+          display: none;
+        }
+        /* 눈 효과가 꺼졌을 때 확실히 숨김 */
+        .snow-particle {
+          display: ${isSnowEnabled ? 'block' : 'none'};
+        }
+      `}</style>
 
-      <div className="dashboard" style={{ marginTop: isMobile ? '160px' : '120px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '180px' : '160px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
@@ -557,7 +563,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 통합 사이드바 - 메뉴 + 차트 선택 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '300px',
+            top: '340px',
             left: '20px',
             width: '220px',
             zIndex: 1000,
@@ -930,7 +936,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 우측 통합 사이드바 - 빠른 거래 + 포트폴리오 요약 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '220px',
+            top: '260px',
             right: '20px',
             width: '300px',
             zIndex: 1000,
