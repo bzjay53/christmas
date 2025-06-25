@@ -387,7 +387,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               fontWeight: 'bold',
               marginBottom: '10px'
             }}>
-              🎄 크리스마스 트레이딩 - 실시간 주식
+              📊 종합 대시보드 - 포트폴리오 & 거래
             </div>
             <div style={{ 
               textAlign: 'center',
