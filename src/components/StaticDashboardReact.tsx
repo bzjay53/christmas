@@ -14,7 +14,7 @@ const StaticDashboardReact: React.FC = () => {
   const [tradeMessage, setTradeMessage] = useState('');
   const [selectedChart, setSelectedChart] = useState('major'); // 차트 선택 상태
   const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
-  const [isSnowEnabled, setIsSnowEnabled] = useState(true); // 눈 효과 상태
+  const [isSnowEnabled, setIsSnowEnabled] = useState(false); // 눈 효과 상태
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태
   const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
   const [loginForm, setLoginForm] = useState({ email: '', password: '' }); // 로그인 폼
@@ -337,11 +337,15 @@ const StaticDashboardReact: React.FC = () => {
                 opacity: 0.3;
               }
             }
+            /* 스크롤바 숨기기 - 웹킷 브라우저 */
+            div[style*="overflowY: auto"]::-webkit-scrollbar {
+              display: none;
+            }
           `}</style>
         </div>
       )}
 
-      <div className="dashboard" style={{ marginTop: isMobile ? '120px' : '70px', width: '100%', paddingLeft: '0' }}>
+      <div className="dashboard" style={{ marginTop: isMobile ? '160px' : '120px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
           {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
@@ -553,7 +557,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 좌측 통합 사이드바 - 메뉴 + 차트 선택 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '250px',
+            top: '300px',
             left: '20px',
             width: '220px',
             zIndex: 1000,
@@ -572,7 +576,9 @@ const StaticDashboardReact: React.FC = () => {
               ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
               : '0 8px 32px rgba(0, 0, 0, 0.12)',
             maxHeight: 'calc(100vh - 380px)',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none' // IE
           }}>
             {/* 메뉴 섹션 */}
             <div style={{
@@ -924,7 +930,7 @@ const StaticDashboardReact: React.FC = () => {
           {/* 우측 통합 사이드바 - 빠른 거래 + 포트폴리오 요약 */}
           {!isMobile && <div style={{
             position: 'fixed',
-            top: '170px',
+            top: '220px',
             right: '20px',
             width: '300px',
             zIndex: 1000,
@@ -941,6 +947,8 @@ const StaticDashboardReact: React.FC = () => {
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             maxHeight: 'calc(100vh - 220px)',
             overflowY: 'auto',
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE
             boxShadow: theme === 'dark' 
               ? '0 8px 32px rgba(0, 0, 0, 0.4)' 
               : '0 8px 32px rgba(0, 0, 0, 0.12)'
