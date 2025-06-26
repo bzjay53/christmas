@@ -5,12 +5,33 @@ import ChristmasSnowEffect from './components/ChristmasSnowEffect'
 import ThemeToggle from './components/ThemeToggle'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { testSupabaseConnection } from './lib/supabase'
+import { getMarketStatus } from './lib/marketHours'
 import './styles/static-dashboard.css'
 import './styles/themes.css'
 
 function AppContent() {
   const [isGlobalSnowEnabled, setIsGlobalSnowEnabled] = useState(false)
+  const [currentTime, setCurrentTime] = useState('')
+  const [marketStatus, setMarketStatus] = useState<any>(null)
   const { theme } = useTheme()
+
+  // 실시간 시간 및 시장 상태 업데이트
+  useEffect(() => {
+    const updateTimeAndMarket = () => {
+      const now = new Date()
+      setCurrentTime(now.toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      }))
+      setMarketStatus(getMarketStatus())
+    }
+
+    updateTimeAndMarket() // 초기 설정
+    const interval = setInterval(updateTimeAndMarket, 1000) // 1초마다 업데이트
+
+    return () => clearInterval(interval)
+  }, [])
   
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -22,8 +43,13 @@ function AppContent() {
       <div className="container mx-auto px-4 py-6" style={{ marginTop: '120px' }}>
         {/* LiveStocksChart 제거됨: StaticDashboardReact의 MajorIndicesChartJS로 통합 */}
         
-        {/* 종합 대시보드 헤더 */}
-        <div className="mb-6" style={{
+        <StaticDashboardReact 
+          isGlobalSnowEnabled={isGlobalSnowEnabled} 
+          setIsGlobalSnowEnabled={setIsGlobalSnowEnabled} 
+        />
+
+        {/* 종합 대시보드 헤더 - 페이지 최하단으로 이동 */}
+        <div className="mt-6" style={{
           background: theme === 'dark' 
             ? 'linear-gradient(135deg, #1e293b, #334155)' 
             : 'linear-gradient(135deg, #ffffff, #f1f5f9)',
@@ -43,36 +69,31 @@ function AppContent() {
             fontWeight: 'bold',
             marginBottom: '10px'
           }}>
-            📊 종합 대시보드 - 포트폴리오 & 거래
+            종합 대시보드 - 포트폴리오 & 거래
           </div>
           <div style={{ 
             textAlign: 'center',
             fontSize: '1rem',
             marginBottom: '8px'
           }}>
-            📊 3개 종목 | 🔄 오후 6:28:18
+            3개 종목 | {currentTime}
           </div>
           <div style={{ 
             textAlign: 'center',
             fontSize: '0.9rem',
-            color: '#EF4444',
+            color: marketStatus?.isOpen ? '#10B981' : '#EF4444',
             marginBottom: '5px'
           }}>
-            🔴 장 마감 - 다음날 09:00 개장
+            {marketStatus?.statusMessage}
           </div>
           <div style={{ 
             textAlign: 'center',
             fontSize: '0.8rem',
             color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
           }}>
-            💡 실제 거래시간: 평일 09:00-15:30
+            실제 거래시간: 평일 09:00-15:30
           </div>
         </div>
-        
-        <StaticDashboardReact 
-          isGlobalSnowEnabled={isGlobalSnowEnabled} 
-          setIsGlobalSnowEnabled={setIsGlobalSnowEnabled} 
-        />
       </div>
       <ChristmasSnowEffect enabled={isGlobalSnowEnabled} />
     </div>

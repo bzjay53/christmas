@@ -284,40 +284,62 @@ body.light-theme .panel-title {
 
 .tables-section {
   margin-top: 30px;                  /* 더 큰 여백 */
+  margin-bottom: 30px;               /* 하단 여백 추가 */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;                         /* 더 큰 간격 */
   padding: 0 10px;                   /* 좌우 여백 추가 */
+  min-height: 400px;                 /* 최소 높이 보장 */
+  z-index: 10;                       /* z-index 추가 */
+  position: relative;                /* position 추가 */
 }
 
 .table-container {
-  background: #1e293b;
-  border: 1px solid #374151;
+  background: var(--bg-panel, #1e293b);
+  border: 1px solid var(--border-primary, #374151);
   border-radius: 12px;
   overflow: hidden;
+  min-height: 200px;                 /* 최소 높이 보장 */
 }
 
 .table-header {
-  background: #374151;
+  background: var(--bg-secondary, #374151);
   padding: 15px 20px;
   font-weight: 600;
+  color: var(--text-primary, #E5E7EB);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  background: var(--bg-panel, #1e293b);
 }
 
 .table th, .table td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--border-secondary, #374151);
+  color: var(--text-primary, #E5E7EB);
 }
 
 .table th {
-  background: #374151;
-  color: #9CA3AF;
+  background: var(--bg-secondary, #374151);
+  color: var(--text-muted, #9CA3AF);
   font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background: var(--bg-hover, rgba(55, 65, 81, 0.5));
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .tables-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 5px;
+  }
 }
 
 /* 눈 효과 스타일 - 토글 가능하도록 수정 */

@@ -465,7 +465,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   fontWeight: 'bold',
                   color: theme === 'dark' ? '#10B981' : '#059669'
                 }}>
-                  🎄 Christmas Portfolio $105,550.91
+                  Christmas Portfolio $105,550.91
                 </div>
                 <div style={{
                   fontSize: '1.1rem',
@@ -488,10 +488,10 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                     color: '#10B981',
                     fontWeight: '600'
                   }}>
-                    👤 {user.displayName || user.email.split('@')[0]}님 접속중
+                    {user.displayName || user.email.split('@')[0]}님 접속중
                   </div>
                 )}
-                <div>마지막 업데이트: 오후 1:41:34 | 장중</div>
+                <div>마지막 업데이트: {new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} | 실시간</div>
               </div>
             </div>
           </div>
@@ -530,10 +530,10 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 marginBottom: '20px',
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
               }}>
-                {selectedChart === 'major' && '🌏 주요 지수 (KOSPI, NASDAQ, S&P500)'}
-                {selectedChart === 'kospi' && '📊 KOSPI - 한국 종합주가지수'}
-                {selectedChart === 'nasdaq' && '🇺🇸 NASDAQ - 나스닥 종합지수'}
-                {selectedChart === 'sp500' && '💼 S&P500 - 미국 주요 500개 기업'}
+                {selectedChart === 'major' && '주요 지수 (KOSPI, NASDAQ, S&P500)'}
+                {selectedChart === 'kospi' && 'KOSPI - 한국 종합주가지수'}
+                {selectedChart === 'nasdaq' && 'NASDAQ - 나스닥 종합지수'}
+                {selectedChart === 'sp500' && 'S&P500 - 미국 주요 500개 기업'}
               </div>
               <div style={{ height: 'calc(100% - 60px)' }}>
                 <MajorIndicesChartJS />
@@ -567,7 +567,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   marginBottom: '20px',
                   color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
                 }}>
-                  📈 AAPL - Apple Inc.
+                  AAPL - Apple Inc.
                 </div>
                 <div style={{ height: 'calc(100% - 60px)' }}>
                   <AppleStockChart />
@@ -593,7 +593,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   marginBottom: '20px',
                   color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
                 }}>
-                  📊 거래량
+                  거래량
                 </div>
                 <div style={{ height: 'calc(100% - 60px)' }}>
                   <VolumeChart />
