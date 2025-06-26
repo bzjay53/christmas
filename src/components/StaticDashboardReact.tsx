@@ -22,7 +22,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
   const [quantity, setQuantity] = useState(10);
   const [tradeMessage, setTradeMessage] = useState('');
   const [selectedChart, setSelectedChart] = useState('major'); // 차트 선택 상태
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // 테마 상태
+  const [theme, setTheme] = useState<'light' | 'dark'>('light'); // 테마 상태
   const [isSnowEnabled, setIsSnowEnabled] = useState(false); // 눈 효과 상태
   const [user, setUser] = useState<AuthUser | null>(null); // 로그인된 사용자
   const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
@@ -441,51 +441,6 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
       <div className="dashboard" style={{ marginTop: isMobile ? '20px' : '20px', width: '100%', paddingLeft: '0' }}>
         {/* 메인 콘텐츠 - 전체 화면 활용 */}
         <div className="main-content" style={{ width: '100%', marginLeft: '0' }}>
-          {/* 상단 시장 정보 헤더 - 배너와 충분한 간격 확보 */}
-          <div style={{
-            background: theme === 'dark' 
-              ? 'linear-gradient(135deg, #1e293b, #334155)' 
-              : 'linear-gradient(135deg, #ffffff, #f1f5f9)',
-            borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-            padding: '25px 20px',
-            color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            marginTop: '0px', // 배너와 간격 최소화
-            boxShadow: theme === 'dark' 
-              ? '0 2px 10px rgba(0, 0, 0, 0.2)' 
-              : '0 2px 10px rgba(0, 0, 0, 0.05)'
-          }}>
-            <div style={{ 
-              textAlign: 'center',
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              marginBottom: '10px'
-            }}>
-              📊 종합 대시보드 - 포트폴리오 & 거래
-            </div>
-            <div style={{ 
-              textAlign: 'center',
-              fontSize: '1rem',
-              marginBottom: '8px'
-            }}>
-              📊 3개 종목 | 🔄 오후 6:28:18
-            </div>
-            <div style={{ 
-              textAlign: 'center',
-              fontSize: '0.9rem',
-              color: '#EF4444',
-              marginBottom: '5px'
-            }}>
-              🔴 장 마감 - 다음날 09:00 개장
-            </div>
-            <div style={{ 
-              textAlign: 'center',
-              fontSize: '0.8rem',
-              color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
-            }}>
-              💡 실제 거래시간: 평일 09:00-15:30
-            </div>
-          </div>
 
           {/* 포트폴리오 요약 헤더 */}
           <div style={{

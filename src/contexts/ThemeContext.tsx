@@ -21,7 +21,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
   children, 
-  defaultTheme = 'dark' 
+  defaultTheme = 'light' 
 }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     // 로컬 스토리지에서 저장된 테마 불러오기
