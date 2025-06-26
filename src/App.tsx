@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import StaticDashboardReact from './components/StaticDashboardReact'
 import ChristmasSnowEffect from './components/ChristmasSnowEffect'
-import LiveStocksChart from './components/charts/LiveStocksChart'
+// import LiveStocksChart from './components/charts/LiveStocksChart' // 제거됨: 중복 기능
 import ThemeToggle from './components/ThemeToggle'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { testSupabaseConnection } from './lib/supabase'
@@ -20,7 +20,7 @@ function AppContent() {
       </div>
       
       <div className="container mx-auto px-4 py-6" style={{ marginTop: '120px' }}>
-        <LiveStocksChart />
+        {/* LiveStocksChart 제거됨: StaticDashboardReact의 MajorIndicesChartJS로 통합 */}
         
         {/* 종합 대시보드 헤더 */}
         <div className="mb-6" style={{
