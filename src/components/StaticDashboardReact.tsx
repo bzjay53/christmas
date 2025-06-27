@@ -1222,12 +1222,37 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             </div>
           </div>}
 
-          {/* 테이블 섹션 */}
-          <div className="tables-section">
+          {/* 테이블 섹션 - 명확한 위치와 스타일링 */}
+          <div className="tables-section" style={{
+            width: '100%',
+            maxWidth: '100%',
+            padding: isMobile ? '20px 15px' : '20px 300px 20px 300px', // 사이드바 공간 확보
+            marginTop: '30px',
+            position: 'relative',
+            zIndex: 5,
+            clear: 'both'
+          }}>
             {/* 보유 종목 */}
-            <div className="table-container">
-              <div className="table-header">보유 종목</div>
-              <table className="table">
+            <div className="table-container" style={{
+              background: theme === 'dark' ? '#1e293b' : '#ffffff',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              borderRadius: '12px',
+              overflow: 'hidden',
+              minHeight: '300px',
+              width: '100%'
+            }}>
+              <div className="table-header" style={{
+                background: theme === 'dark' ? '#374151' : '#f1f5f9',
+                padding: '15px 20px',
+                fontWeight: '600',
+                color: theme === 'dark' ? '#E5E7EB' : '#475569'
+              }}>보유 종목</div>
+              <table className="table" style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                background: theme === 'dark' ? '#1e293b' : '#ffffff',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+              }}>
                 <thead>
                   <tr>
                     <th>종목코드</th>
@@ -1264,9 +1289,26 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             </div>
 
             {/* 최근 주문 */}
-            <div className="table-container">
-              <div className="table-header">최근 주문</div>
-              <table className="table">
+            <div className="table-container" style={{
+              background: theme === 'dark' ? '#1e293b' : '#ffffff',
+              border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
+              borderRadius: '12px',
+              overflow: 'hidden',
+              minHeight: '300px',
+              width: '100%'
+            }}>
+              <div className="table-header" style={{
+                background: theme === 'dark' ? '#374151' : '#f1f5f9',
+                padding: '15px 20px',
+                fontWeight: '600',
+                color: theme === 'dark' ? '#E5E7EB' : '#475569'
+              }}>최근 주문</div>
+              <table className="table" style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                background: theme === 'dark' ? '#1e293b' : '#ffffff',
+                color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+              }}>
                 <thead>
                   <tr>
                     <th>종목코드</th>
