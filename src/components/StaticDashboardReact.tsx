@@ -589,9 +589,9 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '280px' : 'auto', // 차트 크기에 맞춘 높이 조정 (250px → 280px)
-                minHeight: isMobile ? '280px' : 'auto', // 최소 높이 고정
-                maxHeight: isMobile ? '280px' : 'auto', // 최대 높이 제한
+                height: isMobile ? '340px' : 'auto', // 차트 크기에 맞춘 높이 조정 (320px → 340px)
+                minHeight: isMobile ? '340px' : 'auto', // 최소 높이 고정
+                maxHeight: isMobile ? '340px' : 'auto', // 최대 높이 제한
                 transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
@@ -611,7 +611,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   거래량
                 </div>
                 <div style={{ 
-                  height: isMobile ? '230px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (200px → 230px)
+                  height: isMobile ? '285px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (270px → 285px)
                   width: '100%',
                   position: 'relative'
                 }}>
