@@ -495,13 +495,14 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
           <div style={{ 
             position: 'relative', 
             width: '100%',
-            minHeight: 'calc(100vh - 250px)',
+            minHeight: 'auto', // 높이 제한 제거하여 표가 보이도록 수정
             padding: isMobile 
               ? '15px 15px' // 모바일: 사이드바 없이 최소 패딩
               : '20px 340px 20px 280px', // 데스크톱: 좌우 사이드바 공간 확보 + 여유 공간
             display: 'flex',
             flexDirection: 'column',
-            gap: isMobile ? '15px' : '20px'
+            gap: isMobile ? '15px' : '20px',
+            paddingBottom: '50px' // 하단 여백 추가하여 표가 완전히 보이도록
           }}>
             {/* 메인 실시간 주식 차트 - 전체 화면 최대 활용 */}
             <div style={{
@@ -511,7 +512,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               borderRadius: '12px',
               padding: isMobile ? '15px' : '30px',
-              height: isMobile ? '400px' : '700px', // 메인 차트 더 크게
+              height: isMobile ? '350px' : '500px', // 메인 차트 높이 축소하여 표가 보이도록
               width: '100%',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: theme === 'dark' 
@@ -539,7 +540,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               display: 'flex', 
               flexDirection: isMobile ? 'column' : 'row',
               gap: isMobile ? '15px' : '25px', 
-              height: isMobile ? 'auto' : '500px' // 하단 차트들도 더 크게
+              height: isMobile ? 'auto' : '350px' // 하단 차트들 높이 축소
             }}>
               <div style={{
                 flex: 1,

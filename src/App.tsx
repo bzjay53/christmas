@@ -48,52 +48,7 @@ function AppContent() {
           setIsGlobalSnowEnabled={setIsGlobalSnowEnabled} 
         />
 
-        {/* 종합 대시보드 헤더 - 페이지 최하단으로 이동 */}
-        <div className="mt-6" style={{
-          background: theme === 'dark' 
-            ? 'linear-gradient(135deg, #1e293b, #334155)' 
-            : 'linear-gradient(135deg, #ffffff, #f1f5f9)',
-          borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
-          padding: '25px 20px',
-          color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: theme === 'dark' 
-            ? '0 2px 10px rgba(0, 0, 0, 0.2)' 
-            : '0 2px 10px rgba(0, 0, 0, 0.05)',
-          borderRadius: '8px',
-          border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`
-        }}>
-          <div style={{ 
-            textAlign: 'center',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            marginBottom: '10px'
-          }}>
-            종합 대시보드 - 포트폴리오 & 거래
-          </div>
-          <div style={{ 
-            textAlign: 'center',
-            fontSize: '1rem',
-            marginBottom: '8px'
-          }}>
-            3개 종목 | {currentTime}
-          </div>
-          <div style={{ 
-            textAlign: 'center',
-            fontSize: '0.9rem',
-            color: marketStatus?.isOpen ? '#10B981' : '#EF4444',
-            marginBottom: '5px'
-          }}>
-            {marketStatus?.statusMessage}
-          </div>
-          <div style={{ 
-            textAlign: 'center',
-            fontSize: '0.8rem',
-            color: theme === 'dark' ? '#9CA3AF' : '#6B7280'
-          }}>
-            실제 거래시간: 평일 09:00-15:30
-          </div>
-        </div>
+        {/* 종합 대시보드 헤더 제거 - 사용자 요청 */}
       </div>
       <ChristmasSnowEffect enabled={isGlobalSnowEnabled} />
     </div>
