@@ -1,198 +1,237 @@
-# 🏦 한국투자증권 API 연동 가이드
+# 바이낸스 API 연동 가이드 (Binance API Integration Guide)
 
-## 📅 **작성일**: 2025-06-24 UTC
-
----
-
-## 🎯 **연동 목표**
-
-### **핵심 미션**
-Mock 데이터를 **한국투자증권 OpenAPI**로 완전 교체하여 실제 시장 데이터 기반 거래 시스템 구축
-
-### **API 선택 근거**
-- **한국투자증권 OpenAPI**: 개인투자자 무료 제공
-- **실시간 시세**: 1초 단위 업데이트 지원
-- **주문 처리**: 실제 매수/매도 가능
-- **계좌 연동**: 잔고/보유종목 실시간 조회
+## 작성일: 2025-06-27 UTC
 
 ---
 
-## 🔧 **API 설정 및 인증**
+## 연동 목표
 
-### **1단계: API 키 발급**
+### 핵심 미션
+Mock 데이터를 **바이낸스 API**로 완전 교체하여 실제 글로벌 암호화폐 시장 데이터 기반 거래 시스템 구축
+
+### API 선택 근거
+- **바이낸스 API**: 세계 최대 암호화폐 거래소 API
+- **실시간 데이터**: WebSocket 기반 밀리초 단위 업데이트
+- **포괄적 데이터**: Spot, Futures, Options 모든 시장 지원
+- **높은 안정성**: 99.99% 업타임 보장
+- **무료 제공**: 기본 시세 조회 무료, 거래 시 수수료만 발생
+
+---
+
+## API 설정 및 인증
+
+### 1단계: 바이낸스 계정 및 API 키 발급
+
 ```bash
-# 한국투자증권 홈페이지에서 신청
-# 1. 계좌 개설 (모의투자 계좌도 가능)
-# 2. OpenAPI 신청서 작성
-# 3. APP KEY, APP SECRET 발급받기
+# 바이낸스 계정 생성 및 KYC 인증
+# 1. binance.com 방문하여 계정 생성
+# 2. KYC 인증 완료 (신분증 인증)
+# 3. 2FA 보안 설정 (Google Authenticator 권장)
+# 4. API Management에서 API 키 생성
 ```
 
-### **2단계: 환경 변수 설정**
+### 2단계: API 키 권한 설정
+
+```bash
+# API 키 권한 설정 (보안상 최소 권한 부여)
+✅ Enable Reading              # 시세 조회용
+✅ Enable Spot & Margin Trading # 현물 거래용
+❌ Enable Futures             # 선물 거래 (필요시에만)
+❌ Enable Universal Transfer  # 자금 이체 (보안상 비활성화)
+
+# IP 제한 설정 (필수)
+- 개발 서버 IP 주소 등록
+- 운영 서버 IP 주소 등록
+- 와일드카드(*) 사용 금지
+```
+
+### 3단계: 환경 변수 설정
+
 ```env
 # .env 파일에 추가
-KOREA_INVESTMENT_APP_KEY=your_app_key_here
-KOREA_INVESTMENT_APP_SECRET=your_app_secret_here
-KOREA_INVESTMENT_ACCOUNT_NO=your_account_number
-KOREA_INVESTMENT_ACCOUNT_TYPE=01  # 실전투자계좌: 01, 모의투자계좌: 02
+VITE_BINANCE_API_KEY=your_api_key_here
+VITE_BINANCE_SECRET_KEY=your_secret_key_here
+VITE_BINANCE_TESTNET=true  # 개발 환경에서는 testnet 사용
+VITE_BINANCE_BASE_URL=https://api.binance.com
+VITE_BINANCE_TESTNET_URL=https://testnet.binance.vision
+
+# 제거할 기존 한국투자증권 환경변수
+# KOREA_INVESTMENT_APP_KEY=...
+# KOREA_INVESTMENT_APP_SECRET=...
+# KOREA_INVESTMENT_ACCOUNT_NO=...
 ```
 
-### **3단계: 인증 토큰 발급**
-```javascript
-// src/lib/koreaInvestmentAPI.ts
-export class KoreaInvestmentAPI {
-  private accessToken: string = '';
-  private baseURL = 'https://openapi.koreainvestment.com:9443';
-  
-  async authenticate() {
-    const response = await fetch(`${this.baseURL}/oauth2/tokenP`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        grant_type: 'client_credentials',
-        appkey: process.env.KOREA_INVESTMENT_APP_KEY,
-        appsecret: process.env.KOREA_INVESTMENT_APP_SECRET
-      })
-    });
-    
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    return this.accessToken;
+### 4단계: API 인증 방식 (HMAC SHA256)
+
+```typescript
+// src/lib/binanceAPI.ts
+import crypto from 'crypto';
+
+export class BinanceAPI {
+  private apiKey: string;
+  private secretKey: string;
+  private baseURL: string;
+
+  constructor() {
+    this.apiKey = import.meta.env.VITE_BINANCE_API_KEY;
+    this.secretKey = import.meta.env.VITE_BINANCE_SECRET_KEY;
+    this.baseURL = import.meta.env.VITE_BINANCE_TESTNET === 'true' 
+      ? import.meta.env.VITE_BINANCE_TESTNET_URL
+      : import.meta.env.VITE_BINANCE_BASE_URL;
+  }
+
+  // HMAC SHA256 서명 생성
+  private createSignature(queryString: string): string {
+    return crypto
+      .createHmac('sha256', this.secretKey)
+      .update(queryString)
+      .digest('hex');
+  }
+
+  // 인증이 필요한 요청을 위한 헤더 생성
+  private createAuthHeaders(timestamp: number, signature: string) {
+    return {
+      'X-MBX-APIKEY': this.apiKey,
+      'Content-Type': 'application/json',
+    };
   }
 }
 ```
 
 ---
 
-## 📊 **실시간 시세 조회**
+## 핵심 API 기능 구현
 
-### **주식 현재가 조회**
-```javascript
-async getCurrentPrice(stockCode: string) {
+### 1. 시세 조회 (Public API - 인증 불필요)
+
+```typescript
+// 현재가 조회
+async getTickerPrice(symbol: string): Promise<CryptoPrice> {
+  const response = await fetch(`${this.baseURL}/api/v3/ticker/price?symbol=${symbol}`);
+  const data = await response.json();
+  
+  return {
+    symbol: data.symbol,
+    price: parseFloat(data.price),
+    timestamp: Date.now()
+  };
+}
+
+// 24시간 시세 통계
+async getTicker24hr(symbol: string): Promise<Ticker24hr> {
+  const response = await fetch(`${this.baseURL}/api/v3/ticker/24hr?symbol=${symbol}`);
+  const data = await response.json();
+  
+  return {
+    symbol: data.symbol,
+    priceChange: parseFloat(data.priceChange),
+    priceChangePercent: parseFloat(data.priceChangePercent),
+    weightedAvgPrice: parseFloat(data.weightedAvgPrice),
+    prevClosePrice: parseFloat(data.prevClosePrice),
+    lastPrice: parseFloat(data.lastPrice),
+    volume: parseFloat(data.volume),
+    quoteVolume: parseFloat(data.quoteVolume),
+    count: parseInt(data.count)
+  };
+}
+
+// K선 데이터 (차트용)
+async getKlineData(symbol: string, interval: string, limit: number = 100): Promise<KlineData[]> {
   const response = await fetch(
-    `${this.baseURL}/uapi/domestic-stock/v1/quotations/inquire-price`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${this.accessToken}`,
-      'appkey': process.env.KOREA_INVESTMENT_APP_KEY,
-      'appsecret': process.env.KOREA_INVESTMENT_APP_SECRET,
-      'tr_id': 'FHKST01010100',
-      'custtype': 'P'
-    },
-    params: {
-      'FID_COND_MRKT_DIV_CODE': 'J',
-      'FID_INPUT_ISCD': stockCode  // 예: '005930' (삼성전자)
+    `${this.baseURL}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
+  );
+  const data = await response.json();
+  
+  return data.map((kline: any[]) => ({
+    openTime: parseInt(kline[0]),
+    open: parseFloat(kline[1]),
+    high: parseFloat(kline[2]),
+    low: parseFloat(kline[3]),
+    close: parseFloat(kline[4]),
+    volume: parseFloat(kline[5]),
+    closeTime: parseInt(kline[6])
+  }));
+}
+```
+
+### 2. 계좌 정보 조회 (Private API - 인증 필요)
+
+```typescript
+// 계좌 잔고 조회
+async getAccountBalance(): Promise<AccountBalance[]> {
+  const timestamp = Date.now();
+  const queryString = `timestamp=${timestamp}`;
+  const signature = this.createSignature(queryString);
+  
+  const response = await fetch(
+    `${this.baseURL}/api/v3/account?${queryString}&signature=${signature}`,
+    {
+      headers: this.createAuthHeaders(timestamp, signature)
     }
-  });
+  );
   
   const data = await response.json();
-  return {
-    symbol: stockCode,
-    current_price: parseInt(data.output.stck_prpr),
-    price_change: parseInt(data.output.prdy_vrss),
-    price_change_percent: parseFloat(data.output.prdy_ctrt),
-    volume: parseInt(data.output.acml_vol),
-    last_updated: new Date().toISOString()
-  };
+  
+  return data.balances
+    .filter((balance: any) => parseFloat(balance.free) > 0 || parseFloat(balance.locked) > 0)
+    .map((balance: any) => ({
+      asset: balance.asset,
+      free: parseFloat(balance.free),
+      locked: parseFloat(balance.locked),
+      total: parseFloat(balance.free) + parseFloat(balance.locked)
+    }));
 }
 ```
 
-### **실시간 시세 WebSocket**
-```javascript
-async subscribeRealTimePrice(stockCodes: string[], callback: Function) {
-  const ws = new WebSocket('ws://ops.koreainvestment.com:21000');
+### 3. 주문 처리 (Private API - 인증 필요)
+
+```typescript
+// 현물 주문 생성
+async createSpotOrder(orderRequest: SpotOrderRequest): Promise<OrderResult> {
+  const timestamp = Date.now();
+  const queryString = new URLSearchParams({
+    symbol: orderRequest.symbol,
+    side: orderRequest.side, // 'BUY' or 'SELL'
+    type: orderRequest.type, // 'MARKET' or 'LIMIT'
+    quantity: orderRequest.quantity.toString(),
+    ...(orderRequest.price && { price: orderRequest.price.toString() }),
+    timestamp: timestamp.toString()
+  }).toString();
   
-  ws.onopen = () => {
-    // 실시간 시세 구독 요청
-    stockCodes.forEach(code => {
-      ws.send(JSON.stringify({
-        header: {
-          approval_key: this.accessToken,
-          custtype: 'P',
-          tr_type: '1',  // 등록
-          content_type: 'utf-8'
-        },
-        body: {
-          input: {
-            tr_id: 'H0STCNT0',
-            tr_key: code
-          }
-        }
-      }));
-    });
-  };
-  
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    callback(data);
-  };
-}
-```
-
----
-
-## 💱 **주문 처리 시스템**
-
-### **매수 주문**
-```javascript
-async placeBuyOrder(stockCode: string, quantity: number, price?: number) {
-  const orderData = {
-    CANO: process.env.KOREA_INVESTMENT_ACCOUNT_NO,
-    ACNT_PRDT_CD: process.env.KOREA_INVESTMENT_ACCOUNT_TYPE,
-    PDNO: stockCode,
-    ORD_DVSN: price ? '00' : '01',  // 00: 지정가, 01: 시장가
-    ORD_QTY: quantity.toString(),
-    ORD_UNPR: price ? price.toString() : '0'
-  };
+  const signature = this.createSignature(queryString);
   
   const response = await fetch(
-    `${this.baseURL}/uapi/domestic-stock/v1/trading/order-cash`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${this.accessToken}`,
-      'appkey': process.env.KOREA_INVESTMENT_APP_KEY,
-      'appsecret': process.env.KOREA_INVESTMENT_APP_SECRET,
-      'tr_id': 'TTTC0802U',  // 현금 매수 주문
-      'custtype': 'P'
-    },
-    body: JSON.stringify(orderData)
-  });
+    `${this.baseURL}/api/v3/order?${queryString}&signature=${signature}`,
+    {
+      method: 'POST',
+      headers: this.createAuthHeaders(timestamp, signature)
+    }
+  );
   
-  const result = await response.json();
+  const data = await response.json();
+  
   return {
-    success: result.rt_cd === '0',
-    orderNumber: result.output?.KRX_FWDG_ORD_ORGNO,
-    message: result.msg1
+    orderId: data.orderId,
+    symbol: data.symbol,
+    status: data.status,
+    executedQty: parseFloat(data.executedQty),
+    cummulativeQuoteQty: parseFloat(data.cummulativeQuoteQty),
+    transactTime: data.transactTime
   };
 }
-```
 
-### **매도 주문**
-```javascript
-async placeSellOrder(stockCode: string, quantity: number, price?: number) {
-  // 매수와 유사하지만 tr_id가 'TTTC0801U' (현금 매도)
-  const orderData = {
-    CANO: process.env.KOREA_INVESTMENT_ACCOUNT_NO,
-    ACNT_PRDT_CD: process.env.KOREA_INVESTMENT_ACCOUNT_TYPE,
-    PDNO: stockCode,
-    ORD_DVSN: price ? '00' : '01',
-    ORD_QTY: quantity.toString(),
-    ORD_UNPR: price ? price.toString() : '0'
-  };
+// 주문 상태 조회
+async getOrderStatus(symbol: string, orderId: number): Promise<OrderStatus> {
+  const timestamp = Date.now();
+  const queryString = `symbol=${symbol}&orderId=${orderId}&timestamp=${timestamp}`;
+  const signature = this.createSignature(queryString);
   
   const response = await fetch(
-    `${this.baseURL}/uapi/domestic-stock/v1/trading/order-cash`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${this.accessToken}`,
-      'appkey': process.env.KOREA_INVESTMENT_APP_KEY,
-      'appsecret': process.env.KOREA_INVESTMENT_APP_SECRET,
-      'tr_id': 'TTTC0801U',  // 현금 매도 주문
-      'custtype': 'P'
-    },
-    body: JSON.stringify(orderData)
-  });
+    `${this.baseURL}/api/v3/order?${queryString}&signature=${signature}`,
+    {
+      headers: this.createAuthHeaders(timestamp, signature)
+    }
+  );
   
   return await response.json();
 }
@@ -200,198 +239,260 @@ async placeSellOrder(stockCode: string, quantity: number, price?: number) {
 
 ---
 
-## 💰 **계좌 정보 조회**
+## 실시간 데이터 (WebSocket)
 
-### **잔고 조회**
-```javascript
-async getAccountBalance() {
-  const response = await fetch(
-    `${this.baseURL}/uapi/domestic-stock/v1/trading/inquire-balance`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${this.accessToken}`,
-      'appkey': process.env.KOREA_INVESTMENT_APP_KEY,
-      'appsecret': process.env.KOREA_INVESTMENT_APP_SECRET,
-      'tr_id': 'TTTC8434R',
-      'custtype': 'P'
-    },
-    params: {
-      'CANO': process.env.KOREA_INVESTMENT_ACCOUNT_NO,
-      'ACNT_PRDT_CD': process.env.KOREA_INVESTMENT_ACCOUNT_TYPE,
-      'AFHR_FLPR_YN': 'N',
-      'OFL_YN': '',
-      'INQR_DVSN': '02',
-      'UNPR_DVSN': '01',
-      'FUND_STTL_ICLD_YN': 'N',
-      'FNCG_AMT_AUTO_RDPT_YN': 'N',
-      'PRCS_DVSN': '01',
-      'CTX_AREA_FK100': '',
-      'CTX_AREA_NK100': ''
+### WebSocket 연결 설정
+
+```typescript
+// 실시간 가격 스트리밍
+class BinanceWebSocket {
+  private ws: WebSocket | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+
+  connectPriceStream(symbols: string[], callback: (data: any) => void) {
+    const streams = symbols.map(symbol => `${symbol.toLowerCase()}@ticker`).join('/');
+    const wsUrl = `wss://stream.binance.com:9443/ws/${streams}`;
+    
+    this.ws = new WebSocket(wsUrl);
+    
+    this.ws.onopen = () => {
+      console.log('바이낸스 WebSocket 연결 성공');
+      this.reconnectAttempts = 0;
+    };
+    
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
+    };
+    
+    this.ws.onclose = () => {
+      console.log('바이낸스 WebSocket 연결 종료');
+      this.handleReconnect(symbols, callback);
+    };
+    
+    this.ws.onerror = (error) => {
+      console.error('바이낸스 WebSocket 오류:', error);
+    };
+  }
+
+  private handleReconnect(symbols: string[], callback: (data: any) => void) {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      setTimeout(() => {
+        console.log(`재연결 시도 ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+        this.connectPriceStream(symbols, callback);
+      }, 5000 * this.reconnectAttempts);
     }
-  });
-  
-  const data = await response.json();
-  return {
-    totalAsset: parseInt(data.output2[0].tot_evlu_amt),
-    availableCash: parseInt(data.output2[0].nxdy_excc_amt),
-    holdings: data.output1.map(item => ({
-      symbol: item.pdno,
-      name: item.prdt_name,
-      quantity: parseInt(item.hldg_qty),
-      avgPrice: parseInt(item.pchs_avg_pric),
-      currentPrice: parseInt(item.prpr),
-      profitLoss: parseInt(item.evlu_pfls_amt)
-    }))
-  };
+  }
 }
 ```
 
 ---
 
-## 🔄 **기존 Mock 데이터 교체**
+## 데이터 타입 정의
 
-### **stocksService.ts 수정**
-```javascript
-// src/lib/stocksService.ts
-import { KoreaInvestmentAPI } from './koreaInvestmentAPI';
+```typescript
+// 암호화폐 가격 정보
+interface CryptoPrice {
+  symbol: string;
+  price: number;
+  timestamp: number;
+}
 
-const api = new KoreaInvestmentAPI();
+// 24시간 시세 통계
+interface Ticker24hr {
+  symbol: string;
+  priceChange: number;
+  priceChangePercent: number;
+  weightedAvgPrice: number;
+  prevClosePrice: number;
+  lastPrice: number;
+  volume: number;
+  quoteVolume: number;
+  count: number;
+}
 
-// 기존 Mock 데이터 제거하고 실제 API 호출로 교체
-export const getAllStocks = async (): Promise<{ data: Stock[] | null; error: any }> => {
-  try {
-    await api.authenticate();
-    
-    // 주요 종목들 실시간 조회
-    const stockCodes = ['005930', '000660', '035420', '005380', '006400'];
-    const stocks = await Promise.all(
-      stockCodes.map(code => api.getCurrentPrice(code))
-    );
-    
-    return { data: stocks, error: null };
-  } catch (error) {
-    console.error('❌ 한국투자증권 API 오류:', error);
-    // 실패시 Mock 데이터 Fallback
-    return { data: mockStocks, error: null };
-  }
-};
+// K선 데이터
+interface KlineData {
+  openTime: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  closeTime: number;
+}
 
-// 실시간 데이터 구독으로 교체
-export const startDataSimulation = (callback: (stocks: Stock[]) => void) => {
-  const stockCodes = ['005930', '000660', '035420'];
-  
-  api.subscribeRealTimePrice(stockCodes, (data) => {
-    // 실시간 데이터를 콜백으로 전달
-    callback(data);
-  });
-};
+// 계좌 잔고
+interface AccountBalance {
+  asset: string;
+  free: number;
+  locked: number;
+  total: number;
+}
+
+// 주문 요청
+interface SpotOrderRequest {
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  type: 'MARKET' | 'LIMIT';
+  quantity: number;
+  price?: number;
+}
+
+// 주문 결과
+interface OrderResult {
+  orderId: number;
+  symbol: string;
+  status: string;
+  executedQty: number;
+  cummulativeQuoteQty: number;
+  transactTime: number;
+}
 ```
 
 ---
 
-## 🛡️ **에러 처리 및 안전장치**
+## 에러 처리 및 Rate Limiting
 
-### **API 호출 실패 대응**
-```javascript
-class APIFailsafeHandler {
-  private retryCount = 0;
-  private maxRetries = 3;
-  
-  async executeWithRetry(apiCall: Function) {
-    try {
-      return await apiCall();
-    } catch (error) {
-      if (this.retryCount < this.maxRetries) {
-        this.retryCount++;
-        console.warn(`⚠️ API 호출 실패, 재시도 ${this.retryCount}/${this.maxRetries}`);
-        await this.delay(1000 * this.retryCount);
-        return this.executeWithRetry(apiCall);
-      } else {
-        console.error('❌ API 호출 최종 실패, Mock 데이터로 대체');
-        return this.fallbackToMock();
-      }
-    }
+### 1. 에러 처리
+
+```typescript
+class BinanceAPIError extends Error {
+  constructor(public code: number, public message: string) {
+    super(message);
+    this.name = 'BinanceAPIError';
   }
-  
-  private delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async handleAPIResponse(response: Response) {
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new BinanceAPIError(errorData.code, errorData.msg);
   }
-  
-  private fallbackToMock() {
-    // Mock 데이터 반환
-    return mockStocks;
-  }
+  return response.json();
 }
 ```
 
-### **Rate Limiting 방지**
-```javascript
+### 2. Rate Limiting
+
+```typescript
 class RateLimiter {
-  private lastCall = 0;
-  private minInterval = 100; // 100ms 최소 간격
-  
-  async throttle(apiCall: Function) {
+  private requests: number[] = [];
+  private readonly maxRequests = 1200; // 분당 1200 요청
+  private readonly timeWindow = 60000; // 1분
+
+  async waitIfNeeded(): Promise<void> {
     const now = Date.now();
-    const timeSinceLastCall = now - this.lastCall;
+    this.requests = this.requests.filter(time => now - time < this.timeWindow);
     
-    if (timeSinceLastCall < this.minInterval) {
-      await this.delay(this.minInterval - timeSinceLastCall);
+    if (this.requests.length >= this.maxRequests) {
+      const oldestRequest = this.requests[0];
+      const waitTime = this.timeWindow - (now - oldestRequest);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
     
-    this.lastCall = Date.now();
-    return apiCall();
+    this.requests.push(now);
   }
 }
 ```
 
 ---
 
-## 📋 **구현 체크리스트**
+## 보안 베스트 프랙티스
 
-### **Phase 1: 기본 연동 (1일)**
-- [ ] API 키 발급 및 환경 설정
-- [ ] 인증 토큰 발급 테스트
-- [ ] 현재가 조회 API 테스트
-- [ ] Mock 데이터와 실제 데이터 비교
+### 1. API 키 보안
+- 환경 변수로만 저장, 코드에 하드코딩 금지
+- IP 제한 설정 필수
+- 정기적인 API 키 로테이션
+- Testnet에서 충분한 테스트 후 Mainnet 적용
 
-### **Phase 2: 실시간 연동 (1일)**
-- [ ] WebSocket 실시간 시세 구독
-- [ ] 차트 데이터 실시간 업데이트
-- [ ] 에러 처리 및 Fallback 로직
+### 2. 서명 검증
+- 모든 Private API 요청에 HMAC SHA256 서명 필수
+- 타임스탬프 기반 요청 유효성 검증
+- 네트워크 지연 고려한 타임스탬프 윈도우 설정
 
-### **Phase 3: 주문 시스템 (2일)**
-- [ ] 매수/매도 주문 API 연동
-- [ ] 계좌 잔고 조회 연동
-- [ ] 주문 체결 확인 시스템
-
-### **Phase 4: 통합 테스트 (1일)**
-- [ ] 전체 시스템 통합 테스트
-- [ ] 성능 최적화
-- [ ] 에러 로그 모니터링
+### 3. 에러 로깅
+- 모든 API 호출 로그 기록
+- 민감한 정보 (API 키, 서명) 로그에서 제외
+- 에러 발생 시 즉시 알림 시스템
 
 ---
 
-## 🚨 **주의사항**
+## 테스트 전략
 
-### **보안**
-- API 키 절대 클라이언트에 노출 금지
-- 모든 API 호출은 백엔드 서버 경유
-- HTTPS 통신 필수
+### 1. Unit Tests
+```typescript
+describe('BinanceAPI', () => {
+  test('should get ticker price', async () => {
+    const api = new BinanceAPI();
+    const price = await api.getTickerPrice('BTCUSDT');
+    expect(price.symbol).toBe('BTCUSDT');
+    expect(price.price).toBeGreaterThan(0);
+  });
+});
+```
 
-### **성능**
-- API 호출 빈도 제한 준수
-- 캐싱 전략 적용
-- 불필요한 요청 최소화
+### 2. Integration Tests
+- Testnet을 활용한 실제 API 호출 테스트
+- WebSocket 연결 안정성 테스트
+- Rate Limiting 동작 확인
 
-### **에러 처리**
-- 시장 휴장 시간 고려
-- 네트워크 장애 대응
-- API 한도 초과 처리
+### 3. Mock Tests
+- API 응답 모킹으로 에러 상황 시뮬레이션
+- 네트워크 장애 상황 테스트
 
 ---
 
-**🎯 목표: 3일 내 완전한 실제 데이터 기반 시스템 전환**  
-**🔄 현재 상태: Mock 데이터 → 한국투자증권 실시간 데이터**  
-**🚀 다음 단계: API 키 설정 및 첫 번째 API 호출 테스트**
+## 모니터링 및 로깅
 
-*API 연동 가이드 완성: 2025-06-24 UTC*
+### 1. 성능 메트릭
+- API 응답 시간 모니터링
+- Rate Limit 사용률 추적
+- WebSocket 연결 상태 모니터링
+
+### 2. 비즈니스 메트릭
+- 거래 성공/실패율
+- 실시간 데이터 정확성
+- 사용자 거래 패턴 분석
+
+---
+
+## 마이그레이션 체크리스트
+
+### Phase 1: 기반 설정
+- [ ] 바이낸스 API 키 발급 완료
+- [ ] 환경 변수 설정 완료
+- [ ] BinanceAPI 클래스 기본 구조 완성
+- [ ] 인증 시스템 구현 및 테스트
+
+### Phase 2: 핵심 기능
+- [ ] 시세 조회 API 구현
+- [ ] 계좌 정보 조회 구현
+- [ ] 주문 시스템 구현
+- [ ] WebSocket 실시간 데이터 구현
+
+### Phase 3: 통합 및 테스트
+- [ ] 기존 한국투자증권 API 코드 제거
+- [ ] 에러 처리 및 Rate Limiting 구현
+- [ ] 통합 테스트 완료
+- [ ] 프로덕션 배포
+
+---
+
+## 참고 자료
+
+### 공식 문서
+- [바이낸스 API 공식 문서](https://binance-docs.github.io/apidocs/spot/en/)
+- [바이낸스 WebSocket API](https://binance-docs.github.io/apidocs/spot/en/#websocket-market-streams)
+- [바이낸스 Testnet](https://testnet.binance.vision/)
+
+### 개발 도구
+- [API 테스트 도구](https://binance-docs.github.io/apidocs/spot/en/#test-connectivity)
+- [서명 생성 예제](https://binance-docs.github.io/apidocs/spot/en/#signed-trade-and-user_data-endpoint-security)
+
+---
+
+문서 작성 완료: 2025-06-27 UTC
+다음 업데이트 예정: 바이낸스 API 통합 완료 후
