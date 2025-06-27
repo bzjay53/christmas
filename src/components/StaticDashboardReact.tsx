@@ -1222,6 +1222,21 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             </div>
           </div>}
 
+          {/* 테이블 섹션 테스트 마커 */}
+          <div style={{
+            width: '100%',
+            padding: '20px',
+            background: '#10B981',
+            color: 'white',
+            textAlign: 'center',
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            marginTop: '20px',
+            marginBottom: '20px'
+          }}>
+            🔍 테이블 섹션이 여기에 있어야 합니다 🔍
+          </div>
+          
           {/* 테이블 섹션 - 명확한 위치와 스타일링 */}
           <div className="tables-section" style={{
             width: '100%',
@@ -1235,8 +1250,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             display: 'grid',
             gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
             gap: '30px',
-            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.5)' : 'rgba(248, 250, 252, 0.5)', // 디버그용 배경
-            border: '2px solid red' // 디버그용 테두리
+            background: 'transparent'
           }}>
             {/* 보유 종목 */}
             <div className="table-container" style={{
