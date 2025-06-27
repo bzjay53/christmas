@@ -502,7 +502,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             display: 'flex',
             flexDirection: 'column',
             gap: isMobile ? '15px' : '20px',
-            paddingBottom: '50px' // 하단 여백 추가하여 표가 완전히 보이도록
+            paddingBottom: isMobile ? '150px' : '100px' // 하단 여백 대폭 증가하여 모든 콘텐츠가 보이도록
           }}>
             {/* 메인 실시간 주식 차트 - 전체 화면 최대 활용 */}
             <div style={{
@@ -551,9 +551,9 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '250px' : 'auto', // 차트 크기에 맞춘 높이 조정
-                minHeight: isMobile ? '250px' : 'auto', // 최소 높이 고정
-                maxHeight: isMobile ? '250px' : 'auto', // 최대 높이 제한
+                height: isMobile ? '280px' : 'auto', // 차트 크기에 맞춘 높이 조정 (250px → 280px)
+                minHeight: isMobile ? '280px' : 'auto', // 최소 높이 고정
+                maxHeight: isMobile ? '280px' : 'auto', // 최대 높이 제한
                 transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
@@ -573,7 +573,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   AAPL - Apple Inc.
                 </div>
                 <div style={{ 
-                  height: isMobile ? '200px' : 'calc(100% - 60px)', // 모바일에서 고정 높이
+                  height: isMobile ? '230px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (200px → 230px)
                   width: '100%',
                   position: 'relative'
                 }}>
@@ -589,9 +589,9 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '250px' : 'auto', // 차트 크기에 맞춘 높이 조정
-                minHeight: isMobile ? '250px' : 'auto', // 최소 높이 고정
-                maxHeight: isMobile ? '250px' : 'auto', // 최대 높이 제한
+                height: isMobile ? '280px' : 'auto', // 차트 크기에 맞춘 높이 조정 (250px → 280px)
+                minHeight: isMobile ? '280px' : 'auto', // 최소 높이 고정
+                maxHeight: isMobile ? '280px' : 'auto', // 최대 높이 제한
                 transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
@@ -611,7 +611,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   거래량
                 </div>
                 <div style={{ 
-                  height: isMobile ? '200px' : 'calc(100% - 60px)', // 모바일에서 고정 높이
+                  height: isMobile ? '230px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (200px → 230px)
                   width: '100%',
                   position: 'relative'
                 }}>
@@ -1246,28 +1246,13 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             </div>
           </div>}
 
-          {/* 테이블 섹션 테스트 마커 */}
-          <div style={{
-            width: '100%',
-            padding: '20px',
-            background: '#10B981',
-            color: 'white',
-            textAlign: 'center',
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            marginTop: '20px',
-            marginBottom: '20px'
-          }}>
-            🔍 테이블 섹션이 여기에 있어야 합니다 🔍
-          </div>
-          
           {/* 테이블 섹션 - 명확한 위치와 스타일링 */}
           <div className="tables-section" style={{
             width: '100%',
             maxWidth: '100%',
             padding: isMobile ? '20px 15px' : '20px 20px', // 좌우 패딩 최소화
-            marginTop: '40px',
-            marginBottom: '40px',
+            marginTop: isMobile ? '30px' : '40px',
+            marginBottom: isMobile ? '50px' : '40px', // 모바일에서 하단 여백 증가
             position: 'relative',
             zIndex: 100, // 더 높은 z-index
             clear: 'both',

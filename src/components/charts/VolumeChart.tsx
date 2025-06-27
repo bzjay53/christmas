@@ -128,8 +128,8 @@ const VolumeChart: React.FC = () => {
     <canvas 
       ref={canvasRef}
       style={{ 
-        height: isMobile ? '200px' : '120px', // 모바일에서 높이 증가
-        maxHeight: isMobile ? '200px' : '120px',
+        height: isMobile ? '230px' : '120px', // 모바일에서 높이 증가 (200px → 230px)
+        maxHeight: isMobile ? '230px' : '120px',
         maxWidth: '100%',
         touchAction: 'none' // 모바일 터치 스크롤 방지
       }}
