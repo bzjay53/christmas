@@ -7,17 +7,26 @@ const VolumeChart: React.FC = () => {
   const chartRef = useRef<Chart | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
-  // 모바일 환경 감지
+  // 모바일 환경 감지 - 디바운스 적용
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsMobile(window.innerWidth <= 768);
+      }, 100); // 100ms 디바운스
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,6 +62,7 @@ const VolumeChart: React.FC = () => {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          resizeDelay: isMobile ? 0 : 100, // 모바일에서 리사이즈 지연 제거
           animation: {
             duration: isMobile ? 0 : 750 // 모바일에서 애니메이션 비활성화
           },

@@ -543,54 +543,78 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               height: isMobile ? 'auto' : '350px' // 하단 차트들 높이 축소
             }}>
               <div style={{
-                flex: 1,
+                flex: isMobile ? 'none' : 1, // 모바일에서 flex 비활성화
+                width: isMobile ? '100%' : 'auto', // 모바일에서 명시적 너비
                 background: theme === 'dark' 
                   ? 'linear-gradient(135deg, #1e293b, #334155)' 
                   : 'linear-gradient(135deg, #ffffff, #f8fafc)',
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '300px' : 'auto',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                height: isMobile ? '250px' : 'auto', // 차트 크기에 맞춘 높이 조정
+                minHeight: isMobile ? '250px' : 'auto', // 최소 높이 고정
+                maxHeight: isMobile ? '250px' : 'auto', // 최대 높이 제한
+                transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
-                  : '0 4px 20px rgba(0, 0, 0, 0.08)'
+                  : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                overflow: 'hidden', // 내용이 넘치지 않도록
+                position: 'relative' // 포지셔닝 명시
               }}>
                 <div style={{ 
-                  fontSize: '1.3rem', 
+                  fontSize: isMobile ? '1.1rem' : '1.3rem', // 모바일에서 폰트 크기 축소
                   fontWeight: 'bold',
-                  marginBottom: '20px',
-                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+                  marginBottom: isMobile ? '10px' : '20px', // 모바일에서 여백 축소
+                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                  height: isMobile ? '30px' : 'auto', // 헤더 높이 고정
+                  display: 'flex',
+                  alignItems: 'center'
                 }}>
                   AAPL - Apple Inc.
                 </div>
-                <div style={{ height: 'calc(100% - 60px)' }}>
+                <div style={{ 
+                  height: isMobile ? '200px' : 'calc(100% - 60px)', // 모바일에서 고정 높이
+                  width: '100%',
+                  position: 'relative'
+                }}>
                   <AppleStockChart />
                 </div>
               </div>
               <div style={{
-                flex: 1,
+                flex: isMobile ? 'none' : 1, // 모바일에서 flex 비활성화
+                width: isMobile ? '100%' : 'auto', // 모바일에서 명시적 너비
                 background: theme === 'dark' 
                   ? 'linear-gradient(135deg, #1e293b, #334155)' 
                   : 'linear-gradient(135deg, #ffffff, #f8fafc)',
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '300px' : 'auto',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                height: isMobile ? '250px' : 'auto', // 차트 크기에 맞춘 높이 조정
+                minHeight: isMobile ? '250px' : 'auto', // 최소 높이 고정
+                maxHeight: isMobile ? '250px' : 'auto', // 최대 높이 제한
+                transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
-                  : '0 4px 20px rgba(0, 0, 0, 0.08)'
+                  : '0 4px 20px rgba(0, 0, 0, 0.08)',
+                overflow: 'hidden', // 내용이 넘치지 않도록
+                position: 'relative' // 포지셔닝 명시
               }}>
                 <div style={{ 
-                  fontSize: '1.3rem', 
+                  fontSize: isMobile ? '1.1rem' : '1.3rem', // 모바일에서 폰트 크기 축소
                   fontWeight: 'bold',
-                  marginBottom: '20px',
-                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
+                  marginBottom: isMobile ? '10px' : '20px', // 모바일에서 여백 축소
+                  color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
+                  height: isMobile ? '30px' : 'auto', // 헤더 높이 고정
+                  display: 'flex',
+                  alignItems: 'center'
                 }}>
                   거래량
                 </div>
-                <div style={{ height: 'calc(100% - 60px)' }}>
+                <div style={{ 
+                  height: isMobile ? '200px' : 'calc(100% - 60px)', // 모바일에서 고정 높이
+                  width: '100%',
+                  position: 'relative'
+                }}>
                   <VolumeChart />
                 </div>
               </div>
