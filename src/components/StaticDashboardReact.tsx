@@ -383,18 +383,12 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
             opacity: authLoading ? 0.7 : 1
           }}
         >
-          {authLoading ? '⏳' : (user ? `🚪 ${user.displayName || user.email.split('@')[0]}` : '👤 로그인')}
+          {authLoading ? '로딩 중...' : (user ? `${user.displayName || user.email.split('@')[0]}` : '로그인')}
         </button>
       </div>
 
       {/* Christmas 장식 */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-green-500 via-yellow-500 to-red-500 opacity-30 z-10"></div>
-      <div className="fixed top-4 right-4 pointer-events-none z-10 opacity-20">
-        <span className="text-2xl">🎄</span>
-      </div>
-      <div className="fixed bottom-4 left-4 pointer-events-none z-10 opacity-20">
-        <span className="text-2xl">🎁</span>
-      </div>
 
       {/* 눈 내리는 효과 - 완전히 제어됨 */}
       {isSnowEnabled && (
@@ -637,10 +631,10 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               marginBottom: '8px',
               borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
-            }}>🎄 메뉴</div>
+            }}>메뉴</div>
             
             <button 
-              onClick={() => alert('📊 대시보드')}
+              onClick={() => alert('대시보드')}
               style={{
                 width: '100%',
                 padding: '10px 14px',
@@ -669,11 +663,11 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.3)';
               }}
             >
-              📊 대시보드
+              대시보드
             </button>
             
             <button 
-              onClick={() => alert('💼 포트폴리오')}
+              onClick={() => alert('포트폴리오')}
               style={{
                 width: '100%',
                 padding: '10px 14px',
@@ -824,7 +818,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               marginBottom: '8px',
               borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
-            }}>📊 차트 선택</div>
+            }}>차트 선택</div>
             
             <button 
               onClick={() => handleChartSelect('major')}
@@ -897,7 +891,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 }
               }}
             >
-              📊 KOSPI
+              KOSPI
             </button>
             
             <button 
@@ -1111,7 +1105,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               marginBottom: '8px',
               borderBottom: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               paddingBottom: '8px'
-            }}>📊 포트폴리오 요약</div>
+            }}>포트폴리오 요약</div>
             
             {/* 총자산 정보 */}
             <div style={{
@@ -1195,7 +1189,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                📊 분석
+                분석
               </button>
               <button 
                 onClick={() => alert('📈 AI 추천')}
@@ -1222,7 +1216,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                🤖 AI
+                AI
               </button>
             </div>
           </div>}
@@ -1350,7 +1344,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 marginBottom: '8px',
                 color: '#10B981' 
               }}>
-                🎄 Christmas Trading
+                Christmas Trading
               </h2>
               <p style={{ fontSize: '1rem', opacity: 0.8 }}>
                 {isSignUpMode ? '새 계정을 만들어 트레이딩을 시작하세요' : '로그인하여 트레이딩을 시작하세요'}
