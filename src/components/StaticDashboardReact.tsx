@@ -558,7 +558,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
                   : '0 4px 20px rgba(0, 0, 0, 0.08)',
-                overflow: 'hidden', // 내용이 넘치지 않도록
+                overflow: 'visible', // 차트 레이블이 잘리지 않도록
                 position: 'relative' // 포지셔닝 명시
               }}>
                 <div style={{ 
@@ -589,14 +589,14 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
                 borderRadius: '12px',
                 padding: isMobile ? '15px' : '25px',
-                height: isMobile ? '420px' : 'auto', // 차트 크기에 맞춘 높이 조정 (380px → 420px)
-                minHeight: isMobile ? '420px' : 'auto', // 최소 높이 고정
-                maxHeight: isMobile ? '420px' : 'auto', // 최대 높이 제한
+                height: isMobile ? 'auto' : 'auto', // 모바일에서 자동 높이로 변경 - 차트가 잘리지 않도록
+                minHeight: isMobile ? '400px' : 'auto', // 최소 높이 설정 (420px → 400px)
+                // maxHeight 제거 - 차트가 잘리는 원인
                 transition: isMobile ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', // 모바일에서 transition 비활성화
                 boxShadow: theme === 'dark' 
                   ? '0 4px 20px rgba(0, 0, 0, 0.25)' 
                   : '0 4px 20px rgba(0, 0, 0, 0.08)',
-                overflow: 'hidden', // 내용이 넘치지 않도록
+                overflow: 'visible', // overflow를 visible로 변경 - 차트가 잘리지 않도록
                 position: 'relative' // 포지셔닝 명시
               }}>
                 <div style={{ 
@@ -611,9 +611,10 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   거래량
                 </div>
                 <div style={{ 
-                  height: isMobile ? '350px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (320px → 350px)
+                  height: isMobile ? '320px' : 'calc(100% - 60px)', // 모바일에서 차트에 맞춘 높이 (350px → 320px)
                   width: '100%',
-                  position: 'relative'
+                  position: 'relative',
+                  overflow: 'visible' // 차트가 잘리지 않도록 overflow visible
                 }}>
                   <VolumeChart />
                 </div>

@@ -62,13 +62,13 @@ const VolumeChart: React.FC = () => {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          aspectRatio: isMobile ? 1.2 : 2, // 모바일에서 aspectRatio 강제 설정
+          // aspectRatio 제거 - maintainAspectRatio: false와 충돌 방지
           resizeDelay: isMobile ? 0 : 100, // 모바일에서 리사이즈 지연 제거
           layout: {
             padding: isMobile ? {
-              top: 20,
-              bottom: 35, // 하단 여백 최대한 증가로 잘림 완전 방지
-              left: 20,
+              top: 15,
+              bottom: 50, // 하단 여백 대폭 증가 (35px → 50px)
+              left: 45, // 좌측 여백 증가로 Y축 레이블 공간 확보 (20px → 45px)
               right: 15
             } : {
               top: 5,
@@ -108,19 +108,24 @@ const VolumeChart: React.FC = () => {
               },
               ticks: { 
                 color: '#9CA3AF',
-                maxTicksLimit: isMobile ? 3 : 5, // 모바일에서 틱 수 줄여서 잘림 방지
-                padding: isMobile ? 15 : 4, // 모바일에서 틱 패딩 대폭 증가
+                maxTicksLimit: isMobile ? 4 : 5, // 모바일에서 틱 수 적절히 조정
+                padding: isMobile ? 8 : 4, // 모바일에서 Y축 레이블과 차트 간격 조정
                 font: {
-                  size: isMobile ? 10 : 12 // 모바일에서 폰트 크기 축소
+                  size: isMobile ? 11 : 12 // 모바일에서 폰트 크기 살짝 증가 (가독성)
                 },
                 callback: function(value: any) {
                   return (value / 1000000).toFixed(1) + 'M';
-                }
+                },
+                // Y축 레이블이 잘리지 않도록 여백 확보
+                mirror: false,
+                labelOffset: isMobile ? 0 : undefined
               },
               // 모바일에서 Y축 범위 명시적 설정
               min: 0,
-              max: 2000000, // 최대값 고정으로 Y축 공간 확보
-              beginAtZero: true
+              max: 1900000, // 최대값 약간 낮춰서 상단 여백 확보 (2000000 → 1900000)
+              beginAtZero: true,
+              // Y축 위치 조정
+              position: 'left'
             }
           }
         }
@@ -150,10 +155,12 @@ const VolumeChart: React.FC = () => {
     <canvas 
       ref={canvasRef}
       style={{ 
-        height: isMobile ? '350px' : '120px', // 모바일에서 높이 증가 (320px → 350px)
-        maxHeight: isMobile ? '350px' : '120px',
+        height: isMobile ? '320px' : '120px', // 모바일에서 높이 최적화 (350px → 320px)
+        maxHeight: isMobile ? '320px' : '120px',
+        width: '100%',
         maxWidth: '100%',
-        touchAction: 'none' // 모바일 터치 스크롤 방지
+        touchAction: 'none', // 모바일 터치 스크롤 방지
+        display: 'block' // 캔버스 기본 display 명시
       }}
     />
   );
