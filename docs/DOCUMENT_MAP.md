@@ -1,6 +1,7 @@
-# 📚 Christmas Trading - 문서 맵
+# 📚 Christmas Trading - 문서 맵 (바이낸스 암호화폐 거래 버전)
 
-## 📅 **최종 업데이트**: 2025-06-24 UTC
+## 📅 **최종 업데이트**: 2025-06-27 UTC
+## 🔄 **바이낸스 전환**: 진행 중 (한국증권 → 글로벌 암호화폐)
 
 ---
 
@@ -9,13 +10,32 @@
 ### **docs/ 폴더 구조**
 ```
 docs/
-├── 📁 architecture/          # 시스템 아키텍처 문서
-├── 📁 guides/                # 개발 가이드 및 튜토리얼
-├── 📁 specifications/        # 기능 명세 및 요구사항
+├── 📁 architecture/          # 시스템 아키텍처 문서 (암호화폐 중심)
+├── 📁 guides/                # 개발 가이드 및 튜토리얼 (바이낸스 API)
+├── 📁 specifications/        # 기능 명세 및 요구사항 (암호화폐 거래)
 ├── 📁 planning/              # 프로젝트 계획 및 관리
 ├── 📁 reference/             # 참조 문서 및 레퍼런스
+├── 📁 legacy/                # 기존 한국증권 관련 문서 보관
+│   ├── 📁 architecture/      # 기존 한국 주식 DB 스키마
+│   ├── 📁 guides/            # 기존 한국투자증권 API 가이드
+│   └── 📁 specifications/    # 기존 한국 주식 거래 명세
 └── 📄 DOCUMENT_MAP.md        # 이 파일 (문서 맵)
 ```
+
+---
+
+## 🔄 **바이낸스 전환 현황**
+
+### **전환 단계**
+- **Phase 1 (진행 중)**: 문서 구조 재편 및 백업 완료
+- **Phase 2 (예정)**: API 및 데이터 구조 전환
+- **Phase 3 (예정)**: UI/UX 및 고급 기능 전환
+
+### **백업된 한국증권 문서 (docs/legacy/)**
+- `KOREA_INVESTMENT_API_GUIDE.md` - 한국투자증권 API 연동 가이드
+- `KOREAN_STOCK_TRADING_SPEC.md` - 한국 주식 거래 시스템 명세
+- `KOREAN_STOCKS_DB_SCHEMA.md` - 한국 주식 데이터베이스 스키마
+- `README_KOREAN_STOCKS.md` - 기존 한국 주식 프로젝트 README
 
 ---
 
@@ -30,7 +50,7 @@ docs/
 ### **📖 Guides (개발 가이드)**
 | 문서명 | 용도 | 상태 | 우선순위 |
 |--------|------|------|----------|
-| `API_INTEGRATION_GUIDE.md` | 한국투자증권 API 연동 가이드 | ✅ 완료 | CRITICAL |
+| `API_INTEGRATION_GUIDE.md` | 바이낸스 API 연동 가이드 | 🔄 전환 중 | CRITICAL |
 | `CODE_QUALITY_GUIDELINES.md` | 코드 품질 가이드라인 | ⏳ 예정 | MEDIUM |
 | `TEST_STRATEGY.md` | 테스트 전략 문서 | ⏳ 예정 | MEDIUM |
 | `CI_CD_PIPELINE.md` | CI/CD 파이프라인 가이드 | ⏳ 예정 | MEDIUM |
@@ -42,7 +62,7 @@ docs/
 | 문서명 | 용도 | 상태 | 우선순위 |
 |--------|------|------|----------|
 | `RISK_MANAGEMENT_SPEC.md` | 동시 거래 방지 시스템 명세 | ✅ 완료 | CRITICAL |
-| `TRADING_SYSTEM_SPEC.md` | 거래 시스템 명세 | ⏳ 예정 | HIGH |
+| `TRADING_SYSTEM_SPEC.md` | 암호화폐 거래 시스템 명세 | 🔄 전환 중 | HIGH |
 | `USER_AUTHENTICATION_SPEC.md` | 사용자 인증 시스템 명세 | ⏳ 예정 | HIGH |
 | `AI_ALGORITHM_SPEC.md` | AI 알고리즘 명세 | ⏳ 예정 | MEDIUM |
 
