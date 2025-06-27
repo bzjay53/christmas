@@ -99,9 +99,14 @@ export interface OrderStatus {
 
 // 에러 클래스 정의
 export class BinanceAPIError extends Error {
-  constructor(public code: number, public message: string, public body?: any) {
+  public code: number;
+  public body?: any;
+
+  constructor(code: number, message: string, body?: any) {
     super(message);
     this.name = 'BinanceAPIError';
+    this.code = code;
+    this.body = body;
   }
 }
 
