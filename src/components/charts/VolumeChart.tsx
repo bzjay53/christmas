@@ -62,6 +62,7 @@ const VolumeChart: React.FC = () => {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          aspectRatio: isMobile ? 1.2 : 2, // 모바일에서 aspectRatio 강제 설정
           resizeDelay: isMobile ? 0 : 100, // 모바일에서 리사이즈 지연 제거
           layout: {
             padding: isMobile ? {
@@ -107,14 +108,18 @@ const VolumeChart: React.FC = () => {
               },
               ticks: { 
                 color: '#9CA3AF',
-                maxTicksLimit: isMobile ? 4 : 5, // 모바일에서 틱 수 늘려 충분한 공간 확보
-                padding: isMobile ? 8 : 4, // 모바일에서 틱 패딩 증가
+                maxTicksLimit: isMobile ? 3 : 5, // 모바일에서 틱 수 줄여서 잘림 방지
+                padding: isMobile ? 15 : 4, // 모바일에서 틱 패딩 대폭 증가
+                font: {
+                  size: isMobile ? 10 : 12 // 모바일에서 폰트 크기 축소
+                },
                 callback: function(value: any) {
                   return (value / 1000000).toFixed(1) + 'M';
                 }
               },
-              // 모바일에서 Y축 범위 여유 확보
-              suggestedMin: isMobile ? 0 : undefined,
+              // 모바일에서 Y축 범위 명시적 설정
+              min: 0,
+              max: 2000000, // 최대값 고정으로 Y축 공간 확보
               beginAtZero: true
             }
           }
@@ -145,8 +150,8 @@ const VolumeChart: React.FC = () => {
     <canvas 
       ref={canvasRef}
       style={{ 
-        height: isMobile ? '320px' : '120px', // 모바일에서 높이 증가 (285px → 320px)
-        maxHeight: isMobile ? '320px' : '120px',
+        height: isMobile ? '350px' : '120px', // 모바일에서 높이 증가 (320px → 350px)
+        maxHeight: isMobile ? '350px' : '120px',
         maxWidth: '100%',
         touchAction: 'none' // 모바일 터치 스크롤 방지
       }}
