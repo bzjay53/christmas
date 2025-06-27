@@ -65,10 +65,10 @@ const VolumeChart: React.FC = () => {
           resizeDelay: isMobile ? 0 : 100, // 모바일에서 리사이즈 지연 제거
           layout: {
             padding: isMobile ? {
-              top: 15,
-              bottom: 25, // 하단 여백 대폭 증가로 잘림 완전 방지
-              left: 15,
-              right: 10
+              top: 20,
+              bottom: 35, // 하단 여백 최대한 증가로 잘림 완전 방지
+              left: 20,
+              right: 15
             } : {
               top: 5,
               bottom: 5,
@@ -145,8 +145,8 @@ const VolumeChart: React.FC = () => {
     <canvas 
       ref={canvasRef}
       style={{ 
-        height: isMobile ? '285px' : '120px', // 모바일에서 높이 증가 (270px → 285px)
-        maxHeight: isMobile ? '285px' : '120px',
+        height: isMobile ? '320px' : '120px', // 모바일에서 높이 증가 (285px → 320px)
+        maxHeight: isMobile ? '320px' : '120px',
         maxWidth: '100%',
         touchAction: 'none' // 모바일 터치 스크롤 방지
       }}
