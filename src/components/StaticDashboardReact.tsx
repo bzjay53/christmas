@@ -1226,11 +1226,17 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
           <div className="tables-section" style={{
             width: '100%',
             maxWidth: '100%',
-            padding: isMobile ? '20px 15px' : '20px 300px 20px 300px', // 사이드바 공간 확보
-            marginTop: '30px',
+            padding: isMobile ? '20px 15px' : '20px 20px', // 좌우 패딩 최소화
+            marginTop: '40px',
+            marginBottom: '40px',
             position: 'relative',
-            zIndex: 5,
-            clear: 'both'
+            zIndex: 100, // 더 높은 z-index
+            clear: 'both',
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: '30px',
+            background: theme === 'dark' ? 'rgba(30, 41, 59, 0.5)' : 'rgba(248, 250, 252, 0.5)', // 디버그용 배경
+            border: '2px solid red' // 디버그용 테두리
           }}>
             {/* 보유 종목 */}
             <div className="table-container" style={{
