@@ -1,0 +1,131 @@
+# Christmas Trading - Docker Compose Configuration
+# Multi-service architecture for complete Christmas Trading platform
+
+version: '3.8'
+
+services:
+  # Main Christmas Trading Application
+  christmas-trading:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: christmas-trading-app
+    ports:
+      - "3000:3000"   # Frontend
+      - "8001:8001"   # Task Master MCP
+      - "8002:8002"   # Memory Bank MCP  
+      - "8003:8003"   # Gemini MCP
+    environment:
+      # Application Environment
+      - NODE_ENV=production
+      - VITE_APP_ENV=docker
+      
+      # Supabase Configuration
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-https://qehzzsxzjijfzqkysazc.supabase.co}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      
+      # Binance API Configuration  
+      - VITE_BINANCE_API_KEY=${VITE_BINANCE_API_KEY}
+      - VITE_BINANCE_SECRET_KEY=${VITE_BINANCE_SECRET_KEY}
+      - VITE_BINANCE_TESTNET=${VITE_BINANCE_TESTNET:-true}
+      - VITE_BINANCE_BASE_URL=${VITE_BINANCE_BASE_URL:-https://api.binance.com}
+      
+      # Mock Data Configuration
+      - VITE_ENABLE_MOCK_DATA=${VITE_ENABLE_MOCK_DATA:-true}
+      
+      # MCP Configuration
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GIT_REPOSITORY=/app
+      - PROJECT_NAME=Christmas Trading
+      - MEMORY_STORAGE_PATH=/app/data/.memory
+      - PROJECT_CONTEXT=Christmas Trading - Binance Crypto Platform
+    volumes:
+      # 데이터 지속성을 위한 볼륨 마운트
+      - christmas-data:/app/data
+      - christmas-logs:/app/logs
+      # 개발 모드에서 소스 변경 감지 (선택적)
+      # - ./src:/app/src:ro
+      # - ./docs:/app/docs:ro
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    depends_on:
+      - christmas-db
+
+  # SQLite Database Service (데이터 지속성)
+  christmas-db:
+    image: alpine:latest
+    container_name: christmas-db
+    command: tail -f /dev/null
+    volumes:
+      - christmas-data:/data
+    networks:
+      - christmas-network
+    restart: unless-stopped
+
+  # Optional: Nginx Reverse Proxy
+  christmas-proxy:
+    image: nginx:alpine
+    container_name: christmas-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - christmas-ssl:/etc/nginx/ssl
+    networks:
+      - christmas-network
+    depends_on:
+      - christmas-trading
+    restart: unless-stopped
+    profiles:
+      - proxy
+
+  # Optional: Development Hot Reload Service
+  christmas-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: christmas-dev
+    ports:
+      - "5173:5173"  # Vite dev server
+    environment:
+      - NODE_ENV=development
+      - VITE_APP_ENV=development
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./docs:/app/docs
+      - christmas-dev-modules:/app/node_modules
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    profiles:
+      - development
+
+# 네트워크 설정
+networks:
+  christmas-network:
+    driver: bridge
+    name: christmas-network
+
+# 볼륨 설정 (데이터 지속성)
+volumes:
+  christmas-data:
+    driver: local
+    name: christmas-data
+  christmas-logs:
+    driver: local
+    name: christmas-logs
+  christmas-ssl:
+    driver: local
+    name: christmas-ssl
+  christmas-dev-modules:
+    driver: local
+    name: christmas-dev-modules

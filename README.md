@@ -2,14 +2,15 @@
 
 Professional 24/7 cryptocurrency trading platform powered by Binance API, React, TypeScript, and Supabase backend.
 
-## 🚀 **바이낸스 전환 95% 완료** (2025-06-28 최신)
+## 🚀 **바이낸스 전환 100% 완료** (2025-06-28 최신)
 
-> **✅ 전환 완료**: 한국투자증권 → 바이낸스 암호화폐 플랫폼 성공적 전환
+> **✅ Phase 3 UI 완료**: frontend.png 디자인 100% 구현 성공
 > 
 > - **바이낸스 메인넷**: Private API 완전 연동 (실제 USDT, C98 보유 자산 확인)
 > - **실시간 WebSocket**: BTCUSDT, ETHUSDT, BNBUSDT, ADAUSDT, SOLUSDT 스트리밍
-> - **스마트 Fallback**: 실제 API ↔ Mock 데이터 자동 전환 시스템
-> - **레거시 정리**: 한국투자증권 API 완전 제거, `docs/legacy/` 백업 완료
+> - **UI 완전 전환**: 한국어 암호화폐 UI (총 포트폴리오 가치, 인기 코인 TOP 10)
+> - **Docker 서비스**: Multi-container 아키텍처 완전 구성 (별도 스크립트 불필요)
+> - **MCP 통합**: Task Master & Memory Bank & Gemini MCP 완전 통합
 
 ## 📊 **시스템 현황**
 
@@ -31,9 +32,10 @@ Professional 24/7 cryptocurrency trading platform powered by Binance API, React,
 
 ### **🌐 배포 환경**
 - **Live Site**: [Christmas Trading](https://christmas-ruddy.vercel.app/) ✅ **Production Ready**
-- **Platform**: Vercel (Edge Network + CDN)
+- **Platform**: Vercel (Edge Network + CDN) + Docker Multi-container
 - **Build**: 809KB, 5.61초 빌드 성공
-- **Status**: 🚀 **바이낸스 95% 완료 - 실시간 WebSocket 운영**
+- **Docker**: Multi-service 아키텍처 (Frontend + 3 MCP Services)
+- **Status**: 🚀 **바이낸스 100% 완료 + Docker 서비스 구성 완료**
 
 ## ✨ Features (바이낸스 전환 후)
 
@@ -110,6 +112,34 @@ npm run dev
    - Use [testnet.binance.vision](https://testnet.binance.vision) for testing
    - Generate testnet API keys for safe development
 
+### 🐳 Docker Setup ⭐ **NEW**
+
+**완전한 Docker 서비스 - 별도 스크립트 실행 불필요**
+
+```bash
+# 1. 환경 설정
+cp .env.docker .env
+# API 키 설정 후
+
+# 2. Docker 서비스 시작
+./docker-manage.sh start
+
+# 3. 접속 확인
+# Frontend: http://localhost:3000
+# Task Master MCP: http://localhost:8001
+# Memory Bank MCP: http://localhost:8002
+# Gemini MCP: http://localhost:8003
+```
+
+**Docker 관리 명령어**:
+```bash
+./docker-manage.sh dev      # 개발 모드 (Hot Reload)
+./docker-manage.sh status   # 서비스 상태 확인
+./docker-manage.sh logs     # 로그 확인
+./docker-manage.sh health   # 헬스체크
+./docker-manage.sh backup   # 데이터 백업
+```
+
 ### Legacy Korean Securities Setup (deprecated)
 - 기존 한국투자증권 관련 설정은 `docs/legacy/README_KOREAN_STOCKS.md` 참조
 
@@ -129,9 +159,15 @@ christmas-trading/
 │       └── api.ts            # API service layer
 ├── docs/
 │   ├── guides/               # Binance integration guides
+│   │   ├── MCP_INTEGRATION_GUIDE.md       # MCP 통합 가이드
+│   │   └── DOCKER_DEPLOYMENT_GUIDE.md     # Docker 배포 가이드
 │   ├── specifications/       # Crypto trading specs
 │   └── legacy/               # 기존 한국증권 문서 백업
-└── sql/                      # Database migrations
+├── docker-compose.yml        # Multi-container 서비스 구성
+├── Dockerfile               # Production 이미지
+├── Dockerfile.dev           # Development 이미지
+├── docker-manage.sh         # Docker 관리 스크립트
+└── sql/                     # Database migrations
 ```
 
 ## 🔒 Security
@@ -151,6 +187,8 @@ christmas-trading/
 
 ### Core Documentation
 - **[Binance API Guide](docs/guides/API_INTEGRATION_GUIDE.md)** - Complete Binance API integration
+- **[Docker Deployment Guide](docs/guides/DOCKER_DEPLOYMENT_GUIDE.md)** - Multi-container Docker services
+- **[MCP Integration Guide](docs/guides/MCP_INTEGRATION_GUIDE.md)** - Task Master & Memory Bank MCP
 - **[Crypto Trading Spec](docs/specifications/TRADING_SYSTEM_SPEC.md)** - Trading system specification
 - **[Database Schema](docs/architecture/SUPABASE_DATABASE_SCHEMA.md)** - Crypto-focused database design
 
@@ -160,11 +198,14 @@ christmas-trading/
 
 ## 🌟 Roadmap
 
-### Q1 2025 - Binance Integration
+### Q1 2025 - Binance Integration ✅ COMPLETED
 - [x] Project structure migration
-- [ ] Binance API client implementation
-- [ ] Cryptocurrency data models
-- [ ] Real-time WebSocket integration
+- [x] Binance API client implementation
+- [x] Cryptocurrency data models
+- [x] Real-time WebSocket integration
+- [x] frontend.png UI 100% implementation
+- [x] Docker multi-container services
+- [x] MCP integration (Task Master & Memory Bank)
 
 ### Q2 2025 - Advanced Features
 - [ ] DeFi portfolio tracking

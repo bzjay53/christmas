@@ -1,0 +1,95 @@
+# Christmas Trading - Development Dockerfile
+# Hot reload와 개발 도구를 포함한 개발 환경
+
+FROM node:18-alpine
+
+# 시스템 의존성 설치
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    sqlite \
+    curl \
+    bash \
+    git
+
+# Python 의존성 설치
+RUN pip3 install --no-cache-dir \
+    aiohttp \
+    asyncio
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 환경 변수 설정
+ENV NODE_ENV=development
+ENV VITE_APP_ENV=development
+ENV PYTHONUNBUFFERED=1
+
+# Package files 복사 및 의존성 설치
+COPY package*.json ./
+RUN npm install
+
+# 개발 도구 추가 설치
+RUN npm install -g nodemon concurrently
+
+# MCP 서비스 파일들 복사
+COPY gemini_mcp_server.py ./
+COPY task-master-integration.py ./
+COPY memory-bank-integration.py ./
+COPY mcp-config.json ./
+
+# 환경 설정 파일 복사
+COPY .env.example ./
+COPY tsconfig*.json ./
+COPY vite.config.ts ./
+COPY eslint.config.js ./
+
+# 로그 디렉토리 생성
+RUN mkdir -p logs data
+
+# 개발 서버 포트
+EXPOSE 5173 8001 8002 8003
+
+# 개발 시작 스크립트 생성
+RUN cat > dev-start.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🎄 Christmas Trading Development Environment Starting..."
+
+# 환경 변수 설정
+export VITE_ENABLE_MOCK_DATA=true
+
+# 데이터베이스 디렉토리 권한 확인
+chmod 755 /app/data
+
+# MCP 서비스들을 백그라운드에서 시작
+echo "🔧 Starting MCP Services (Development)..."
+
+# Task Master MCP
+python3 task-master-integration.py > logs/task-master-dev.log 2>&1 &
+
+# Memory Bank MCP
+python3 memory-bank-integration.py > logs/memory-bank-dev.log 2>&1 &
+
+# Gemini MCP (API 키가 있는 경우만)
+if [ -n "$GEMINI_API_KEY" ]; then
+    python3 gemini_mcp_server.py > logs/gemini-mcp-dev.log 2>&1 &
+fi
+
+# 잠시 대기
+sleep 2
+
+echo "🚀 Starting Vite Development Server..."
+# Vite 개발 서버 시작
+npm run dev -- --host 0.0.0.0
+EOF
+
+RUN chmod +x dev-start.sh
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5173 || exit 1
+
+# 시작 명령
+CMD ["./dev-start.sh"]

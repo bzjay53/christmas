@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "christmas-gemini": {
+      "command": "python",
+      "args": ["/root/dev/christmas-trading/gemini_mcp_server.py"],
+      "env": {
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+      },
+      "description": "Christmas Trading Gemini AI Analysis MCP Server"
+    },
+    "task-master": {
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "/root/dev/christmas-trading"],
+      "description": "Task Master MCP for systematic task management",
+      "env": {
+        "GIT_REPOSITORY": "/root/dev/christmas-trading",
+        "PROJECT_NAME": "Christmas Trading"
+      }
+    },
+    "memory-bank": {
+      "command": "uvx", 
+      "args": ["mcp-server-memory"],
+      "description": "Memory Bank MCP for project memory management",
+      "env": {
+        "MEMORY_STORAGE_PATH": "/root/dev/christmas-trading/.memory",
+        "PROJECT_CONTEXT": "Christmas Trading - Binance Crypto Platform"
+      }
+    }
+  }
+}
