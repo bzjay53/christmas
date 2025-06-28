@@ -19,7 +19,7 @@ if (!rootElement) {
     console.log('React Root 생성 완료');
     
     console.log('App 컴포넌트 렌더링 시작...');
-    root.render(<App />);
+    root.render(<AppSimple />);
     console.log('React 앱 마운트 완료!');
     
     setTimeout(() => {
