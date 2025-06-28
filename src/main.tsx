@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import AppSimple from './AppSimple'
+import AppMinimal from './AppMinimal'
 
 console.log('Christmas Trading App 시작');
 console.log('DOM 상태:', document.readyState);
@@ -19,7 +20,7 @@ if (!rootElement) {
     console.log('React Root 생성 완료');
     
     console.log('App 컴포넌트 렌더링 시작...');
-    root.render(<AppSimple />);
+    root.render(<AppMinimal />);
     console.log('React 앱 마운트 완료!');
     
     setTimeout(() => {
