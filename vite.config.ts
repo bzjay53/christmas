@@ -11,7 +11,12 @@ export default defineConfig({
     target: 'es2015',
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          charts: ['recharts', 'chart.js'],
+          icons: ['lucide-react'],
+          crypto: ['@supabase/supabase-js']
+        },
       },
     },
   },
