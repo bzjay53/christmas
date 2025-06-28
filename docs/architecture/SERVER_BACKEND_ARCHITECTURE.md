@@ -352,14 +352,60 @@ console.log(`Rate Limit 사용률: ${rateLimiter.getUsage()}%`);
 
 ---
 
-## 📈 **모니터링 및 로깅**
+## 🏗️ **바이낸스 시스템 아키텍처 다이어그램**
+
+```mermaid
+graph TB
+    subgraph "🎄 Christmas Trading - 바이낸스 암호화폐 플랫폼"
+        A[Frontend - Vercel] --> B[바이낸스 API 클라이언트]
+        A --> C[Supabase Backend]
+        
+        B --> D[바이낸스 REST API]
+        B --> E[바이낸스 WebSocket]
+        C --> F[PostgreSQL 암호화폐 DB]
+        
+        D --> G[Public API - 시세 조회]
+        D --> H[Private API - 계좌/거래]
+        E --> I[실시간 가격 스트림]
+        
+        F --> J[crypto_pairs 테이블]
+        F --> K[portfolios 테이블]
+        F --> L[orders 테이블]
+        F --> M[users 테이블]
+    end
+    
+    subgraph "💰 바이낸스 API 기능"
+        N[getTickerPrice] --> O[현재가 조회]
+        P[getTicker24hr] --> Q[24시간 통계]
+        R[getKlineData] --> S[차트 데이터]
+        T[getAccountInfo] --> U[계좌 정보]
+        V[createSpotOrder] --> W[현물 거래]
+    end
+    
+    subgraph "🔄 실시간 데이터 플로우"
+        X[BinanceWebSocket] --> Y[실시간 가격]
+        Y --> Z[Chart.js 업데이트]
+        Y --> AA[포트폴리오 계산]
+        AA --> BB[Supabase 저장]
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#e8f5e8
+    style E fill:#fff8e1
+```
+
+---
+
+## 📈 **모니터링 및 로깅 (바이낸스 특화)**
 
 ### **클라이언트 사이드**
 ```javascript
-console.log('⏰ 현재 한국시간:', koreaTime)
-console.log('🔍 시장 상태 체크:', marketStatus.message)
-console.log('📈 장중 데이터 업데이트:', stocks)
-console.log('⏸️ 장 마감 - 데이터 업데이트 중지')
+console.log('🔍 바이낸스 API 연결 상태:', binanceAPI.isConnected())
+console.log('💰 실시간 BTC 가격:', btcPrice.toFixed(8))
+console.log('📊 WebSocket 연결:', binanceWebSocket.isConnected())
+console.log('⚡ 24/7 암호화폐 시장 - 지속적 업데이트')
 ```
 
 ### **Supabase 대시보드**

@@ -112,17 +112,18 @@ const baseURL = import.meta.env.VITE_BINANCE_TESTNET === 'true'
 - **실시간 WebSocket**: 밀리초 단위 실시간 시세 수신
 - **24/7 시장 대응**: 시간 제약 없는 글로벌 암호화폐 시장
 - **높은 정밀도**: 소수점 8자리 암호화폐 거래 지원
-- **시세 조회**: 실시간 주식 가격 정보
-- **주문 처리**: 매수/매도 주문 (모의투자 우선)
-- **계좌 조회**: 잔고 및 보유 종목 확인
+- **시세 조회**: 실시간 암호화폐 가격 정보 (BTCUSDT, ETHUSDT)
+- **주문 처리**: 매수/매도 주문 (Spot 거래)
+- **계좌 조회**: 잔고 및 보유 암호화폐 확인
 
 ### 5. 데이터 우선순위 시스템
 ```typescript
-// 데이터 소스 우선순위: 실제 API → Supabase → Mock 데이터
+// 데이터 소스 우선순위: 바이낸스 API → Supabase → Mock 데이터
 const dataFlow = {
-  primary: "Korean Investment API",
+  primary: "Binance REST API",
+  secondary: "Binance WebSocket", 
   fallback1: "Supabase Database",
-  fallback2: "Mock Data"
+  fallback2: "Mock Crypto Data"
 };
 ```
 
@@ -130,28 +131,29 @@ const dataFlow = {
 
 ### 6. 환경변수 관리
 ```env
-# 한국투자증권 API (모의투자)
-VITE_KOREA_INVESTMENT_APP_KEY=your_app_key_here
-VITE_KOREA_INVESTMENT_APP_SECRET=your_app_secret_here
-VITE_KOREA_INVESTMENT_ACCOUNT_NO=your_account_number
-VITE_KOREA_INVESTMENT_ACCOUNT_TYPE=02  # 02: 모의투자, 01: 실전투자
+# 바이낸스 API (Testnet/Mainnet)
+VITE_BINANCE_API_KEY=your_binance_api_key
+VITE_BINANCE_SECRET_KEY=your_binance_secret_key
+VITE_BINANCE_TESTNET=true  # true: Testnet, false: Mainnet
+VITE_BINANCE_BASE_URL=https://api.binance.com
+VITE_BINANCE_TESTNET_URL=https://testnet.binance.vision
 
 # 보안 설정
-VITE_ENABLE_MOCK_DATA=true  # true: Mock 데이터, false: 실제 API
+VITE_ENABLE_MOCK_DATA=true  # true: Mock 암호화폐 데이터, false: 실제 API
 ```
 
 ### 7. 오류 처리 및 복구
 ```typescript
 // 계층적 오류 처리
 try {
-  // 1차: 실제 API 시도
-  const result = await koreaInvestmentAPI.getCurrentPrice(stockCode);
+  // 1차: 바이낸스 API 시도
+  const result = await binanceAPI.getTickerPrice(symbol);
 } catch (apiError) {
   // 2차: Supabase 데이터 사용
-  const cachedData = await supabase.from('stocks').select('*');
+  const cachedData = await supabase.from('crypto_pairs').select('*');
 } catch (dbError) {
-  // 3차: Mock 데이터 사용
-  return mockStocks;
+  // 3차: Mock 암호화폐 데이터 사용
+  return mockCryptoData;
 }
 ```
 
@@ -159,11 +161,12 @@ try {
 
 ### 8. 실시간 데이터 시스템
 ```typescript
-// 장중/장마감 시간 자동 감지
-const isMarketOpen = (): { isOpen: boolean; message: string } => {
-  // 한국시간 기준: 평일 09:00-15:30
-  // 장중: 1초 간격 업데이트
-  // 장마감: 정적 데이터 유지
+// 24/7 암호화폐 시장 (시간 제약 없음)
+const isCryptoMarketOpen = (): { isOpen: boolean; message: string } => {
+  // 암호화폐 시장: 24시간 365일 운영
+  // 상시: 1초 간격 업데이트
+  // 높은 변동성: 실시간 모니터링
+  return { isOpen: true, message: '24/7 글로벌 암호화폐 시장 운영 중' };
 }
 ```
 
@@ -175,14 +178,16 @@ const isMarketOpen = (): { isOpen: boolean; message: string } => {
 ### 9. 거래 현황 모니터링
 ```typescript
 // 실시간 거래 현황 조회
-const getActiveTradingStatus = (): TradingStatus[] => {
-  return tradingConflictManager.getActiveTradeStatus();
+const getActiveCryptoTradingStatus = (): CryptoTradingStatus[] => {
+  return cryptoTradingConflictManager.getActiveTradeStatus();
 }
 
-interface TradingStatus {
-  stockCode: string;
+interface CryptoTradingStatus {
+  symbol: string;           // 'BTCUSDT', 'ETHUSDT'
+  baseAsset: string;       // 'BTC', 'ETH' 
   userCount: number;
   recentOrders: number;
+  volatility24h: number;   // 24시간 변동률
 }
 ```
 

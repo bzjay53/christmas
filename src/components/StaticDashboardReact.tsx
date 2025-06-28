@@ -526,7 +526,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 color: theme === 'dark' ? '#E5E7EB' : '#1e293b'
               }}>
                 {selectedChart === 'major' && '주요 코인 (BTC, ETH, BNB)'}
-                {selectedChart === 'btc' && 'BTC - 비트코인'}
+                {selectedChart === 'crypto' && 'Top Crypto - 상위 암호화폐'}
                 {selectedChart === 'nasdaq' && 'NASDAQ - 나스닥 종합지수'}
                 {selectedChart === 'sp500' && 'S&P500 - 미국 주요 500개 기업'}
               </div>
@@ -570,7 +570,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   display: 'flex',
                   alignItems: 'center'
                 }}>
-                  AAPL - Apple Inc.
+                  BTC - 비트코인
                 </div>
                 <div style={{ 
                   height: isMobile ? '230px' : 'calc(100% - 60px)', // 모바일에서 고정 높이 (200px → 230px)
@@ -608,7 +608,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   display: 'flex',
                   alignItems: 'center'
                 }}>
-                  거래량
+                  코인 거래량
                 </div>
                 <div style={{ 
                   height: isMobile ? '320px' : 'calc(100% - 60px)', // 모바일에서 차트에 맞춘 높이 (350px → 320px)
@@ -880,18 +880,18 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 }
               }}
             >
-              🌏 주요지수
+              🌏 암호화폐 지수
             </button>
             
             <button 
-              onClick={() => handleChartSelect('kospi')}
+              onClick={() => handleChartSelect('crypto')}
               style={{
                 width: '100%',
                 padding: '10px 14px',
                 border: 'none',
                 borderRadius: '6px',
-                background: selectedChart === 'kospi' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
-                color: selectedChart === 'kospi' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
+                background: selectedChart === 'crypto' ? '#10B981' : (theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)'),
+                color: selectedChart === 'crypto' ? 'white' : (theme === 'dark' ? '#E5E7EB' : '#1e293b'),
                 fontSize: '0.9rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -900,24 +900,24 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
-                boxShadow: selectedChart === 'kospi' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+                boxShadow: selectedChart === 'crypto' ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
               }}
               onMouseEnter={(e) => {
-                if (selectedChart !== 'kospi') {
+                if (selectedChart !== 'crypto') {
                   e.currentTarget.style.background = '#10B981';
                   e.currentTarget.style.color = 'white';
                   e.currentTarget.style.transform = 'translateX(4px)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (selectedChart !== 'kospi') {
+                if (selectedChart !== 'crypto') {
                   e.currentTarget.style.background = theme === 'dark' ? 'rgba(55, 65, 81, 0.8)' : 'rgba(226, 232, 240, 0.8)';
                   e.currentTarget.style.color = theme === 'dark' ? '#E5E7EB' : '#1e293b';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }
               }}
             >
-              KOSPI
+              💰 Top Crypto
             </button>
             
             <button 
@@ -1146,7 +1146,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               <div style={{ fontSize: '0.8rem', color: '#10B981' }}>+$1,575.60 (+1.52%)</div>
             </div>
 
-            {/* 투자 종목 요약 */}
+            {/* 투자 코인 요약 */}
             <div style={{
               padding: '12px',
               background: theme === 'dark' ? 'rgba(55, 65, 81, 0.5)' : 'rgba(248, 250, 252, 0.8)',
@@ -1154,18 +1154,18 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               marginBottom: '10px'
             }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>보유 종목</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>보유 코인</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>AAPL</span>
-                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>100주 (+3.4%)</span>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>BTC</span>
+                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>0.125 BTC (+3.4%)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>MSFT</span>
-                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>50주 (+1.0%)</span>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>ETH</span>
+                <span style={{ fontSize: '0.75rem', color: '#10B981' }}>2.5 ETH (+1.0%)</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>GOOGL</span>
-                <span style={{ fontSize: '0.75rem', color: '#EF4444' }}>25주 (-1.1%)</span>
+                <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>BNB</span>
+                <span style={{ fontSize: '0.75rem', color: '#EF4444' }}>10 BNB (-1.1%)</span>
               </div>
             </div>
 
@@ -1177,7 +1177,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               border: `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}`,
               marginBottom: '10px'
             }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>오늘 거래</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '8px', color: theme === 'dark' ? '#E5E7EB' : '#1e293b' }}>최근 거래</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <span style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#9CA3AF' : '#6B7280' }}>매수</span>
                 <span style={{ fontSize: '0.75rem', color: '#10B981' }}>2건</span>
@@ -1332,7 +1332,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 padding: '15px 20px',
                 fontWeight: '600',
                 color: theme === 'dark' ? '#E5E7EB' : '#475569'
-              }}>최근 주문</div>
+              }}>최근 거래</div>
               <table className="table" style={{
                 width: '100%',
                 borderCollapse: 'collapse',
@@ -1763,7 +1763,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 </label>
                 <input
                   type="number"
-                  placeholder="예: 1000000 (백만원)"
+                  placeholder="예: 10000 USDT (달러)"
                   style={{
                     width: '100%',
                     padding: '12px',
@@ -1790,7 +1790,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   🏭 관심 섹터 (복수 선택 가능)
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['기술주', '금융', '헬스케어', '제조업', '에너지', '소비재'].map((sector) => (
+                  {['Layer 1', 'DeFi', 'GameFi', 'Metaverse', 'AI Tokens', 'Meme Coins'].map((sector) => (
                     <label key={sector} style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1954,7 +1954,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                     fontWeight: 'bold',
                     color: '#10B981'
                   }}>
-                    ₩0/월
+                    $0/month
                   </span>
                 </div>
                 <ul style={{
@@ -1963,8 +1963,8 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
                   fontSize: '0.9rem'
                 }}>
-                  <li>기본 차트 및 시세 정보</li>
-                  <li>3개 종목 포트폴리오</li>
+                  <li>기본 차트 및 가격 정보</li>
+                  <li>3개 코인 포트폴리오</li>
                   <li>일반 속도 데이터 업데이트</li>
                   <li>기본 투자 전략 추천</li>
                 </ul>
@@ -1974,11 +1974,11 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
               {[
                 {
                   title: '🥉 스탠다드',
-                  price: '₩29,900',
+                  price: '$29.90',
                   popular: false,
                   features: [
                     '실시간 고속 데이터 (1초 업데이트)',
-                    '15개 종목 포트폴리오',
+                    '15개 코인 포트폴리오',
                     'AI 기반 매매 신호',
                     '손익률 상세 분석',
                     '모바일 알림 서비스',
@@ -1987,11 +1987,11 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 },
                 {
                   title: '🥈 프로페셔널',
-                  price: '₩59,900',
+                  price: '$59.90',
                   popular: true,
                   features: [
                     '실시간 초고속 데이터 (0.1초 업데이트)',
-                    '50개 종목 포트폴리오',
+                    '50개 코인 포트폴리오',
                     '고급 AI 투자 전략',
                     '리스크 관리 시스템',
                     '개인 맞춤형 대시보드',
@@ -2001,11 +2001,11 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 },
                 {
                   title: '🥇 엔터프라이즈',
-                  price: '₩99,900',
+                  price: '$99.90',
                   popular: false,
                   features: [
                     '기관급 실시간 데이터',
-                    '무제한 종목 포트폴리오',
+                    '무제한 코인 포트폴리오',
                     '프리미엄 AI 알고리즘',
                     '자동 매매 시스템',
                     'API 접근 권한',
@@ -2284,7 +2284,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 </label>
                 <input
                   type="number"
-                  placeholder="예: 10000000 (천만원)"
+                  placeholder="예: 50000 USDT (달러)"
                   defaultValue="10000000"
                   style={{
                     width: '100%',
@@ -2313,7 +2313,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 </label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
-                    { id: 'momentum', name: '모멘텀 전략', desc: '상승 추세 종목 매수' },
+                    { id: 'momentum', name: '모멘텀 전략', desc: '상승 추세 코인 매수' },
                     { id: 'value', name: '가치 투자', desc: '저평가 우량주 장기 보유' },
                     { id: 'technical', name: '기술적 분석', desc: 'RSI, MACD 등 지표 활용' },
                     { id: 'mixed', name: '혼합 전략', desc: '여러 전략 조합' }
@@ -2362,7 +2362,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 </div>
               </div>
 
-              {/* 종목 선택 */}
+              {/* 코인 선택 */}
               <div>
                 <label style={{
                   display: 'block',
@@ -2371,12 +2371,12 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   color: theme === 'dark' ? '#E5E7EB' : '#374151',
                   marginBottom: '8px'
                 }}>
-                  📈 백테스트 종목
+                  📈 백테스트 코인
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {[
-                    '삼성전자', 'LG에너지솔루션', 'SK하이닉스', 
-                    'NAVER', '카카오', '현대차'
+                    'Bitcoin', 'Ethereum', 'Binance Coin', 
+                    'Cardano', 'Solana', 'Polygon'
                   ].map((stock) => (
                     <label key={stock} style={{
                       display: 'flex',
@@ -2473,7 +2473,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
         </div>
       )}
 
-      {/* 주요 종목 현황 모달 */}
+      {/* 주요 코인 현황 모달 */}
       {showStocksModal && (
         <div 
           style={{
@@ -2517,14 +2517,14 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 marginBottom: '8px',
                 color: '#10B981' 
               }}>
-                📈 주요 종목 현황
+                📈 주요 코인 현황
               </h2>
               <p style={{ 
                 fontSize: '1rem', 
                 color: theme === 'dark' ? '#9CA3AF' : '#6B7280',
                 marginBottom: '0'
               }}>
-                실시간 주요 종목의 가격과 등락률을 확인하세요
+                실시간 주요 코인의 가격과 등락률을 확인하세요
               </p>
             </div>
 
@@ -2586,7 +2586,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 </div>
               </div>
 
-              {/* 인기 종목 */}
+              {/* 인기 코인 */}
               <div style={{
                 padding: '20px',
                 borderRadius: '12px',
@@ -2600,18 +2600,18 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                   marginBottom: '15px',
                   margin: '0 0 15px 0'
                 }}>
-                  🔥 인기 종목 TOP 10
+                  🔥 인기 코인 TOP 10
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
-                    { rank: 1, name: '삼성전자', code: '005930', price: '75,000', change: '+1,500', rate: '+2.04%', positive: true },
-                    { rank: 2, name: 'LG에너지솔루션', code: '373220', price: '412,500', change: '-8,500', rate: '-2.02%', positive: false },
-                    { rank: 3, name: 'SK하이닉스', code: '000660', price: '138,500', change: '+3,500', rate: '+2.59%', positive: true },
-                    { rank: 4, name: 'NAVER', code: '035420', price: '189,000', change: '-2,000', rate: '-1.05%', positive: false },
-                    { rank: 5, name: '카카오', code: '035720', price: '45,250', change: '+750', rate: '+1.69%', positive: true },
-                    { rank: 6, name: '현대차', code: '005380', price: '246,500', change: '+4,500', rate: '+1.86%', positive: true },
-                    { rank: 7, name: 'LG화학', code: '051910', price: '367,000', change: '-5,000', rate: '-1.34%', positive: false },
-                    { rank: 8, name: '포스코홀딩스', code: '005490', price: '389,500', change: '+2,500', rate: '+0.65%', positive: true }
+                    { rank: 1, name: 'Bitcoin', code: 'BTCUSDT', price: '$43,250', change: '+$1,275', rate: '+3.04%', positive: true },
+                    { rank: 2, name: 'Ethereum', code: 'ETHUSDT', price: '$2,485', change: '-$125', rate: '-4.78%', positive: false },
+                    { rank: 3, name: 'Binance Coin', code: 'BNBUSDT', price: '$315', change: '+$18', rate: '+6.05%', positive: true },
+                    { rank: 4, name: 'Cardano', code: 'ADAUSDT', price: '$0.385', change: '-$0.012', rate: '-3.02%', positive: false },
+                    { rank: 5, name: 'Solana', code: 'SOLUSDT', price: '$98.50', change: '+$4.25', rate: '+4.51%', positive: true },
+                    { rank: 6, name: 'Polygon', code: 'MATICUSDT', price: '$0.825', change: '+$0.045', rate: '+5.77%', positive: true },
+                    { rank: 7, name: 'Chainlink', code: 'LINKUSDT', price: '$14.75', change: '-$0.85', rate: '-5.45%', positive: false },
+                    { rank: 8, name: 'Litecoin', code: 'LTCUSDT', price: '$72.50', change: '+$2.15', rate: '+3.06%', positive: true }
                   ].map((stock) => (
                     <div key={stock.rank} style={{
                       display: 'flex',
@@ -2672,7 +2672,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                           color: theme === 'dark' ? '#E5E7EB' : '#1e293b',
                           marginBottom: '2px'
                         }}>
-                          {stock.price}원
+                          {stock.price}
                         </div>
                         <div style={{
                           fontSize: '0.8rem',
@@ -2709,7 +2709,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                     { sector: '자동차', rate: '+2.1%', positive: true },
                     { sector: '화학', rate: '-0.5%', positive: false },
                     { sector: '금융', rate: '+0.3%', positive: true },
-                    { sector: '헬스케어', rate: '-1.2%', positive: false },
+                    { sector: 'GameFi', rate: '-1.2%', positive: false },
                     { sector: '게임', rate: '+3.4%', positive: true }
                   ].map((sector, i) => (
                     <div key={i} style={{
@@ -2846,9 +2846,9 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {[
                     '친구 1명 초대 시: 프리미엄 1개월 무료',
-                    '친구 3명 초대 시: 프리미엄 3개월 무료 + 10만원 거래 크레딧',
-                    '친구 5명 초대 시: 프리미엄 6개월 무료 + 50만원 거래 크레딧',
-                    '친구 10명 초대 시: 프리미엄 1년 무료 + 100만원 거래 크레딧'
+                    '친구 3명 초대 시: 프리미엄 3개월 무료 + $100 거래 크레딧',
+                    '친구 5명 초대 시: 프리미엄 6개월 무료 + $500 거래 크레딧',
+                    '친구 10명 초대 시: 프리미엄 1년 무료 + $1000 거래 크레딧'
                   ].map((benefit, i) => (
                     <div key={i} style={{
                       display: 'flex',
