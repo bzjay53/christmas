@@ -2,7 +2,7 @@
 // Supabase와 암호화폐 데이터 연동 + 바이낸스 API 통합
 
 import { supabase } from './supabase'
-import { getBinanceAPI, getBinanceWebSocket, type Ticker24hr } from './binanceAPI'
+import { getBinanceAPI, getBinanceWebSocket } from './binanceAPI'
 import { tradingConflictManager, type TradeRequest, type TradeConflict } from './tradingConflictManager'
 
 export interface Crypto {

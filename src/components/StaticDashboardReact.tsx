@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import MajorIndicesChartJS from './charts/MajorIndicesChartJS';
 import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
-import PortfolioChart from './charts/PortfolioChart';
+// import PortfolioChart from './charts/PortfolioChart';
 import BinanceAPITest from './BinanceAPITest';
 import { safePlaceOrder } from '../lib/stocksService';
 import { signIn, signUp, signOut, getCurrentUser, onAuthStateChange, type AuthUser } from '../lib/authService';
