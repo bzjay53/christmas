@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import AppSimple from './AppSimple'
 
 // 디버깅을 위한 강화된 로깅
 console.log('🎄 Christmas Trading App 시작');
@@ -19,7 +20,8 @@ if (!rootElement) {
     console.log('🎄 React Root 생성 완료');
     
     console.log('🎄 App 컴포넌트 렌더링 시작...');
-    root.render(<App />);
+    // 디버깅을 위해 간단한 AppSimple 컴포넌트 사용
+    root.render(<AppSimple />);
     console.log('🎄 ✅ React 앱 마운트 완료!');
     
     // 추가 검증
