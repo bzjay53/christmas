@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CryptoCard } from './components/crypto/CryptoCard';
 import type { CryptoData } from './types/crypto';
 import './App.css';
 
@@ -30,13 +31,11 @@ function AppMinimal() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cryptoData.map(crypto => (
-            <div key={crypto.symbol} className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
-              <h3 className="text-white font-bold text-lg mb-2">{crypto.name}</h3>
-              <div className="text-white text-2xl font-bold">${crypto.price.toLocaleString()}</div>
-              <div className="text-green-400 text-lg font-semibold">
-                +{crypto.changePercent.toFixed(2)}% (+${crypto.change.toFixed(2)})
-              </div>
-            </div>
+            <CryptoCard 
+              key={crypto.symbol} 
+              crypto={crypto}
+              onClick={() => console.log('Crypto clicked:', crypto.symbol)}
+            />
           ))}
         </div>
       </div>
