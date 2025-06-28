@@ -140,7 +140,7 @@ export const LiveChart: React.FC<LiveChartProps> = ({
       <div className="flex justify-between items-center p-4 border-b border-gray-700/50">
         <div className="flex items-center gap-3">
           <h3 className="text-green-400 font-bold text-lg flex items-center gap-2">
-            {symbol} Live Chart
+            {symbol} 실시간 차트
           </h3>
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full animate-pulse ${isLive ? 'bg-green-400' : 'bg-gray-400'}`}></div>

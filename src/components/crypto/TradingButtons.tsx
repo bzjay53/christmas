@@ -103,7 +103,7 @@ export const TradingButtons: React.FC<TradingButtonsProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-green-400 text-lg font-semibold flex items-center gap-2">
             <Bot size={20} />
-            AI Trading
+            AI 자동 거래
           </h4>
           <button
             onClick={toggleAI}
