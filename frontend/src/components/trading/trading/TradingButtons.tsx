@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Bot, Settings, Star, Shield, Sword } from 'lucide-react';
-import { TradingButtonsProps } from '../../types';
+import { TradingButtonsProps } from '../../../types';
 
 export const TradingButtons: React.FC<TradingButtonsProps> = ({ 
   symbol, 

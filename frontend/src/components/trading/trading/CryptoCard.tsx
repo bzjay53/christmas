@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
-import { CryptoCardProps } from '../../types';
+import { CryptoCardProps } from '../../../types';
 
 export const CryptoCard: React.FC<CryptoCardProps> = ({ 
   crypto, 

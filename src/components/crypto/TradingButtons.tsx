@@ -31,9 +31,9 @@ export const TradingButtons: React.FC<TradingButtonsProps> = ({
   }, [isAIActive]);
 
   const strategyConfig = {
-    CONSERVATIVE: { icon: '🛡️', name: 'Conservative', color: 'blue' },
-    BALANCED: { icon: '⚖️', name: 'Balanced', color: 'green' },
-    AGGRESSIVE: { icon: '⚔️', name: 'Aggressive', color: 'red' }
+    CONSERVATIVE: { name: 'Conservative', color: 'blue' },
+    BALANCED: { name: 'Balanced', color: 'green' },
+    AGGRESSIVE: { name: 'Aggressive', color: 'red' }
   };
 
   const currentStrategy = strategyConfig[strategy];
@@ -70,7 +70,7 @@ export const TradingButtons: React.FC<TradingButtonsProps> = ({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-white text-xl font-bold">
-          Christmas Trading
+          빠른 트레이딩
         </h3>
         <div className="text-green-400 text-sm font-mono">
           {symbol}
@@ -154,7 +154,11 @@ export const TradingButtons: React.FC<TradingButtonsProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{currentStrategy.icon}</span>
+          <div className={`w-3 h-3 rounded-full ${
+            currentStrategy.color === 'blue' ? 'bg-blue-400' :
+            currentStrategy.color === 'green' ? 'bg-green-400' :
+            'bg-red-400'
+          }`}></div>
           <span className={`
             text-sm font-semibold
             ${currentStrategy.color === 'blue' ? 'text-blue-400' :

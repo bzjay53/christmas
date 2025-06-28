@@ -29,18 +29,10 @@ interface Portfolio {
   }>;
 }
 
-// 눈 내리는 컴포넌트
-const SnowEffect: React.FC = () => {
-  const snowflakes = ['❄️', '⭐', '🎄', '❄️', '⭐', '❄️', '🎁', '❄️', '⭐'];
-  
+// 배경 효과 컴포넌트 (이모지 제거)
+const BackgroundEffect: React.FC = () => {
   return (
-    <div className="christmas-bg">
-      {snowflakes.map((flake, index) => (
-        <div key={index} className="snowflake">
-          {flake}
-        </div>
-      ))}
-    </div>
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-50" />
   );
 };
 
@@ -62,9 +54,9 @@ const NotificationBar: React.FC<{ notifications: Notification[] }> = ({ notifica
   const current = notifications[currentIndex];
   
   return (
-    <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-2 mb-4 animate-pulse">
+    <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-2 mb-4">
       <div className="text-green-400 text-sm font-semibold">
-        🔔 {current.title}: {current.message}
+        {current.title}: {current.message}
       </div>
     </div>
   );
@@ -74,20 +66,18 @@ const NotificationBar: React.FC<{ notifications: Notification[] }> = ({ notifica
 const PortfolioSummary: React.FC<{ portfolio: Portfolio }> = ({ portfolio }) => {
   return (
     <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg">
-      <h3 className="text-green-400 text-xl font-bold mb-4 flex items-center gap-2">
-        🎁 Santa's Portfolio
+      <h3 className="text-green-400 text-xl font-bold mb-4">
+        Portfolio Summary
       </h3>
       
       <div className="mb-6">
         <div className="text-white text-3xl font-bold">
           ${portfolio.totalValue.toLocaleString()}
         </div>
-        <div className={`text-lg font-semibold flex items-center gap-1 ${
+        <div className={`text-lg font-semibold ${
           portfolio.totalChangePercent >= 0 ? 'text-green-400' : 'text-red-400'
         }`}>
-          <span>{portfolio.totalChangePercent >= 0 ? '↗' : '↘'}</span>
-          <span>{portfolio.totalChangePercent >= 0 ? '+' : ''}${portfolio.totalChange.toFixed(2)}</span>
-          <span>({portfolio.totalChangePercent.toFixed(2)}%)</span>
+          {portfolio.totalChangePercent >= 0 ? '+' : ''}${portfolio.totalChange.toFixed(2)} ({portfolio.totalChangePercent.toFixed(2)}%)
         </div>
       </div>
       
@@ -118,36 +108,33 @@ function App() {
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([
     {
       symbol: 'BTCUSDT',
-      name: 'Bitcoin',
+      name: 'Bitcoin (BTC)',
       price: 43250.00,
       change: 1250.00,
       changePercent: 2.98,
       volume: 28500000000,
       high24h: 44100,
-      low24h: 41800,
-      icon: '🎄'
+      low24h: 41800
     },
     {
       symbol: 'ETHUSDT',
-      name: 'Ethereum',
+      name: 'Ethereum (ETH)',
       price: 2580.50,
       change: -45.00,
       changePercent: -1.72,
       volume: 15200000000,
       high24h: 2650,
-      low24h: 2520,
-      icon: '❄️'
+      low24h: 2520
     },
     {
       symbol: 'BNBUSDT',
-      name: 'Binance Coin',
+      name: 'Binance Coin (BNB)',
       price: 315.75,
       change: 12.30,
       changePercent: 4.05,
       volume: 890000000,
       high24h: 320,
-      low24h: 298,
-      icon: '⭐'
+      low24h: 298
     }
   ]);
 
@@ -166,7 +153,7 @@ function App() {
     {
       id: '1',
       type: 'SUCCESS',
-      title: '🎁 Christmas Bonus',
+      title: 'Trade Alert',
       message: 'AI 거래로 $127.50 수익 달성!',
       timestamp: Date.now(),
       isRead: false
@@ -174,7 +161,7 @@ function App() {
     {
       id: '2',
       type: 'INFO',
-      title: '📈 Market Alert',
+      title: 'Market Alert',
       message: 'BTC가 $44,000 저항선 돌파 시도 중',
       timestamp: Date.now() - 60000,
       isRead: false
@@ -218,7 +205,7 @@ function App() {
       const notification: Notification = {
         id: Date.now().toString(),
         type: 'SUCCESS',
-        title: '🎁 매수 주문 완료',
+        title: '매수 주문 완료',
         message: `${symbol} 매수 주문이 성공적으로 처리되었습니다!`,
         timestamp: Date.now(),
         isRead: false
@@ -239,7 +226,7 @@ function App() {
       const notification: Notification = {
         id: Date.now().toString(),
         type: 'SUCCESS',
-        title: '❄️ 매도 주문 완료',
+        title: '매도 주문 완료',
         message: `${symbol} 매도 주문이 성공적으로 처리되었습니다!`,
         timestamp: Date.now(),
         isRead: false
@@ -252,47 +239,57 @@ function App() {
     }, 1500);
   }, []);
 
-  // 거래 효과
+  // 거래 효과 (이모지 제거)
   const playTradeEffect = (type: 'buy' | 'sell') => {
-    // 화면에 일시적 효과 표시
-    const effect = document.createElement('div');
-    effect.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl z-50 pointer-events-none animate-bounce`;
-    effect.textContent = type === 'buy' ? '🎁' : '❄️';
-    document.body.appendChild(effect);
+    // 간단한 플래시 효과
+    const flashColor = type === 'buy' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: ${flashColor};
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    `;
+    document.body.appendChild(flash);
     
     setTimeout(() => {
-      if (document.body.contains(effect)) {
-        document.body.removeChild(effect);
-      }
-    }, 2000);
+      flash.style.opacity = '0';
+      setTimeout(() => {
+        if (document.body.contains(flash)) {
+          document.body.removeChild(flash);
+        }
+      }, 500);
+    }, 100);
   };
 
   // 현재 시간과 크리스마스까지 남은 일수
   const daysUntilChristmas = Math.ceil((new Date('2025-12-25').getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900/20 to-red-900/20 text-white relative overflow-hidden">
-      {/* 눈 내리는 효과 */}
-      <SnowEffect />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative">
+      <BackgroundEffect />
       
       <div className="container mx-auto px-4 py-6 relative z-10">
         {/* 헤더 */}
         <header className="text-center mb-8">
-          <h1 className="christmas-logo text-6xl font-bold font-christmas mb-4">
-            🎄 Christmas Crypto Trading 🎄
+          <h1 className="text-4xl font-bold mb-4">
+            Binance Dashboard v1
           </h1>
-          <div className="flex items-center justify-center gap-4 text-lg mb-2">
+          <div className="flex items-center justify-center gap-4 text-sm mb-2">
             <div className="text-green-400 font-semibold flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              🟢 Santa's Market is Open
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              Market Open
             </div>
-            <div className="text-blue-400">🌍 24/7 북극 거래소</div>
+            <div className="text-gray-400">Real-time Data</div>
           </div>
-          <div className="text-yellow-300 text-sm">
-            ⏰ 크리스마스까지 <span className="font-bold text-yellow-400">{daysUntilChristmas}일</span> 남음!
-          </div>
-          <div className="text-gray-400 text-xs mt-2">
-            마지막 업데이트: {lastUpdate.toLocaleTimeString('ko-KR')}
+          <div className="text-gray-400 text-xs">
+            Last Update: {lastUpdate.toLocaleTimeString('ko-KR')}
           </div>
         </header>
 
@@ -324,32 +321,29 @@ function App() {
             />
           </div>
           
-          {/* 크리스마스 메뉴 패널 */}
+          {/* 메뉴 패널 */}
           <div className="lg:col-span-3 bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg">
-            <h3 className="text-yellow-400 text-xl font-bold mb-6 flex items-center gap-2">
-              🎅 Santa's Menu
+            <h3 className="text-blue-400 text-xl font-bold mb-6">
+              메뉴
             </h3>
-            <div className="space-y-4">
-              <div className="text-green-400 font-semibold flex items-center gap-3 p-2 bg-green-500/10 rounded-lg">
-                🏠 <span>워크샵 대시보드</span>
+            <div className="space-y-3">
+              <div className="text-blue-400 font-semibold flex items-center gap-3 p-2 bg-blue-500/10 rounded-lg">
+                <span>현물트레이딩</span>
               </div>
               <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
-                🎁 <span>선물 포트폴리오</span>
+                <span>포트폴리오</span>
               </div>
               <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
-                📊 <span>루돌프 거래내역</span>
+                <span>거래내역</span>
               </div>
               <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
-                🔐 <span>엘프 로그인</span>
+                <span>로그인</span>
               </div>
               <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
-                ⚙️ <span>썰매 설정</span>
-              </div>
-              <div className="text-red-400 flex items-center gap-3 p-2 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer">
-                🌍 <span>북극 글로벌 거래</span>
+                <span>설정</span>
               </div>
               <div className="text-yellow-400 flex items-center gap-3 p-2 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer">
-                ⭐ <span>크리스마스 스페셜</span>
+                <span>24/7 글로벌 거래</span>
               </div>
             </div>
           </div>
@@ -373,16 +367,13 @@ function App() {
           </div>
         </div>
 
-        {/* 크리스마스 푸터 */}
-        <footer className="text-center bg-gradient-to-r from-green-600/20 to-red-600/20 rounded-lg p-6">
-          <div className="text-yellow-400 text-lg font-bold mb-2">
-            🎄 Powered by Binance Christmas API 🎄
-          </div>
-          <div className="text-green-300 mb-4">
-            Ho Ho Ho! 메리 크리스마스 & 해피 트레이딩! 🎅✨
+        {/* 푸터 */}
+        <footer className="text-center bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-lg p-6">
+          <div className="text-blue-400 text-lg font-bold mb-2">
+            Powered by Binance API
           </div>
           <div className="text-gray-400 text-sm">
-            © 2025 Christmas Crypto Trading. Made with ❤️ and 🎄
+            © 2025 Binance Dashboard. Real-time crypto trading platform.
           </div>
         </footer>
       </div>

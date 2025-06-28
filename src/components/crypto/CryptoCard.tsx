@@ -68,8 +68,8 @@ export const CryptoCard: React.FC<CryptoCardProps> = ({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="text-2xl">
-            {crypto.icon || '💰'}
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+            {crypto.symbol.slice(0, 2)}
           </div>
           <div>
             <h3 className="text-white font-bold text-lg">
