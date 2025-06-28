@@ -5,8 +5,12 @@ import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
 // import PortfolioChart from './charts/PortfolioChart';
 import BinanceAPITest from './BinanceAPITest';
+import CryptoCard from './crypto/CryptoCard';
+import TradingButtons from './crypto/TradingButtons';
+import LiveChart from './crypto/LiveChart';
 import { safePlaceOrder } from '../lib/stocksService';
 import { signIn, signUp, signOut, getCurrentUser, onAuthStateChange, type AuthUser } from '../lib/authService';
+import type { CryptoData } from '../types/crypto';
 
 interface StaticDashboardReactProps {
   isGlobalSnowEnabled?: boolean;
@@ -30,6 +34,56 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
   const [isSignUpMode, setIsSignUpMode] = useState(false); // 회원가입 모드
   const [authLoading, setAuthLoading] = useState(false); // 로그인 처리 중
   const [isMobile, setIsMobile] = useState(false); // 모바일 환경 체크
+  
+  // 새로운 암호화폐 데이터 상태
+  const [selectedCrypto, setSelectedCrypto] = useState<CryptoData>({
+    symbol: 'BTCUSDT',
+    name: 'Bitcoin',
+    price: 43250.00,
+    change: 1275.50,
+    changePercent: 3.04,
+    volume: 28476584321,
+    high24h: 44125.00,
+    low24h: 41987.50,
+    icon: '₿'
+  });
+  
+  // 암호화폐 목록 데이터
+  const [cryptoList] = useState<CryptoData[]>([
+    {
+      symbol: 'BTCUSDT',
+      name: 'Bitcoin',
+      price: 43250.00,
+      change: 1275.50,
+      changePercent: 3.04,
+      volume: 28476584321,
+      high24h: 44125.00,
+      low24h: 41987.50,
+      icon: '₿'
+    },
+    {
+      symbol: 'ETHUSDT',
+      name: 'Ethereum',
+      price: 2485.30,
+      change: -125.70,
+      changePercent: -4.78,
+      volume: 15384729102,
+      high24h: 2625.90,
+      low24h: 2450.10,
+      icon: '♦'
+    },
+    {
+      symbol: 'BNBUSDT',
+      name: 'Binance Coin',
+      price: 315.85,
+      change: 18.95,
+      changePercent: 6.05,
+      volume: 892765432,
+      high24h: 325.40,
+      low24h: 298.60,
+      icon: '🔶'
+    }
+  ]);
   
   // 버튼 모달 상태
   const [showStrategyModal, setShowStrategyModal] = useState(false);
@@ -200,6 +254,20 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
     }
     
     setIsTrading(false);
+  };
+
+  // 새로운 컴포넌트들을 위한 핸들러 함수들
+  const handleCryptoSelect = (crypto: CryptoData) => {
+    setSelectedCrypto(crypto);
+    setCryptoSymbol(crypto.symbol);
+  };
+
+  const handleBuy = () => {
+    handleTrade('buy');
+  };
+
+  const handleSell = () => {
+    handleTrade('sell');
   };
 
   return (
