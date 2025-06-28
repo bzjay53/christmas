@@ -4,7 +4,7 @@ import MajorIndicesChartJS from './charts/MajorIndicesChartJS';
 import AppleStockChart from './charts/AppleStockChart';
 import VolumeChart from './charts/VolumeChart';
 import PortfolioChart from './charts/PortfolioChart';
-import APIConnectionTest from './APIConnectionTest';
+import BinanceAPITest from './BinanceAPITest';
 import { safePlaceOrder } from '../lib/stocksService';
 import { signIn, signUp, signOut, getCurrentUser, onAuthStateChange, type AuthUser } from '../lib/authService';
 
@@ -1370,7 +1370,7 @@ const StaticDashboardReact: React.FC<StaticDashboardReactProps> = ({
 
           {/* API 연결 테스트 섹션 */}
           <div className="api-test-section">
-            <APIConnectionTest />
+            <BinanceAPITest />
           </div>
         </div>
       </div>

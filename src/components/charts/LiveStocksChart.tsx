@@ -3,14 +3,15 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import Chart from 'chart.js/auto'
-import { getAllCryptos, subscribeToCryptos, startDataSimulation, type Crypto } from '../../lib/stocksService'
+import { getAllCryptos, subscribeToCryptos, startDataSimulation, subscribeToRealTimeCryptos, type Crypto } from '../../lib/stocksService'
 
 const LiveCryptoChart: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const chartRef = useRef<Chart | null>(null)
   const [cryptos, setCryptos] = useState<Crypto[]>([])
   const [lastUpdate, setLastUpdate] = useState<string>('')
-  const [marketStatus, setMarketStatus] = useState<any>(null)
+  const [marketStatus, setMarketStatus] = useState<{ isOpen: boolean; statusMessage: string } | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting')
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -32,35 +33,80 @@ const LiveCryptoChart: React.FC = () => {
 
     loadData()
 
-    // 실시간 구독 (Supabase가 있으면 사용, 없으면 시뮬레이션)
-    const subscription = subscribeToCryptos((updatedCryptos) => {
-      setCryptos(updatedCryptos)
-      setLastUpdate(new Date().toLocaleTimeString())
-      if (chartRef.current) {
-        updateChart(updatedCryptos)
-      }
-    })
+    // 환경변수로 실제 WebSocket 사용 여부 결정
+    const hasRealAPIKeys = import.meta.env.VITE_BINANCE_API_KEY && 
+                          import.meta.env.VITE_BINANCE_SECRET_KEY &&
+                          !import.meta.env.VITE_BINANCE_API_KEY.includes('placeholder')
+    const useRealWebSocket = import.meta.env.VITE_ENABLE_MOCK_DATA !== 'true' && hasRealAPIKeys
 
-    // Mock 데이터 시뮬레이션 시작 (시장시간 고려)
-    const simulationInterval = startDataSimulation(
-      (updatedCryptos) => {
+    let websocketConnection: { disconnect?: () => void; subscription?: any; simulationInterval?: NodeJS.Timeout } | null = null
+
+    if (useRealWebSocket) {
+      // 실제 바이낸스 WebSocket 사용
+      console.log('🔌 바이낸스 실시간 WebSocket 연결 시작...')
+      setConnectionStatus('connecting')
+      
+      websocketConnection = subscribeToRealTimeCryptos((updatedCryptos) => {
+        setCryptos(updatedCryptos)
+        setLastUpdate(new Date().toLocaleTimeString())
+        setConnectionStatus('connected')
+        setMarketStatus({ isOpen: true, statusMessage: '🟢 실시간 바이낸스 연결됨' })
+        
+        if (chartRef.current) {
+          updateChart(updatedCryptos)
+        }
+      })
+    } else {
+      // Mock 시뮬레이션 사용 (기존 방식)
+      console.log('📊 Mock 데이터 시뮬레이션 시작...')
+      setConnectionStatus('connected')
+      
+      // Supabase 구독 (fallback)
+      const subscription = subscribeToCryptos((updatedCryptos) => {
         setCryptos(updatedCryptos)
         setLastUpdate(new Date().toLocaleTimeString())
         if (chartRef.current) {
           updateChart(updatedCryptos)
         }
-      },
-      (status) => {
-        setMarketStatus(status)
-      }
-    )
+      })
+
+      // Mock 데이터 시뮬레이션 시작 (시장시간 고려)
+      const simulationInterval = startDataSimulation(
+        (updatedCryptos) => {
+          setCryptos(updatedCryptos)
+          setLastUpdate(new Date().toLocaleTimeString())
+          if (chartRef.current) {
+            updateChart(updatedCryptos)
+          }
+        },
+        (status) => {
+          setMarketStatus(status)
+        }
+      )
+      
+      websocketConnection = { subscription, simulationInterval }
+    }
 
     return () => {
       if (chartRef.current) {
         chartRef.current.destroy()
       }
-      subscription.unsubscribe()
-      clearInterval(simulationInterval)
+      
+      // 연결 타입에 따른 정리
+      if (useRealWebSocket && websocketConnection) {
+        console.log('🔌 바이낸스 WebSocket 연결 해제')
+        websocketConnection.disconnect()
+      } else if (websocketConnection) {
+        // Mock 모드 정리
+        if (websocketConnection.subscription) {
+          websocketConnection.subscription.unsubscribe()
+        }
+        if (websocketConnection.simulationInterval) {
+          clearInterval(websocketConnection.simulationInterval)
+        }
+      }
+      
+      setConnectionStatus('disconnected')
     }
   }, [])
 
@@ -148,8 +194,18 @@ const LiveCryptoChart: React.FC = () => {
           <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
             🎄 크리스마스 트레이딩 - 실시간 암호화폐
           </h3>
-          <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            📊 {cryptos.length}개 코인 | 🔄 {lastUpdate}
+          <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <span className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-500' : 
+              connectionStatus === 'connecting' ? 'bg-yellow-500' : 
+              'bg-red-500'
+            }`}></span>
+            <span>
+              {connectionStatus === 'connected' ? '🔌 연결됨' : 
+               connectionStatus === 'connecting' ? '⏳ 연결 중' : 
+               '❌ 연결 끊김'}
+            </span>
+            <span>📊 {cryptos.length}개 코인 | 🔄 {lastUpdate}</span>
           </div>
         </div>
         

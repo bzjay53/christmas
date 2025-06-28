@@ -2,7 +2,7 @@
 // Supabase와 암호화폐 데이터 연동 + 바이낸스 API 통합
 
 import { supabase } from './supabase'
-import { getBinanceAPI, type Ticker24hr } from './binanceAPI'
+import { getBinanceAPI, getBinanceWebSocket, type Ticker24hr } from './binanceAPI'
 import { tradingConflictManager, type TradeRequest, type TradeConflict } from './tradingConflictManager'
 
 export interface Crypto {
@@ -283,6 +283,55 @@ export const subscribeToCryptos = (callback: (cryptos: Crypto[]) => void) => {
     .subscribe()
   
   return subscription
+}
+
+// 실시간 바이낸스 WebSocket 데이터 구독
+export const subscribeToRealTimeCryptos = (callback: (cryptos: Crypto[]) => void) => {
+  console.log('🔄 바이낸스 WebSocket 실시간 구독 시작...')
+  
+  const binanceWS = getBinanceWebSocket()
+  const cryptoSymbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT']
+  
+  // 실시간 가격 스트림 연결
+  binanceWS.connectPriceStream(cryptoSymbols, (data) => {
+    try {
+      // 바이낸스 WebSocket 데이터를 Crypto 형식으로 변환
+      const updatedCrypto: Crypto = {
+        symbol: data.s, // 심볼 (예: BTCUSDT)
+        name: getFullCryptoName(data.s),
+        current_price: parseFloat(data.c), // 현재가
+        price_change: parseFloat(data.p), // 24시간 변동량
+        price_change_percent: parseFloat(data.P), // 24시간 변동률
+        market: 'SPOT',
+        last_updated: new Date(data.E).toISOString() // 이벤트 시간
+      }
+      
+      // 기존 mockCryptos 배열에서 해당 심볼을 찾아 업데이트
+      const existingIndex = mockCryptos.findIndex(crypto => crypto.symbol === updatedCrypto.symbol)
+      if (existingIndex !== -1) {
+        mockCryptos[existingIndex] = updatedCrypto
+      } else {
+        // 새로운 암호화폐라면 배열에 추가
+        mockCryptos.push(updatedCrypto)
+      }
+      
+      // 업데이트된 전체 배열을 콜백으로 전달
+      callback([...mockCryptos])
+      
+      console.log(`📈 실시간 업데이트: ${updatedCrypto.symbol} = $${updatedCrypto.current_price} (${updatedCrypto.price_change_percent}%)`)
+      
+    } catch (error) {
+      console.error('❌ WebSocket 데이터 처리 오류:', error)
+    }
+  })
+  
+  return {
+    disconnect: () => {
+      console.log('🔌 바이낸스 WebSocket 연결 해제')
+      binanceWS.disconnect()
+    },
+    isConnected: () => binanceWS.isConnected()
+  }
 }
 
 // 암호화폐 시장 상태 체크 (24시간 운영)
