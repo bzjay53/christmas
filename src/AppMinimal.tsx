@@ -3,6 +3,9 @@ import { CryptoCard } from './components/crypto/CryptoCard';
 import type { CryptoData } from './types/crypto';
 import './App.css';
 
+// CSS 강제 로딩 확인
+console.log('AppMinimal CSS imports loaded');
+
 function AppMinimal() {
   const [cryptoData] = useState<CryptoData[]>([
     {
@@ -16,6 +19,14 @@ function AppMinimal() {
       low24h: 41800
     }
   ]);
+
+  // CSS 로딩 상태 확인
+  useEffect(() => {
+    console.log('AppMinimal mounted');
+    console.log('Document styles:', document.styleSheets.length);
+    const styles = Array.from(document.styleSheets).map(sheet => sheet.href || 'inline');
+    console.log('Loaded stylesheets:', styles);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
