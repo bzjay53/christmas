@@ -302,7 +302,7 @@ function App() {
         {/* 인기 코인 TOP 10 테이블 */}
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg mb-8">
           <h3 className="text-orange-400 font-bold text-xl mb-6 flex items-center gap-2">
-            🔥 인기 코인 TOP 10
+            인기 코인 TOP 10
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -353,7 +353,7 @@ function App() {
         {/* 시장 지수 정보 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
-            <h4 className="text-blue-400 font-bold mb-2">📊 시장 지수</h4>
+            <h4 className="text-blue-400 font-bold mb-2">시장 지수</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Crypto Index</span>
@@ -367,7 +367,7 @@ function App() {
           </div>
           
           <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
-            <h4 className="text-green-400 font-bold mb-2">📈 DeFi Index</h4>
+            <h4 className="text-green-400 font-bold mb-2">DeFi Index</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">DeFi Index</span>
@@ -381,7 +381,7 @@ function App() {
           </div>
           
           <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50 shadow-lg">
-            <h4 className="text-red-400 font-bold mb-2">🎮 GameFi Index</h4>
+            <h4 className="text-red-400 font-bold mb-2">GameFi Index</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">GameFi Index</span>
