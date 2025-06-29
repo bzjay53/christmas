@@ -59,18 +59,41 @@ export const saveUserApiKeys = async (
     const encryptedSecretKey = await encryptApiKey(secretKey);
     console.log('🔧 암호화 완료', { encryptedLength: encryptedApiKey.length });
 
+    // Supabase 연결 테스트 먼저 수행
+    console.log('🔧 Supabase 연결 테스트 중...');
+    try {
+      const { data: testData, error: testError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+      console.log('🔧 연결 테스트 결과:', { testError, hasData: !!testData });
+    } catch (testErr) {
+      console.log('🔧 연결 테스트 예외:', testErr);
+    }
+
     // Supabase에 저장
     console.log('🔧 Supabase에 저장 시작...', { userId });
-    const { error } = await supabase
+    const updateData = {
+      binance_api_key_encrypted: encryptedApiKey,
+      binance_secret_key_encrypted: encryptedSecretKey,
+      binance_api_active: true,
+      api_last_verified: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    console.log('🔧 업데이트할 데이터:', Object.keys(updateData));
+    
+    // 타임아웃 추가하여 무한 대기 방지
+    const updatePromise = supabase
       .from('profiles')
-      .update({
-        binance_api_key_encrypted: encryptedApiKey,
-        binance_secret_key_encrypted: encryptedSecretKey,
-        binance_api_active: true,
-        api_last_verified: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', userId);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Supabase 저장 타임아웃 (10초)')), 10000)
+    );
+    
+    const { error } = await Promise.race([updatePromise, timeoutPromise]) as any;
     
     console.log('🔧 Supabase 저장 결과:', { error });
 

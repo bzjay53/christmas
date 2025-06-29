@@ -35,22 +35,30 @@ export class SecureEncryption {
   // 데이터 암호화
   static async encrypt(plaintext: string): Promise<string> {
     try {
+      console.log('🔐 암호화 시작', { length: plaintext?.length });
       const key = await this.getMasterKey();
+      console.log('🔐 마스터 키 생성 완료');
       const iv = crypto.getRandomValues(new Uint8Array(this.IV_LENGTH));
       const plaintextBuffer = new TextEncoder().encode(plaintext);
+      console.log('🔐 텍스트 인코딩 완료', { bufferLength: plaintextBuffer.length });
 
+      console.log('🔐 암호화 시작 중...');
       const encrypted = await crypto.subtle.encrypt(
         { name: this.ALGORITHM, iv: iv },
         key,
         plaintextBuffer
       );
+      console.log('🔐 암호화 완료', { encryptedLength: encrypted.byteLength });
 
       // IV와 암호화된 데이터를 결합하여 base64로 인코딩
       const combined = new Uint8Array(iv.length + encrypted.byteLength);
       combined.set(iv, 0);
       combined.set(new Uint8Array(encrypted), iv.length);
+      console.log('🔐 데이터 결합 완료', { totalLength: combined.length });
 
-      return btoa(String.fromCharCode(...combined));
+      const result = btoa(String.fromCharCode(...combined));
+      console.log('🔐 Base64 인코딩 완료', { resultLength: result.length });
+      return result;
     } catch (error) {
       console.error('암호화 실패:', error);
       throw new Error('데이터 암호화에 실패했습니다.');
