@@ -7,12 +7,12 @@ import { LoginModal } from '../components/auth/LoginModal';
 export interface UserProfile {
   id: string;
   email: string;
-  display_name: string | null;
-  role: 'admin' | 'premium' | 'basic' | 'free';
-  subscription_tier: 'free' | 'basic' | 'premium' | 'vip';
-  portfolio_balance_usdt: number;
-  available_cash_usdt: number;
-  kyc_status: 'pending' | 'verified' | 'rejected';
+  first_name: string | null;
+  last_name: string | null;
+  membership_type: string;
+  membership_start_date: string | null;
+  membership_end_date: string | null;
+  free_trial_end_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,23 +35,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 구독 티어별 권한 설정
-const SUBSCRIPTION_PERMISSIONS = {
-  free: {
+// 멤버십 타입별 권한 설정
+const MEMBERSHIP_PERMISSIONS = {
+  FREE_TRIAL: {
     features: ['mockTrading', 'basicCharts'],
     maxDailyTrades: 5,
     maxOrderAmount: 100,
     realTimeData: false,
     aiRecommendations: false
   },
-  basic: {
+  BASIC: {
     features: ['mockTrading', 'realTrading', 'basicCharts', 'realTimeData'],
     maxDailyTrades: 20,
     maxOrderAmount: 1000,
     realTimeData: true,
     aiRecommendations: true
   },
-  premium: {
+  PREMIUM: {
     features: ['mockTrading', 'realTrading', 'basicCharts', 'realTimeData', 'aiTrading', 'advancedCharts'],
     maxDailyTrades: 100,
     maxOrderAmount: 10000,
@@ -59,7 +59,7 @@ const SUBSCRIPTION_PERMISSIONS = {
     aiRecommendations: true,
     aiTrading: true
   },
-  vip: {
+  VIP: {
     features: ['all'],
     maxDailyTrades: 1000,
     maxOrderAmount: 100000,
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', userId)
         .single();
@@ -112,16 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const defaultProfile = {
         id: user.id,
         email: user.email!,
-        display_name: user.user_metadata?.display_name || null,
-        role: 'basic' as const,
-        subscription_tier: 'free' as const,
-        portfolio_balance_usdt: 0,
-        available_cash_usdt: 1000, // 신규 사용자 체험용
-        kyc_status: 'pending' as const,
+        first_name: user.user_metadata?.first_name || null,
+        last_name: user.user_metadata?.last_name || null,
+        membership_type: 'FREE_TRIAL',
+        free_trial_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 체험
       };
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .insert([defaultProfile])
         .select()
         .single();
@@ -246,17 +244,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!error && data.user) {
         // 프로필 생성
         const { error: profileError } = await supabase
-          .from('profiles')
+          .from('users')
           .insert([
             {
               id: data.user.id,
               email: data.user.email!,
-              display_name: displayName || null,
-              role: 'basic',
-              subscription_tier: 'free',
-              portfolio_balance_usdt: 0,
-              available_cash_usdt: 1000, // 신규 가입자 체험용 1000 USDT
-              kyc_status: 'pending',
+              first_name: displayName || null,
+              membership_type: 'FREE_TRIAL',
+              free_trial_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 체험
             }
           ]);
 
@@ -359,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('users')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', user.id);
 
@@ -378,10 +373,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasPermission = (feature: string): boolean => {
     if (!profile) return false;
 
-    const tierPermissions = SUBSCRIPTION_PERMISSIONS[profile.subscription_tier];
-    if (!tierPermissions) return false;
+    const membershipPermissions = MEMBERSHIP_PERMISSIONS[profile.membership_type as keyof typeof MEMBERSHIP_PERMISSIONS];
+    if (!membershipPermissions) return false;
 
-    return tierPermissions.features.includes(feature) || tierPermissions.features.includes('all');
+    return membershipPermissions.features.includes(feature) || membershipPermissions.features.includes('all');
   };
 
   // 로그인 모달 표시

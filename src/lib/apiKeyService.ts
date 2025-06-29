@@ -62,7 +62,7 @@ export const saveUserApiKeys = async (
     // 사용자 프로필 존재 여부 확인 및 생성
     console.log('🔧 사용자 프로필 확인 중...');
     const { data: existingProfile, error: profileError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id')
       .eq('id', userId)
       .single();
@@ -71,10 +71,10 @@ export const saveUserApiKeys = async (
       // 프로필이 존재하지 않으면 생성
       console.log('🔧 프로필이 없습니다. 새로 생성합니다...');
       const { error: createError } = await supabase
-        .from('profiles')
+        .from('users')
         .insert({
           id: userId,
-          subscription_tier: 'free',
+          membership_type: 'FREE_TRIAL',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -94,17 +94,15 @@ export const saveUserApiKeys = async (
     // Supabase에 저장
     console.log('🔧 Supabase에 저장 시작...', { userId });
     const updateData = {
-      binance_api_key_encrypted: encryptedApiKey,
-      binance_secret_key_encrypted: encryptedSecretKey,
-      binance_api_active: true,
-      api_last_verified: new Date().toISOString(),
+      binance_api_key: encryptedApiKey,
+      binance_secret_key: encryptedSecretKey,
       updated_at: new Date().toISOString()
     };
     console.log('🔧 업데이트할 데이터:', Object.keys(updateData));
     
     // 타임아웃 추가하여 무한 대기 방지
     const updatePromise = supabase
-      .from('profiles')
+      .from('users')
       .update(updateData)
       .eq('id', userId);
     
@@ -142,8 +140,8 @@ export const getUserApiKeys = async (
 ): Promise<{ apiKey?: string; secretKey?: string; error?: any }> => {
   try {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('binance_api_key_encrypted, binance_secret_key_encrypted, binance_api_active')
+      .from('users')
+      .select('binance_api_key, binance_secret_key')
       .eq('id', userId)
       .single();
 
@@ -152,13 +150,13 @@ export const getUserApiKeys = async (
       return { error: error || 'API 키를 찾을 수 없습니다.' };
     }
 
-    if (!data.binance_api_active || !data.binance_api_key_encrypted || !data.binance_secret_key_encrypted) {
+    if (!data.binance_api_key || !data.binance_secret_key) {
       return { error: 'API 키가 설정되지 않았습니다.' };
     }
 
     // API 키 복호화 (비동기 처리)
-    const apiKey = await decryptApiKey(data.binance_api_key_encrypted);
-    const secretKey = await decryptApiKey(data.binance_secret_key_encrypted);
+    const apiKey = await decryptApiKey(data.binance_api_key);
+    const secretKey = await decryptApiKey(data.binance_secret_key);
 
     return { apiKey, secretKey };
 
@@ -174,12 +172,10 @@ export const deleteUserApiKeys = async (
 ): Promise<{ success: boolean; error?: any }> => {
   try {
     const { error } = await supabase
-      .from('profiles')
+      .from('users')
       .update({
-        binance_api_key_encrypted: null,
-        binance_secret_key_encrypted: null,
-        binance_api_active: false,
-        api_last_verified: null,
+        binance_api_key: null,
+        binance_secret_key: null,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
@@ -226,8 +222,8 @@ export const validateUserApiKeys = async (
 
     // 유효성 검증 시간 업데이트
     await supabase
-      .from('profiles')
-      .update({ api_last_verified: new Date().toISOString() })
+      .from('users')
+      .update({ updated_at: new Date().toISOString() })
       .eq('id', userId);
 
     return { 
@@ -253,8 +249,8 @@ export const getUserApiStatus = async (
 }> => {
   try {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('binance_api_active, api_last_verified, binance_api_permissions')
+      .from('users')
+      .select('binance_api_key, binance_secret_key, updated_at')
       .eq('id', userId)
       .single();
 
@@ -266,13 +262,13 @@ export const getUserApiStatus = async (
       };
     }
 
-    const hasApiKeys = data.binance_api_active === true;
+    const hasApiKeys = !!(data.binance_api_key && data.binance_secret_key);
     
     return {
       hasApiKeys,
       isActive: hasApiKeys,
-      lastVerified: data.api_last_verified,
-      permissions: data.binance_api_permissions || ['SPOT']
+      lastVerified: data.updated_at,
+      permissions: ['SPOT']
     };
 
   } catch (error) {
