@@ -3,7 +3,7 @@
 
 import { supabase } from './supabase'
 import { getBinanceAPI, getBinanceWebSocket } from './binanceAPI'
-import { tradingConflictManager, type TradeRequest, type TradeConflict } from './tradingConflictManager'
+import { cryptoTradingConflictManager, type CryptoTradeRequest, type TradeConflict } from './tradingConflictManager'
 
 export interface Crypto {
   symbol: string
@@ -418,28 +418,30 @@ export const safePlaceOrder = async (
   cryptoSymbol: string, 
   orderType: 'buy' | 'sell', 
   quantity: number, 
-  price?: number
+  price?: number,
+  userTier: 'free' | 'basic' | 'premium' | 'vip' = 'free'
 ): Promise<{ success: boolean; message: string; conflict?: TradeConflict; alternatives?: any[] }> => {
   try {
     console.log(`🛡️ 안전한 거래 요청: ${userId} -> ${cryptoSymbol} ${orderType} ${quantity} 코인`)
 
-    const tradeRequest: TradeRequest = {
+    const tradeRequest: CryptoTradeRequest = {
       userId,
-      stockCode: cryptoSymbol,
+      symbol: cryptoSymbol,
       orderType,
       quantity,
       price,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      userTier
     }
 
     // 1. 충돌 감지
-    const conflict = await tradingConflictManager.detectTradeConflict(tradeRequest)
+    const conflict = await cryptoTradingConflictManager.detectTradeConflict(tradeRequest)
     
     if (conflict) {
       console.log(`⚠️ 거래 충돌 감지:`, conflict)
       
       // 대안 암호화폐 추천
-      const alternatives = await tradingConflictManager.getAlternativeStocks(cryptoSymbol)
+      const alternatives = await cryptoTradingConflictManager.getAlternativeCryptos(cryptoSymbol)
       
       return {
         success: false,
@@ -450,13 +452,13 @@ export const safePlaceOrder = async (
     }
 
     // 2. 시간 분산 권장
-    const recommendedDelay = tradingConflictManager.getOptimalTradingDelay(cryptoSymbol)
-    if (recommendedDelay > 2000) {
+    const recommendedDelay = cryptoTradingConflictManager.getOptimalTradingDelay(cryptoSymbol)
+    if (recommendedDelay > 1000) {
       console.log(`⏰ 권장 지연 시간: ${recommendedDelay}ms`)
     }
 
     // 3. 거래 요청 등록
-    await tradingConflictManager.registerTradeRequest(tradeRequest)
+    await cryptoTradingConflictManager.registerCryptoTradeRequest(tradeRequest)
 
     // 4. 실제 주문 처리 (시뮬레이션)
     // 실제 환경에서는 binanceAPI.createSpotOrder() 호출
@@ -464,12 +466,12 @@ export const safePlaceOrder = async (
     
     // 5. 거래 완료 처리
     setTimeout(() => {
-      tradingConflictManager.completeTradeRequest(userId, cryptoSymbol)
-    }, 3000) // 3초 후 완료 처리 (암호화폐는 더 빠름)
+      cryptoTradingConflictManager.completeCryptoTradeRequest(userId, cryptoSymbol)
+    }, 2000) // 2초 후 완료 처리 (암호화폐는 더 빠름)
 
     return {
       success: true,
-      message: `주문이 성공적으로 처리되었습니다. ${recommendedDelay > 2000 ? `(${recommendedDelay/1000}초 지연 권장)` : ''}`
+      message: `주문이 성공적으로 처리되었습니다. ${recommendedDelay > 1000 ? `(${recommendedDelay/1000}초 지연 권장)` : ''}`
     }
 
   } catch (error) {
@@ -483,7 +485,7 @@ export const safePlaceOrder = async (
 
 // 활성 거래 현황 조회
 export const getActiveTradingStatus = () => {
-  return tradingConflictManager.getActiveTradeStatus()
+  return cryptoTradingConflictManager.getActiveCryptoTradeStatus()
 }
 
 export default {
