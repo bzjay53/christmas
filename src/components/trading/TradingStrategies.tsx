@@ -264,6 +264,36 @@ export function TradingStrategies({ selectedSymbol, onStrategySelect }: TradingS
         </div>
       </div>
 
+      {/* 업그레이드 안내 (무료 사용자용) */}
+      {profile && profile.subscription_tier === 'free' && (
+        <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-xl p-6 border border-yellow-500/30 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Target className="text-yellow-400" size={24} />
+            <h3 className="text-yellow-400 font-bold text-lg">매매 전략 업그레이드 필요</h3>
+          </div>
+          <p className="text-gray-300 mb-4">
+            전문 매매 전략은 Basic 플랜 이상에서 이용 가능합니다. 업그레이드하시면 초단타, 단기, 중기, 장기 전략을 모두 사용할 수 있습니다.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>스캘핑 전략</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span>AI 매매 신호</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span>리스크 관리</span>
+            </div>
+          </div>
+          <button className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold px-6 py-3 rounded-lg hover:from-yellow-400 hover:to-orange-400 transition-all">
+            플랜 업그레이드
+          </button>
+        </div>
+      )}
+
       {/* 필터 버튼들 */}
       <div className="flex flex-wrap gap-2 mb-6">
         {[

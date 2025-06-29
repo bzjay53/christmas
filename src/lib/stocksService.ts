@@ -4,6 +4,8 @@
 import { supabase } from './supabase'
 import { getBinanceAPI, getBinanceWebSocket } from './binanceAPI'
 import { cryptoTradingConflictManager, type CryptoTradeRequest, type TradeConflict } from './tradingConflictManager'
+import { createUserBinanceAPI, UserBinanceAPIError, type UserSpotOrderRequest } from './userBinanceAPI'
+import { getUserApiStatus } from './apiKeyService'
 
 export interface Crypto {
   symbol: string
@@ -420,9 +422,18 @@ export const safePlaceOrder = async (
   quantity: number, 
   price?: number,
   userTier: 'free' | 'basic' | 'premium' | 'vip' = 'free'
-): Promise<{ success: boolean; message: string; conflict?: TradeConflict; alternatives?: any[] }> => {
+): Promise<{ success: boolean; message: string; conflict?: TradeConflict; alternatives?: any[]; orderId?: number }> => {
   try {
     console.log(`🛡️ 안전한 거래 요청: ${userId} -> ${cryptoSymbol} ${orderType} ${quantity} 코인`)
+
+    // 1. 사용자 API 키 상태 확인
+    const apiStatus = await getUserApiStatus(userId);
+    if (!apiStatus.hasApiKeys || !apiStatus.isActive) {
+      return {
+        success: false,
+        message: '거래를 위해서는 먼저 설정 페이지에서 개인 Binance API 키를 등록해주세요. 보안을 위해 개인 API 키가 필요합니다.'
+      };
+    }
 
     const tradeRequest: CryptoTradeRequest = {
       userId,
@@ -434,7 +445,7 @@ export const safePlaceOrder = async (
       userTier
     }
 
-    // 1. 충돌 감지
+    // 2. 충돌 감지
     const conflict = await cryptoTradingConflictManager.detectTradeConflict(tradeRequest)
     
     if (conflict) {
@@ -451,27 +462,71 @@ export const safePlaceOrder = async (
       }
     }
 
-    // 2. 시간 분산 권장
+    // 3. 시간 분산 권장
     const recommendedDelay = cryptoTradingConflictManager.getOptimalTradingDelay(cryptoSymbol)
     if (recommendedDelay > 1000) {
       console.log(`⏰ 권장 지연 시간: ${recommendedDelay}ms`)
     }
 
-    // 3. 거래 요청 등록
+    // 4. 거래 요청 등록
     await cryptoTradingConflictManager.registerCryptoTradeRequest(tradeRequest)
 
-    // 4. 실제 주문 처리 (시뮬레이션)
-    // 실제 환경에서는 binanceAPI.createSpotOrder() 호출
-    console.log(`✅ 주문 처리 시뮬레이션: ${cryptoSymbol} ${orderType} ${quantity} 코인`)
-    
-    // 5. 거래 완료 처리
-    setTimeout(() => {
-      cryptoTradingConflictManager.completeCryptoTradeRequest(userId, cryptoSymbol)
-    }, 2000) // 2초 후 완료 처리 (암호화폐는 더 빠름)
+    // 5. 사용자별 Binance API로 실제 주문 처리
+    try {
+      const userAPI = createUserBinanceAPI(userId);
+      
+      // 현재 가격 조회 (MARKET 주문의 경우)
+      if (!price) {
+        const priceData = await userAPI.getPrice(cryptoSymbol);
+        price = priceData.price;
+      }
 
-    return {
-      success: true,
-      message: `주문이 성공적으로 처리되었습니다. ${recommendedDelay > 1000 ? `(${recommendedDelay/1000}초 지연 권장)` : ''}`
+      // 주문 요청 생성
+      const orderRequest: UserSpotOrderRequest = {
+        symbol: cryptoSymbol,
+        side: orderType.toUpperCase() as 'BUY' | 'SELL',
+        type: 'MARKET', // 현재는 시장가 주문만 지원
+        quantity: quantity
+      };
+
+      // 실제 주문 실행
+      const orderResult = await userAPI.createSpotOrder(orderRequest);
+      
+      console.log(`✅ 실제 거래 완료: ${cryptoSymbol} ${orderType} ${quantity} 코인`, orderResult);
+
+      // 거래 완료 처리
+      setTimeout(() => {
+        cryptoTradingConflictManager.completeCryptoTradeRequest(userId, cryptoSymbol)
+      }, 2000);
+
+      // 거래 내역을 데이터베이스에 저장
+      await saveTradeToDatabase(userId, cryptoSymbol, orderType, quantity, price, orderResult);
+
+      return {
+        success: true,
+        message: `✅ 주문이 성공적으로 처리되었습니다!\n주문 ID: ${orderResult.orderId}\n실행 수량: ${orderResult.executedQty}\n평균 가격: $${(orderResult.cummulativeQuoteQty / orderResult.executedQty).toFixed(2)}`,
+        orderId: orderResult.orderId
+      };
+
+    } catch (apiError) {
+      console.error('❌ Binance API 주문 실패:', apiError);
+      
+      let errorMessage = '주문 처리 중 오류가 발생했습니다.';
+      
+      if (apiError instanceof UserBinanceAPIError) {
+        if (apiError.code === 401) {
+          errorMessage = 'API 키가 유효하지 않습니다. 설정 페이지에서 API 키를 다시 확인해주세요.';
+        } else if (apiError.code === 400) {
+          errorMessage = `주문 파라미터 오류: ${apiError.message}`;
+        } else {
+          errorMessage = `거래 오류: ${apiError.message}`;
+        }
+      }
+
+      return {
+        success: false,
+        message: errorMessage
+      };
     }
 
   } catch (error) {
@@ -482,6 +537,41 @@ export const safePlaceOrder = async (
     }
   }
 }
+
+// 거래 내역을 데이터베이스에 저장
+const saveTradeToDatabase = async (
+  userId: string,
+  symbol: string,
+  orderType: 'buy' | 'sell',
+  quantity: number,
+  price: number,
+  orderResult: any
+): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('trades')
+      .insert({
+        user_id: userId,
+        symbol: symbol,
+        trade_type: orderType,
+        order_type: 'market',
+        quantity: quantity,
+        price: orderResult.cummulativeQuoteQty / orderResult.executedQty, // 평균 체결가
+        total_amount: orderResult.cummulativeQuoteQty,
+        fee_amount: orderResult.fills.reduce((sum: number, fill: any) => sum + parseFloat(fill.commission), 0),
+        status: 'filled',
+        execution_time: new Date(orderResult.transactTime).toISOString()
+      });
+
+    if (error) {
+      console.error('거래 내역 저장 실패:', error);
+    } else {
+      console.log('✅ 거래 내역 데이터베이스 저장 완료');
+    }
+  } catch (error) {
+    console.error('거래 내역 저장 중 오류:', error);
+  }
+};
 
 // 활성 거래 현황 조회
 export const getActiveTradingStatus = () => {

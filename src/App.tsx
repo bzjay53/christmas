@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { CryptoCard } from './components/crypto/CryptoCard';
 import { TradingButtons } from './components/crypto/TradingButtons';
 import { LiveChart } from './components/crypto/LiveChart';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthButton } from './components/auth/AuthButton';
-import { AITradingDashboard } from './components/ai/AITradingDashboard';
-import { TradingStrategies } from './components/trading/TradingStrategies';
-import { RiskManagement } from './components/risk/RiskManagement';
+import { TradingPage } from './pages/TradingPage';
+import { PortfolioPage } from './pages/PortfolioPage';
+import { TradingHistoryPage } from './pages/TradingHistoryPage';
+import { SettingsPage } from './pages/SettingsPage';
 import type { CryptoData } from './types/crypto';
 import { safePlaceOrder } from './lib/stocksService';
 import './App.css';
@@ -87,9 +89,19 @@ const PortfolioSummary: React.FC<{ portfolio: Portfolio }> = ({ portfolio }) => 
 // 메인 대시보드 컴포넌트 (내부에서 useAuth 사용)
 function MainDashboard() {
   const { user, profile, signOut, showLoginModal } = useAuth();
+  const location = useLocation();
   
-  // 상태 관리
-  const [activeMenu, setActiveMenu] = useState<'현물트레이딩' | '포트폴리오' | '거래내역' | '설정'>('현물트레이딩');
+  // 현재 경로에 따라 활성 메뉴 결정
+  const getActiveMenu = () => {
+    switch (location.pathname) {
+      case '/portfolio': return '포트폴리오';
+      case '/history': return '거래내역';
+      case '/settings': return '설정';
+      default: return '현물트레이딩';
+    }
+  };
+  
+  const activeMenu = getActiveMenu();
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([
     {
       symbol: 'BTCUSDT',
@@ -163,27 +175,15 @@ function MainDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // 메뉴 핸들러
+  // 메뉴 핸들러 - 현재 AppRouter.tsx에서 처리됨
   const handleMenuClick = useCallback((menuItem: string) => {
     switch (menuItem) {
-      case '현물트레이딩':
-        setActiveMenu('현물트레이딩');
-        break;
-      case '포트폴리오':
-        setActiveMenu('포트폴리오');
-        break;
-      case '거래내역':
-        setActiveMenu('거래내역');
-        break;
       case '로그인':
         if (user) {
           signOut();
         } else {
           showLoginModal();
         }
-        break;
-      case '설정':
-        setActiveMenu('설정');
         break;
       case '24/7 글로벌 거래':
         alert('🌍 24시간 글로벌 거래가 활성화되어 있습니다!\n실시간으로 전 세계 암호화폐 시장에 접근할 수 있습니다.');
@@ -524,50 +524,29 @@ function MainDashboard() {
         <div className="border-l-4 border-blue-400 pl-6 ml-4">
           {activeMenu === '현물트레이딩' && (
             <div className="space-y-8">
-              {/* AI 자동 매매 대시보드 */}
+              {/* AI 자동 매매 대시보드 - 현재 AppRouter.tsx에서 처리됨 */}
+              {/*
               <div className="relative">
                 <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
                 <AITradingDashboard selectedSymbol={selectedSymbol} />
               </div>
+              */}
 
-              {/* 매매 전략 시스템 */}
+              {/* 매매 전략 시스템 - 현재 AppRouter.tsx에서 처리됨 */}
+              {/*
               <div className="relative">
                 <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
                 <TradingStrategies 
                 selectedSymbol={selectedSymbol} 
                 onStrategySelect={(strategy) => {
-                  if (!user) {
-                    showLoginModal();
-                    return;
-                  }
-                  
-                  // 전략 적용 확인
-                  const confirm = window.confirm(
-                    `🎯 "${strategy.name}" 전략을 적용하시겠습니까?\n\n` +
-                    `📊 전략 정보:\n` +
-                    `• 유형: ${strategy.type}\n` +
-                    `• 리스크: ${strategy.risk_level}\n` +
-                    `• 목표 수익률: +${strategy.profit_target}%\n` +
-                    `• 손절라인: -${strategy.stop_loss}%\n` +
-                    `• 평균 성공률: ${strategy.success_rate}%\n\n` +
-                    `⚠️ 이 전략이 향후 거래에 자동 적용됩니다.`
-                  );
-                  
-                  if (confirm) {
-                    // 실제 전략 적용 로직
-                    alert(`✅ "${strategy.name}" 전략이 적용되었습니다!\n\n` +
-                          `🎯 ${selectedSymbol}에 대해 ${strategy.type} 전략으로 거래합니다.\n` +
-                          `📈 목표 수익률: +${strategy.profit_target}%\n` +
-                          `🛡️ 손절라인: -${strategy.stop_loss}%\n\n` +
-                          `자동 매매를 원하시면 AI 트레이딩 대시보드에서 활성화하세요.`);
-                    
-                    console.log('적용된 전략:', strategy);
-                  }
+                  // 전략 적용 로직은 TradingPage.tsx에서 처리됨
                 }}
               />
             </div>
+              */}
 
-              {/* 리스크 관리 시스템 */}
+              {/* 리스크 관리 시스템 - 현재 AppRouter.tsx에서 처리됨 */}
+              {/*
               <div className="relative">
                 <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
                 <RiskManagement 
@@ -575,6 +554,7 @@ function MainDashboard() {
                   currentPortfolioValue={portfolio.totalValue}
                 />
               </div>
+              */}
             </div>
           )}
 

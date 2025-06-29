@@ -177,25 +177,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 로그인
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      return { error };
+      if (error) {
+        console.error('로그인 에러:', error);
+        return { error };
+      }
+
+      if (data.user) {
+        console.log('로그인 성공:', data.user.email);
+        // 프로필 즉시 로드
+        const userProfile = await fetchUserProfile(data.user.id);
+        setProfile(userProfile);
+      }
+
+      return { error: null };
     } catch (error) {
-      console.error('로그인 에러:', error);
+      console.error('로그인 예외:', error);
       return { error: error as AuthError };
+    } finally {
+      setLoading(false);
     }
   };
 
   // 로그아웃
   const signOut = async () => {
+    setLoading(true);
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('로그아웃 에러:', error);
+        throw error;
+      }
+      
+      // 상태 즉시 클리어
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      setIsLoginModalOpen(false);
+      
+      console.log('로그아웃 완료');
     } catch (error) {
-      console.error('로그아웃 에러:', error);
+      console.error('로그아웃 예외:', error);
+      // 강제로 상태 클리어
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+    } finally {
+      setLoading(false);
     }
   };
 

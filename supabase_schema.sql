@@ -11,6 +11,12 @@ CREATE TABLE profiles (
   portfolio_balance_usdt NUMERIC(15,2) DEFAULT 0.00,
   available_cash_usdt NUMERIC(15,2) DEFAULT 1000.00,
   kyc_status TEXT DEFAULT 'pending' CHECK (kyc_status IN ('pending', 'verified', 'rejected')),
+  -- 개인 Binance API 키 (암호화 저장)
+  binance_api_key_encrypted TEXT,
+  binance_secret_key_encrypted TEXT,
+  binance_api_active BOOLEAN DEFAULT FALSE,
+  binance_api_permissions TEXT[], -- ['SPOT', 'FUTURES'] 등
+  api_last_verified TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
