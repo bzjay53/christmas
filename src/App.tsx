@@ -353,62 +353,116 @@ function MainDashboard() {
           
           {/* 메뉴 패널 */}
           <div className="lg:col-span-3 bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg">
-            <h3 className="text-blue-400 text-xl font-bold mb-6">
-              메뉴
-            </h3>
-            <div className="space-y-3">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-blue-400 text-xl font-bold">
+                메뉴
+              </h3>
+              <div className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">
+                Navigation
+              </div>
+            </div>
+            
+            <div className="space-y-2">
               <div 
                 onClick={() => handleMenuClick('현물트레이딩')}
-                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                className={`group font-semibold flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all transform hover:scale-105 ${
                   activeMenu === '현물트레이딩' 
-                    ? 'text-blue-400 bg-blue-500/10' 
-                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                    ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg border border-blue-400/50' 
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-blue-400 border border-transparent'
                 }`}
               >
-                <span>현물트레이딩</span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activeMenu === '현물트레이딩' ? 'bg-white' : 'bg-gray-500 group-hover:bg-blue-400'
+                  }`}></div>
+                  <span>현물트레이딩</span>
+                </div>
+                {activeMenu === '현물트레이딩' && (
+                  <div className="text-xs bg-white/20 px-2 py-1 rounded">활성</div>
+                )}
               </div>
+
               <div 
                 onClick={() => handleMenuClick('포트폴리오')}
-                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                className={`group font-semibold flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all transform hover:scale-105 ${
                   activeMenu === '포트폴리오' 
-                    ? 'text-blue-400 bg-blue-500/10' 
-                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                    ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg border border-blue-400/50' 
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-blue-400 border border-transparent'
                 }`}
               >
-                <span>포트폴리오</span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activeMenu === '포트폴리오' ? 'bg-white' : 'bg-gray-500 group-hover:bg-blue-400'
+                  }`}></div>
+                  <span>포트폴리오</span>
+                </div>
+                {activeMenu === '포트폴리오' && (
+                  <div className="text-xs bg-white/20 px-2 py-1 rounded">활성</div>
+                )}
               </div>
+
               <div 
                 onClick={() => handleMenuClick('거래내역')}
-                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                className={`group font-semibold flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all transform hover:scale-105 ${
                   activeMenu === '거래내역' 
-                    ? 'text-blue-400 bg-blue-500/10' 
-                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                    ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg border border-blue-400/50' 
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-blue-400 border border-transparent'
                 }`}
               >
-                <span>거래내역</span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activeMenu === '거래내역' ? 'bg-white' : 'bg-gray-500 group-hover:bg-blue-400'
+                  }`}></div>
+                  <span>거래내역</span>
+                </div>
+                {activeMenu === '거래내역' && (
+                  <div className="text-xs bg-white/20 px-2 py-1 rounded">활성</div>
+                )}
               </div>
+
+              <hr className="border-gray-700 my-3" />
+
               <div 
                 onClick={() => handleMenuClick('로그인')}
-                className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer hover:text-green-400"
+                className="group text-gray-300 flex items-center justify-between p-3 hover:bg-gray-700/50 rounded-lg transition-all cursor-pointer hover:text-green-400 border border-transparent"
               >
-                <span>{user ? '로그아웃' : '로그인'}</span>
-                {user && <span className="text-xs text-green-400">({profile?.subscription_tier})</span>}
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full group-hover:bg-green-400"></div>
+                  <span>{user ? '로그아웃' : '로그인'}</span>
+                </div>
+                {user && <span className="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded">({profile?.subscription_tier})</span>}
               </div>
+
               <div 
                 onClick={() => handleMenuClick('설정')}
-                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                className={`group font-semibold flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all transform hover:scale-105 ${
                   activeMenu === '설정' 
-                    ? 'text-blue-400 bg-blue-500/10' 
-                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                    ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg border border-blue-400/50' 
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-blue-400 border border-transparent'
                 }`}
               >
-                <span>설정</span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activeMenu === '설정' ? 'bg-white' : 'bg-gray-500 group-hover:bg-blue-400'
+                  }`}></div>
+                  <span>설정</span>
+                </div>
+                {activeMenu === '설정' && (
+                  <div className="text-xs bg-white/20 px-2 py-1 rounded">활성</div>
+                )}
               </div>
+
+              <hr className="border-gray-700 my-3" />
+
               <div 
                 onClick={() => handleMenuClick('24/7 글로벌 거래')}
-                className="text-yellow-400 flex items-center gap-3 p-2 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer hover:text-yellow-300"
+                className="group text-yellow-400 flex items-center justify-between p-3 hover:bg-yellow-500/10 rounded-lg transition-all cursor-pointer hover:text-yellow-300 border border-yellow-500/20 hover:border-yellow-400/50"
               >
-                <span>24/7 글로벌 거래</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                  <span>24/7 글로벌 거래</span>
+                </div>
+                <div className="text-xs bg-yellow-500/20 px-2 py-1 rounded">LIVE</div>
               </div>
             </div>
           </div>
@@ -432,17 +486,54 @@ function MainDashboard() {
           </div>
         </div>
 
-        {/* 메뉴별 콘텐츠 렌더링 */}
-        {activeMenu === '현물트레이딩' && (
-          <>
-            {/* AI 자동 매매 대시보드 */}
-            <div className="mb-8">
-              <AITradingDashboard selectedSymbol={selectedSymbol} />
+        {/* 메뉴 연결선 및 선택된 메뉴 표시 */}
+        <div className="relative mb-6">
+          {/* 연결선 */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-px h-8 bg-gradient-to-b from-blue-400 to-transparent"></div>
+          <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 w-3 h-3 bg-blue-400 rounded-full animate-pulse -translate-y-1"></div>
+          
+          {/* 선택된 메뉴 표시 박스 */}
+          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-4 border border-blue-500/30 relative">
+            {/* 위쪽 화살표 */}
+            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-blue-500 rotate-45 border-t border-l border-blue-400/50"></div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                <h2 className="text-white font-bold text-xl">
+                  현재 선택: <span className="text-blue-400">{activeMenu}</span>
+                </h2>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-blue-400 text-sm">활성 메뉴</div>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+              </div>
             </div>
+            
+            {/* 메뉴별 설명 */}
+            <div className="mt-3 text-gray-300 text-sm">
+              {activeMenu === '현물트레이딩' && '암호화폐 현물 거래, AI 트레이딩, 매매 전략을 관리합니다.'}
+              {activeMenu === '포트폴리오' && '보유 중인 암호화폐 자산과 투자 성과를 확인합니다.'}
+              {activeMenu === '거래내역' && '과거 거래 기록과 수익률을 분석합니다.'}
+              {activeMenu === '설정' && '계정 정보, 거래 설정, 알림 설정을 관리합니다.'}
+            </div>
+          </div>
+        </div>
 
-            {/* 매매 전략 시스템 */}
-            <div className="mb-8">
-              <TradingStrategies 
+        {/* 메뉴별 콘텐츠 렌더링 */}
+        <div className="border-l-4 border-blue-400 pl-6 ml-4">
+          {activeMenu === '현물트레이딩' && (
+            <div className="space-y-8">
+              {/* AI 자동 매매 대시보드 */}
+              <div className="relative">
+                <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
+                <AITradingDashboard selectedSymbol={selectedSymbol} />
+              </div>
+
+              {/* 매매 전략 시스템 */}
+              <div className="relative">
+                <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
+                <TradingStrategies 
                 selectedSymbol={selectedSymbol} 
                 onStrategySelect={(strategy) => {
                   if (!user) {
@@ -476,18 +567,20 @@ function MainDashboard() {
               />
             </div>
 
-            {/* 리스크 관리 시스템 */}
-            <div className="mb-8">
-              <RiskManagement 
-                selectedSymbol={selectedSymbol}
-                currentPortfolioValue={portfolio.totalValue}
-              />
+              {/* 리스크 관리 시스템 */}
+              <div className="relative">
+                <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
+                <RiskManagement 
+                  selectedSymbol={selectedSymbol}
+                  currentPortfolioValue={portfolio.totalValue}
+                />
+              </div>
             </div>
-          </>
-        )}
+          )}
 
-        {activeMenu === '포트폴리오' && (
-          <div className="mb-8">
+          {activeMenu === '포트폴리오' && (
+            <div className="relative">
+              <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
               <h2 className="text-white font-bold text-xl mb-6">📊 내 포트폴리오</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -523,11 +616,12 @@ function MainDashboard() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
 
-        {activeMenu === '거래내역' && (
-          <div className="mb-8">
+          {activeMenu === '거래내역' && (
+            <div className="relative">
+              <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
               <h2 className="text-white font-bold text-xl mb-6">📋 거래 내역</h2>
               {user ? (
@@ -560,11 +654,12 @@ function MainDashboard() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+            </div>
+          )}
 
-        {activeMenu === '설정' && (
-          <div className="mb-8">
+          {activeMenu === '설정' && (
+            <div className="relative">
+              <div className="absolute -left-8 top-4 w-3 h-3 bg-blue-400 rounded-full"></div>
             <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
               <h2 className="text-white font-bold text-xl mb-6">⚙️ 설정</h2>
               {user ? (
@@ -616,8 +711,9 @@ function MainDashboard() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* 인기 코인 TOP 10 테이블 */}
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg mb-8">
