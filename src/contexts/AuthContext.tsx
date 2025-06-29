@@ -27,6 +27,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: any }>;
   hasPermission: (feature: string) => boolean;
+  showLoginModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -225,6 +226,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return tierPermissions.features.includes(feature) || tierPermissions.features.includes('all');
   };
 
+  // 로그인 모달 표시 (간단한 구현)
+  const showLoginModal = () => {
+    // 실제로는 모달 상태를 관리해야 하지만, 임시로 alert 사용
+    const email = prompt('이메일을 입력하세요:');
+    if (email) {
+      const password = prompt('비밀번호를 입력하세요:');
+      if (password) {
+        signIn(email, password).then(({ error }) => {
+          if (error) {
+            alert(`로그인 실패: ${error.message}`);
+          } else {
+            alert('로그인 성공!');
+          }
+        });
+      }
+    }
+  };
+
   const value: AuthContextType = {
     user,
     profile,
@@ -235,6 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     updateProfile,
     hasPermission,
+    showLoginModal,
   };
 
   return (

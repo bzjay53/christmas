@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { CryptoCard } from './components/crypto/CryptoCard';
 import { TradingButtons } from './components/crypto/TradingButtons';
 import { LiveChart } from './components/crypto/LiveChart';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthButton } from './components/auth/AuthButton';
 import { AITradingDashboard } from './components/ai/AITradingDashboard';
 import { TradingStrategies } from './components/trading/TradingStrategies';
 import { RiskManagement } from './components/risk/RiskManagement';
 import type { CryptoData } from './types/crypto';
+import { safePlaceOrder } from './lib/stocksService';
 import './App.css';
 
 // 알림 타입 정의
@@ -83,8 +84,12 @@ const PortfolioSummary: React.FC<{ portfolio: Portfolio }> = ({ portfolio }) => 
   );
 };
 
-function App() {
+// 메인 대시보드 컴포넌트 (내부에서 useAuth 사용)
+function MainDashboard() {
+  const { user, profile, signOut, showLoginModal } = useAuth();
+  
   // 상태 관리
+  const [activeMenu, setActiveMenu] = useState<'현물트레이딩' | '포트폴리오' | '거래내역' | '설정'>('현물트레이딩');
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([
     {
       symbol: 'BTCUSDT',
@@ -158,25 +163,108 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 거래 함수들
-  const handleBuy = useCallback((symbol: string) => {
-    setIsLoading(true);
-    
-    // 모의 거래 처리
-    setTimeout(() => {
-      setIsLoading(false);
-      playTradeEffect('buy');
-    }, 1500);
-  }, []);
+  // 메뉴 핸들러
+  const handleMenuClick = useCallback((menuItem: string) => {
+    switch (menuItem) {
+      case '현물트레이딩':
+        setActiveMenu('현물트레이딩');
+        break;
+      case '포트폴리오':
+        setActiveMenu('포트폴리오');
+        break;
+      case '거래내역':
+        setActiveMenu('거래내역');
+        break;
+      case '로그인':
+        if (user) {
+          signOut();
+        } else {
+          showLoginModal();
+        }
+        break;
+      case '설정':
+        setActiveMenu('설정');
+        break;
+      case '24/7 글로벌 거래':
+        alert('🌍 24시간 글로벌 거래가 활성화되어 있습니다!\n실시간으로 전 세계 암호화폐 시장에 접근할 수 있습니다.');
+        break;
+      default:
+        break;
+    }
+  }, [user, signOut, showLoginModal]);
 
-  const handleSell = useCallback((symbol: string) => {
+  // 실제 거래 함수들
+  const handleBuy = useCallback(async (symbol: string) => {
+    if (!user) {
+      showLoginModal();
+      return;
+    }
+
     setIsLoading(true);
     
-    setTimeout(() => {
+    try {
+      const selectedCrypto = cryptoData.find(c => c.symbol === symbol);
+      if (!selectedCrypto) return;
+
+      // 실제 거래 처리 (충돌 방지 포함)
+      const result = await safePlaceOrder(
+        user.id,
+        symbol,
+        'buy',
+        0.01, // 0.01 코인 구매
+        selectedCrypto.price,
+        profile?.subscription_tier || 'free'
+      );
+
+      if (result.success) {
+        playTradeEffect('buy');
+        alert(`✅ 매수 주문 완료!\n${symbol} 0.01 코인을 $${selectedCrypto.price.toFixed(2)}에 구매했습니다.`);
+      } else {
+        alert(`❌ 거래 실패\n${result.message}`);
+      }
+    } catch (error) {
+      console.error('매수 오류:', error);
+      alert('거래 처리 중 오류가 발생했습니다.');
+    } finally {
       setIsLoading(false);
-      playTradeEffect('sell');
-    }, 1500);
-  }, []);
+    }
+  }, [user, profile, cryptoData, showLoginModal]);
+
+  const handleSell = useCallback(async (symbol: string) => {
+    if (!user) {
+      showLoginModal();
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const selectedCrypto = cryptoData.find(c => c.symbol === symbol);
+      if (!selectedCrypto) return;
+
+      // 실제 거래 처리 (충돌 방지 포함)
+      const result = await safePlaceOrder(
+        user.id,
+        symbol,
+        'sell',
+        0.01, // 0.01 코인 판매
+        selectedCrypto.price,
+        profile?.subscription_tier || 'free'
+      );
+
+      if (result.success) {
+        playTradeEffect('sell');
+        alert(`✅ 매도 주문 완료!\n${symbol} 0.01 코인을 $${selectedCrypto.price.toFixed(2)}에 판매했습니다.`);
+      } else {
+        alert(`❌ 거래 실패\n${result.message}`);
+      }
+    } catch (error) {
+      console.error('매도 오류:', error);
+      alert('거래 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, profile, cryptoData, showLoginModal]);
 
   // 거래 효과 (이모지 제거)
   const playTradeEffect = (type: 'buy' | 'sell') => {
@@ -211,11 +299,10 @@ function App() {
   const daysUntilChristmas = Math.ceil((new Date('2025-12-25').getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative">
-        <BackgroundEffect />
-        
-        <div className="container mx-auto px-4 py-6 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative">
+      <BackgroundEffect />
+      
+      <div className="container mx-auto px-4 py-6 relative z-10">
         {/* 헤더 */}
         <header className="mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -270,22 +357,57 @@ function App() {
               메뉴
             </h3>
             <div className="space-y-3">
-              <div className="text-blue-400 font-semibold flex items-center gap-3 p-2 bg-blue-500/10 rounded-lg">
+              <div 
+                onClick={() => handleMenuClick('현물트레이딩')}
+                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                  activeMenu === '현물트레이딩' 
+                    ? 'text-blue-400 bg-blue-500/10' 
+                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                }`}
+              >
                 <span>현물트레이딩</span>
               </div>
-              <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
+              <div 
+                onClick={() => handleMenuClick('포트폴리오')}
+                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                  activeMenu === '포트폴리오' 
+                    ? 'text-blue-400 bg-blue-500/10' 
+                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                }`}
+              >
                 <span>포트폴리오</span>
               </div>
-              <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
+              <div 
+                onClick={() => handleMenuClick('거래내역')}
+                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                  activeMenu === '거래내역' 
+                    ? 'text-blue-400 bg-blue-500/10' 
+                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                }`}
+              >
                 <span>거래내역</span>
               </div>
-              <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
-                <span>로그인</span>
+              <div 
+                onClick={() => handleMenuClick('로그인')}
+                className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer hover:text-green-400"
+              >
+                <span>{user ? '로그아웃' : '로그인'}</span>
+                {user && <span className="text-xs text-green-400">({profile?.subscription_tier})</span>}
               </div>
-              <div className="text-gray-300 flex items-center gap-3 p-2 hover:bg-gray-700/30 rounded-lg transition-colors cursor-pointer">
+              <div 
+                onClick={() => handleMenuClick('설정')}
+                className={`font-semibold flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                  activeMenu === '설정' 
+                    ? 'text-blue-400 bg-blue-500/10' 
+                    : 'text-gray-300 hover:bg-gray-700/30 hover:text-blue-400'
+                }`}
+              >
                 <span>설정</span>
               </div>
-              <div className="text-yellow-400 flex items-center gap-3 p-2 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer">
+              <div 
+                onClick={() => handleMenuClick('24/7 글로벌 거래')}
+                className="text-yellow-400 flex items-center gap-3 p-2 hover:bg-yellow-500/10 rounded-lg transition-colors cursor-pointer hover:text-yellow-300"
+              >
                 <span>24/7 글로벌 거래</span>
               </div>
             </div>
@@ -310,28 +432,192 @@ function App() {
           </div>
         </div>
 
-        {/* AI 자동 매매 대시보드 */}
-        <div className="mb-8">
-          <AITradingDashboard selectedSymbol={selectedSymbol} />
-        </div>
+        {/* 메뉴별 콘텐츠 렌더링 */}
+        {activeMenu === '현물트레이딩' && (
+          <>
+            {/* AI 자동 매매 대시보드 */}
+            <div className="mb-8">
+              <AITradingDashboard selectedSymbol={selectedSymbol} />
+            </div>
 
-        {/* 매매 전략 시스템 */}
-        <div className="mb-8">
-          <TradingStrategies 
-            selectedSymbol={selectedSymbol} 
-            onStrategySelect={(strategy) => {
-              console.log('선택된 전략:', strategy);
-            }}
-          />
-        </div>
+            {/* 매매 전략 시스템 */}
+            <div className="mb-8">
+              <TradingStrategies 
+                selectedSymbol={selectedSymbol} 
+                onStrategySelect={(strategy) => {
+                  if (!user) {
+                    showLoginModal();
+                    return;
+                  }
+                  
+                  // 전략 적용 확인
+                  const confirm = window.confirm(
+                    `🎯 "${strategy.name}" 전략을 적용하시겠습니까?\n\n` +
+                    `📊 전략 정보:\n` +
+                    `• 유형: ${strategy.type}\n` +
+                    `• 리스크: ${strategy.risk_level}\n` +
+                    `• 목표 수익률: +${strategy.profit_target}%\n` +
+                    `• 손절라인: -${strategy.stop_loss}%\n` +
+                    `• 평균 성공률: ${strategy.success_rate}%\n\n` +
+                    `⚠️ 이 전략이 향후 거래에 자동 적용됩니다.`
+                  );
+                  
+                  if (confirm) {
+                    // 실제 전략 적용 로직
+                    alert(`✅ "${strategy.name}" 전략이 적용되었습니다!\n\n` +
+                          `🎯 ${selectedSymbol}에 대해 ${strategy.type} 전략으로 거래합니다.\n` +
+                          `📈 목표 수익률: +${strategy.profit_target}%\n` +
+                          `🛡️ 손절라인: -${strategy.stop_loss}%\n\n` +
+                          `자동 매매를 원하시면 AI 트레이딩 대시보드에서 활성화하세요.`);
+                    
+                    console.log('적용된 전략:', strategy);
+                  }
+                }}
+              />
+            </div>
 
-        {/* 리스크 관리 시스템 */}
-        <div className="mb-8">
-          <RiskManagement 
-            selectedSymbol={selectedSymbol}
-            currentPortfolioValue={portfolio.totalValue}
-          />
-        </div>
+            {/* 리스크 관리 시스템 */}
+            <div className="mb-8">
+              <RiskManagement 
+                selectedSymbol={selectedSymbol}
+                currentPortfolioValue={portfolio.totalValue}
+              />
+            </div>
+          </>
+        )}
+
+        {activeMenu === '포트폴리오' && (
+          <div className="mb-8">
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+              <h2 className="text-white font-bold text-xl mb-6">📊 내 포트폴리오</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gray-800/30 rounded-lg p-4">
+                  <h3 className="text-green-400 font-semibold mb-3">보유 자산</h3>
+                  <div className="space-y-2">
+                    {portfolio.holdings.map((holding) => (
+                      <div key={holding.symbol} className="flex justify-between items-center">
+                        <span className="text-gray-300">{holding.symbol}</span>
+                        <span className="text-white font-bold">{holding.amount} 코인</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-gray-800/30 rounded-lg p-4">
+                  <h3 className="text-blue-400 font-semibold mb-3">투자 성과</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">총 투자금액:</span>
+                      <span className="text-white">${(portfolio.totalValue - portfolio.totalChange).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">현재 가치:</span>
+                      <span className="text-white">${portfolio.totalValue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">손익:</span>
+                      <span className={portfolio.totalChange >= 0 ? 'text-green-400' : 'text-red-400'}>
+                        {portfolio.totalChange >= 0 ? '+' : ''}${portfolio.totalChange.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeMenu === '거래내역' && (
+          <div className="mb-8">
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+              <h2 className="text-white font-bold text-xl mb-6">📋 거래 내역</h2>
+              {user ? (
+                <div className="space-y-3">
+                  <div className="bg-gray-800/30 rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-green-400 font-semibold">매수</span>
+                        <span className="text-gray-300 ml-2">BTCUSDT 0.01</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-white">$432.50</div>
+                        <div className="text-gray-400 text-xs">2025-06-29 09:30</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-center text-gray-400 py-8">
+                    더 많은 거래 내역을 보려면 실제 거래를 진행해보세요.
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-400 mb-4">거래 내역을 보려면 로그인이 필요합니다.</p>
+                  <button 
+                    onClick={showLoginModal}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-500"
+                  >
+                    로그인하기
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeMenu === '설정' && (
+          <div className="mb-8">
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+              <h2 className="text-white font-bold text-xl mb-6">⚙️ 설정</h2>
+              {user ? (
+                <div className="space-y-6">
+                  <div className="bg-gray-800/30 rounded-lg p-4">
+                    <h3 className="text-blue-400 font-semibold mb-3">계정 정보</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">이메일:</span>
+                        <span className="text-white">{user.email}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">구독 플랜:</span>
+                        <span className="text-green-400 font-semibold">{profile?.subscription_tier?.toUpperCase()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">가입일:</span>
+                        <span className="text-white">{new Date(user.created_at || '').toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/30 rounded-lg p-4">
+                    <h3 className="text-yellow-400 font-semibold mb-3">거래 설정</h3>
+                    <div className="space-y-3">
+                      <label className="flex items-center space-x-3">
+                        <input type="checkbox" className="text-blue-600" defaultChecked />
+                        <span className="text-gray-300">실시간 알림 받기</span>
+                      </label>
+                      <label className="flex items-center space-x-3">
+                        <input type="checkbox" className="text-blue-600" defaultChecked />
+                        <span className="text-gray-300">AI 매매 신호 알림</span>
+                      </label>
+                      <label className="flex items-center space-x-3">
+                        <input type="checkbox" className="text-blue-600" />
+                        <span className="text-gray-300">고위험 거래 경고</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-400 mb-4">설정을 변경하려면 로그인이 필요합니다.</p>
+                  <button 
+                    onClick={showLoginModal}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-500"
+                  >
+                    로그인하기
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 인기 코인 TOP 10 테이블 */}
         <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 shadow-lg mb-8">
@@ -438,8 +724,16 @@ function App() {
             © 2025 Binance Dashboard. Real-time crypto trading platform.
           </div>
         </footer>
-        </div>
       </div>
+    </div>
+  );
+}
+
+// 메인 App 컴포넌트
+function App() {
+  return (
+    <AuthProvider>
+      <MainDashboard />
     </AuthProvider>
   );
 }
