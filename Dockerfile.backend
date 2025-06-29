@@ -1,0 +1,37 @@
+# Christmas Trading Backend - Python FastAPI
+# 원격 서버 배포용 백엔드 컨테이너
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 시스템 패키지 설치
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python 의존성 파일 복사
+COPY backend/requirements.txt .
+
+# Python 패키지 설치
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 백엔드 소스 코드 복사
+COPY backend/ .
+
+# 데이터 및 로그 디렉토리 생성
+RUN mkdir -p /app/data /app/logs
+
+# 실행 권한 부여
+RUN chmod +x /app/start.sh
+
+# 포트 노출
+EXPOSE 8080
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# 서비스 시작
+CMD ["./start.sh"]

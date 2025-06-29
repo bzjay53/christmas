@@ -1,0 +1,28 @@
+# Christmas Trading Orchestrator Dependencies
+
+# 파일 시스템 감시
+watchdog==3.0.0
+
+# JSON 처리
+jsonschema==4.20.0
+
+# WebSocket 클라이언트
+websockets==12.0
+
+# HTTP 클라이언트
+httpx==0.25.2
+
+# 비동기 처리
+aiofiles==23.2.1
+
+# 로깅
+structlog==23.2.0
+
+# 환경 변수
+python-dotenv==1.0.0
+
+# 스케줄링
+apscheduler==3.10.4
+
+# Redis 클라이언트
+redis==5.0.1

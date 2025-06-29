@@ -1,0 +1,144 @@
+# Christmas Trading - Production Docker Compose
+# 원격 서버 (31.220.83.213) 배포용 설정
+
+version: '3.8'
+
+services:
+  # 프론트엔드 서비스 (React + Vite)
+  christmas-frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: christmas-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_APP_ENV=production
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_BINANCE_API_KEY=${VITE_BINANCE_API_KEY}
+      - VITE_BINANCE_SECRET_KEY=${VITE_BINANCE_SECRET_KEY}
+      - VITE_BINANCE_TESTNET=false
+      - VITE_ENABLE_MOCK_DATA=false
+      - VITE_BACKEND_URL=http://31.220.83.213:8080
+    volumes:
+      - christmas-data:/app/data
+      - christmas-logs:/app/logs
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 백엔드 API 서비스 (Python + FastAPI)
+  christmas-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: christmas-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@christmas-db:5432/christmas_trading
+      - SUPABASE_URL=${VITE_SUPABASE_URL}
+      - SUPABASE_KEY=${VITE_SUPABASE_ANON_KEY}
+      - BINANCE_API_KEY=${VITE_BINANCE_API_KEY}
+      - BINANCE_SECRET_KEY=${VITE_BINANCE_SECRET_KEY}
+      - REDIS_URL=redis://christmas-redis:6379
+    volumes:
+      - christmas-data:/app/data
+      - christmas-logs:/app/logs
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    depends_on:
+      - christmas-db
+      - christmas-redis
+
+  # PostgreSQL 데이터베이스
+  christmas-db:
+    image: postgres:15-alpine
+    container_name: christmas-db
+    environment:
+      - POSTGRES_DB=christmas_trading
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-christmas_secure_2025}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./supabase_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
+  # Redis 캐시 (실시간 데이터)
+  christmas-redis:
+    image: redis:7-alpine
+    container_name: christmas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Nginx 리버스 프록시
+  christmas-nginx:
+    image: nginx:alpine
+    container_name: christmas-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - christmas-ssl:/etc/nginx/ssl
+    networks:
+      - christmas-network
+    depends_on:
+      - christmas-frontend
+      - christmas-backend
+    restart: unless-stopped
+
+  # JSON 기반 오케스트레이션 서비스
+  christmas-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    container_name: christmas-orchestrator
+    environment:
+      - ENV=production
+      - JSON_DATA_PATH=/app/data/trading_signals.json
+      - WEBSOCKET_URL=ws://christmas-backend:8080/ws
+    volumes:
+      - christmas-data:/app/data
+      - christmas-logs:/app/logs
+    networks:
+      - christmas-network
+    restart: unless-stopped
+    depends_on:
+      - christmas-backend
+
+networks:
+  christmas-network:
+    driver: bridge
+
+volumes:
+  christmas-data:
+    driver: local
+  christmas-logs:
+    driver: local
+  christmas-ssl:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local

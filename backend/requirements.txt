@@ -1,0 +1,53 @@
+# Christmas Trading Backend Dependencies
+# Python FastAPI 백엔드 서버용
+
+# 웹 프레임워크
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+
+# 데이터베이스
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.23
+alembic==1.13.1
+
+# Redis 캐시
+redis[hiredis]==5.0.1
+aioredis==2.0.1
+
+# HTTP 클라이언트
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Binance API
+python-binance==1.0.19
+ccxt==4.1.71
+
+# 데이터 처리
+pandas==2.1.4
+numpy==1.25.2
+pydantic==2.5.1
+
+# JSON 스키마
+jsonschema==4.20.0
+
+# 암호화
+cryptography==41.0.8
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# 환경 변수
+python-dotenv==1.0.0
+
+# 로깅
+structlog==23.2.0
+
+# 모니터링
+prometheus-client==0.19.0
+
+# 개발 도구
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+isort==5.12.0
+mypy==1.7.1

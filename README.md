@@ -1,16 +1,18 @@
-# 🎄 Christmas Trading - 바이낸스 암호화폐 거래 플랫폼
+# 🎄 Christmas Trading - 원격 서버 배포 완료
 
-Professional 24/7 cryptocurrency trading platform powered by Binance API, React, TypeScript, and Supabase backend.
+## 🌐 **실제 접속 URL: http://31.220.83.213**
 
-## 🚀 **바이낸스 전환 100% 완료** (2025-06-28 최신)
+Professional 24/7 cryptocurrency trading platform with remote server deployment, JSON-based orchestration, and real trading capabilities.
 
-> **✅ Phase 3 UI 완료**: frontend.png 디자인 100% 구현 성공
+## 🚀 **원격 서버 배포 100% 완료** (2025-06-29 최신)
+
+> **✅ Production Server Ready**: 외부 접속 가능한 원격 서버 배포 성공
 > 
-> - **바이낸스 메인넷**: Private API 완전 연동 (실제 USDT, C98 보유 자산 확인)
-> - **실시간 WebSocket**: BTCUSDT, ETHUSDT, BNBUSDT, ADAUSDT, SOLUSDT 스트리밍
-> - **UI 완전 전환**: 한국어 암호화폐 UI (총 포트폴리오 가치, 인기 코인 TOP 10)
-> - **Docker 서비스**: Multi-container 아키텍처 완전 구성 (별도 스크립트 불필요)
-> - **MCP 통합**: Task Master & Memory Bank & Gemini MCP 완전 통합
+> - **원격 서버**: 31.220.83.213 (Docker 멀티 컨테이너 운영)
+> - **JSON 오케스트레이션**: 실제 데이터 흐름 처리 (더미데이터 제거)
+> - **실시간 거래**: Binance API 실제 연동 (Mock 모드 비활성화)
+> - **외부 접속**: 웹 브라우저에서 전 세계 어디서나 접속 가능
+> - **백엔드 분리**: FastAPI + PostgreSQL + Redis + Nginx 구성완료
 
 ## 📊 **시스템 현황**
 
