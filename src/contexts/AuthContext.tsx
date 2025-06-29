@@ -102,19 +102,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // 사용자 프로필 조회
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
     try {
+      console.log('프로필 조회 시도:', userId);
+      
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error && error.code === 'PGRST116') {
-        // 프로필이 없으면 기본 프로필 생성
-        console.log('프로필이 없습니다. 기본 프로필을 생성합니다...');
-        const defaultProfile = await createDefaultProfile({ id: userId, email: '' } as User);
-        return defaultProfile;
-      } else if (error) {
-        console.error('프로필 조회 실패:', error);
+      if (error) {
+        console.error('프로필 조회 오류:', error.code, error.message);
+        
+        // 프로필이 없는 경우 (PGRST116) 또는 권한 오류인 경우
+        if (error.code === 'PGRST116' || error.code === 'PGRST301' || error.message.includes('row-level security')) {
+          console.log('프로필이 없거나 접근 권한이 없습니다. 기본 프로필 생성을 시도합니다...');
+          
+          // 현재 사용자 정보로 기본 프로필 생성 시도
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && user.id === userId) {
+            const defaultProfile = await createDefaultProfile(user);
+            return defaultProfile;
+          }
+        }
+        
         return null;
       }
 
@@ -125,9 +135,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile.portfolio_balance_usdt = profile.portfolio_balance_usdt || 0;
       profile.available_cash_usdt = profile.available_cash_usdt || 1000;
 
+      console.log('프로필 조회 성공:', profile.email);
       return profile;
     } catch (error) {
-      console.error('프로필 조회 에러:', error);
+      console.error('프로필 조회 예외:', error);
       return null;
     }
   };
@@ -140,28 +151,87 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const defaultProfile = {
         id: user.id,
         email: user.email!,
-        first_name: user.user_metadata?.first_name || null,
+        first_name: user.user_metadata?.first_name || user.user_metadata?.display_name || null,
         last_name: user.user_metadata?.last_name || null,
+        display_name: user.user_metadata?.display_name || user.user_metadata?.first_name || user.email?.split('@')[0] || null,
         membership_type: 'FREE_TRIAL',
+        subscription_tier: 'free',
         free_trial_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 체험
+        available_cash_usdt: 1000.00,
+        portfolio_balance_usdt: 0.00
       };
 
-      const { data, error } = await supabase
-        .from('users')
-        .insert([defaultProfile])
-        .select()
-        .single();
+      // 여러 방법으로 프로필 생성 시도
+      let insertResult = null;
+      
+      // 방법 1: 일반 INSERT 시도
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .insert([defaultProfile])
+          .select()
+          .single();
+          
+        if (!error) {
+          insertResult = data;
+          console.log('방법 1: 일반 INSERT 성공');
+        } else {
+          console.log('방법 1: 일반 INSERT 실패:', error.message);
+        }
+      } catch (e) {
+        console.log('방법 1: INSERT 예외:', e);
+      }
+      
+      // 방법 2: upsert 시도
+      if (!insertResult) {
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .upsert([defaultProfile], { onConflict: 'id' })
+            .select()
+            .single();
+            
+          if (!error) {
+            insertResult = data;
+            console.log('방법 2: UPSERT 성공');
+          } else {
+            console.log('방법 2: UPSERT 실패:', error.message);
+          }
+        } catch (e) {
+          console.log('방법 2: UPSERT 예외:', e);
+        }
+      }
+      
+      // 방법 3: 서비스 롤 키 사용 (만약 있다면)
+      if (!insertResult) {
+        console.log('방법 3: 트리거 의존 - 사용자 생성 후 잠시 대기');
+        // 트리거가 실행될 시간을 줌
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 다시 조회 시도
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        if (!error) {
+          insertResult = data;
+          console.log('방법 3: 트리거 후 조회 성공');
+        }
+      }
 
-      if (error) {
-        console.error('기본 프로필 생성 실패:', error);
+      if (!insertResult) {
+        console.error('모든 프로필 생성 방법 실패');
         return null;
       }
 
-      console.log('기본 프로필 생성 완료:', data.email);
+      console.log('기본 프로필 생성 완료:', insertResult.email);
+      
       // subscription_tier 매핑 추가
-      const profile = data as UserProfile;
+      const profile = insertResult as UserProfile;
       profile.subscription_tier = mapMembershipToSubscriptionTier(profile.membership_type);
-      profile.display_name = profile.first_name || profile.last_name || null;
+      profile.display_name = profile.display_name || profile.first_name || profile.last_name || null;
       profile.portfolio_balance_usdt = profile.portfolio_balance_usdt || 0;
       profile.available_cash_usdt = profile.available_cash_usdt || 1000;
       
