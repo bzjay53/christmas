@@ -33,13 +33,17 @@ export const saveUserApiKeys = async (
   secretKey: string
 ): Promise<{ success: boolean; error?: any; strength?: any }> => {
   try {
+    console.log('🔧 saveUserApiKeys 함수 시작', { userId, apiKeyLength: apiKey?.length, secretKeyLength: secretKey?.length });
+    
     if (!apiKey || !secretKey) {
       throw new Error('API 키와 시크릿 키가 모두 필요합니다.');
     }
 
     // API 키 강도 평가
+    console.log('🔧 API 키 강도 평가 중...');
     const apiKeyStrength = ApiKeySecurityManager.assessApiKeyStrength(apiKey);
     const secretKeyStrength = ApiKeySecurityManager.assessApiKeyStrength(secretKey);
+    console.log('🔧 강도 평가 완료', { apiKeyStrength: apiKeyStrength.strength, secretKeyStrength: secretKeyStrength.strength });
 
     // 약한 키에 대한 경고
     if (apiKeyStrength.strength === 'weak' || secretKeyStrength.strength === 'weak') {
@@ -50,10 +54,13 @@ export const saveUserApiKeys = async (
     }
 
     // API 키 암호화 (비동기 처리)
+    console.log('🔧 API 키 암호화 시작...');
     const encryptedApiKey = await encryptApiKey(apiKey);
     const encryptedSecretKey = await encryptApiKey(secretKey);
+    console.log('🔧 암호화 완료', { encryptedLength: encryptedApiKey.length });
 
     // Supabase에 저장
+    console.log('🔧 Supabase에 저장 시작...', { userId });
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -64,6 +71,8 @@ export const saveUserApiKeys = async (
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
+    
+    console.log('🔧 Supabase 저장 결과:', { error });
 
     if (error) {
       console.error('API 키 저장 실패:', error);

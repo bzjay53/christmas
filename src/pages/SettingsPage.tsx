@@ -50,6 +50,14 @@ export function SettingsPage() {
   const handleSaveApiKeys = async () => {
     if (!user) return;
     
+    console.log('🔧 API 키 저장 시작...', { 
+      userId: user.id, 
+      hasApiKey: !!binanceApiKey, 
+      hasSecretKey: !!binanceSecretKey,
+      apiKeyLength: binanceApiKey?.length,
+      secretKeyLength: binanceSecretKey?.length
+    });
+    
     if (!binanceApiKey || !binanceSecretKey) {
       alert('❌ API 키와 시크릿 키를 모두 입력해주세요.');
       return;
@@ -57,8 +65,10 @@ export function SettingsPage() {
     
     setSaving(true);
     try {
+      console.log('🔧 saveUserApiKeys 호출 중...');
       // 새로운 API 키 서비스 사용
       const result = await saveUserApiKeys(user.id, binanceApiKey, binanceSecretKey);
+      console.log('🔧 saveUserApiKeys 결과:', result);
       
       if (result.success) {
         // API 키 강도 평가 결과 표시

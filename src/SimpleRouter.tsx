@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthButton } from './components/auth/AuthButton';
 import { SimpleTradingPage } from './pages/SimpleTradingPage';
 import { SimplePortfolioPage } from './pages/SimplePortfolioPage';
+import { RealPortfolioPage } from './pages/RealPortfolioPage';
 import { TradingHistoryPage } from './pages/TradingHistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import './App.css';
@@ -16,7 +17,7 @@ function SimpleNavigation() {
 
   const navItems = [
     { path: '/', label: '거래' },
-    { path: '/portfolio', label: '포트폴리오' },
+    { path: '/portfolio', label: '실제 포트폴리오' },
     { path: '/history', label: '거래내역' },
     { path: '/settings', label: '설정' },
   ];
@@ -107,15 +108,7 @@ function MainApp() {
           totalChangePercent: 5.0,
           holdings: []
         }} />} />
-        <Route path="/portfolio" element={<SimplePortfolioPage portfolio={{
-          totalValue: 10000,
-          totalChange: 500,
-          totalChangePercent: 5.0,
-          holdings: [
-            { symbol: 'BTCUSDT', amount: 0.1, value: 4325, change: 125, changePercent: 2.98 },
-            { symbol: 'ETHUSDT', amount: 2.0, value: 5161, change: -90, changePercent: -1.72 },
-          ]
-        }} />} />
+        <Route path="/portfolio" element={<RealPortfolioPage />} />
         <Route path="/history" element={<TradingHistoryPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
