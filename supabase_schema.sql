@@ -1,19 +1,25 @@
 -- 🎄 Christmas Trading 데이터베이스 스키마
 -- Supabase PostgreSQL 스키마
+-- 실제 사용되는 테이블 구조에 맞춰 업데이트됨 (2025-06-29)
 
--- 사용자 프로필 테이블
-CREATE TABLE profiles (
+-- 사용자 테이블 (실제 사용 중인 구조)
+CREATE TABLE users (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
-  display_name TEXT,
-  role TEXT DEFAULT 'basic' CHECK (role IN ('admin', 'premium', 'basic', 'free')),
-  subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'basic', 'premium', 'vip')),
+  first_name TEXT,
+  last_name TEXT,
+  display_name TEXT, -- 계산된 필드
+  membership_type TEXT DEFAULT 'FREE_TRIAL' CHECK (membership_type IN ('FREE_TRIAL', 'BASIC', 'PREMIUM', 'VIP')),
+  subscription_tier TEXT DEFAULT 'free' CHECK (subscription_tier IN ('free', 'basic', 'premium', 'vip')), -- 매핑된 값
+  membership_start_date TIMESTAMP WITH TIME ZONE,
+  membership_end_date TIMESTAMP WITH TIME ZONE,
+  free_trial_end_date TIMESTAMP WITH TIME ZONE,
   portfolio_balance_usdt NUMERIC(15,2) DEFAULT 0.00,
   available_cash_usdt NUMERIC(15,2) DEFAULT 1000.00,
   kyc_status TEXT DEFAULT 'pending' CHECK (kyc_status IN ('pending', 'verified', 'rejected')),
   -- 개인 Binance API 키 (암호화 저장)
-  binance_api_key_encrypted TEXT,
-  binance_secret_key_encrypted TEXT,
+  binance_api_key TEXT, -- 실제 사용되는 컬럼명
+  binance_secret_key TEXT, -- 실제 사용되는 컬럼명
   binance_api_active BOOLEAN DEFAULT FALSE,
   binance_api_permissions TEXT[], -- ['SPOT', 'FUTURES'] 등
   api_last_verified TIMESTAMP WITH TIME ZONE,
@@ -24,7 +30,7 @@ CREATE TABLE profiles (
 -- 거래 내역 테이블
 CREATE TABLE trades (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL,
   trade_type TEXT NOT NULL CHECK (trade_type IN ('buy', 'sell')),
   order_type TEXT NOT NULL CHECK (order_type IN ('market', 'limit', 'stop_loss')),
@@ -45,7 +51,7 @@ CREATE TABLE trades (
 -- 포트폴리오 보유 자산 테이블
 CREATE TABLE portfolio_holdings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   symbol TEXT NOT NULL,
   quantity NUMERIC(20,8) NOT NULL DEFAULT 0,
   average_buy_price NUMERIC(15,2) NOT NULL DEFAULT 0,
@@ -59,7 +65,7 @@ CREATE TABLE portfolio_holdings (
 -- AI 매매 전략 설정 테이블
 CREATE TABLE ai_trading_strategies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   strategy_name TEXT NOT NULL,
   symbol TEXT NOT NULL,
   strategy_type TEXT NOT NULL CHECK (strategy_type IN ('scalping', 'short_term', 'medium_term', 'long_term')),
@@ -94,7 +100,7 @@ CREATE TABLE trading_signals (
 -- 구독 및 결제 내역 테이블
 CREATE TABLE subscriptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   plan_type TEXT NOT NULL CHECK (plan_type IN ('free', 'basic', 'premium', 'vip')),
   price_paid NUMERIC(10,2) NOT NULL DEFAULT 0,
   payment_method TEXT,
@@ -108,7 +114,7 @@ CREATE TABLE subscriptions (
 -- 시스템 알림 테이블
 CREATE TABLE notifications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('trade', 'system', 'alert', 'promotion')),
   title TEXT NOT NULL,
   message TEXT NOT NULL,
@@ -143,7 +149,7 @@ CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
 -- RLS (Row Level Security) 정책 설정
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE portfolio_holdings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_trading_strategies ENABLE ROW LEVEL SECURITY;
@@ -151,7 +157,7 @@ ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- 사용자는 자신의 데이터만 접근 가능
-CREATE POLICY "Users can only access their own profile" ON profiles
+CREATE POLICY "Users can only access their own profile" ON users
   FOR ALL USING (auth.uid() = id);
 
 CREATE POLICY "Users can only access their own trades" ON trades
@@ -177,9 +183,9 @@ CREATE POLICY "Anyone can read market data" ON market_data_cache
 CREATE POLICY "Trading signals access based on subscription" ON trading_signals
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.subscription_tier IN ('basic', 'premium', 'vip')
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.subscription_tier IN ('basic', 'premium', 'vip')
     )
   );
 
@@ -193,7 +199,7 @@ END;
 $$ language 'plpgsql';
 
 -- 트리거 생성
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_portfolio_holdings_updated_at BEFORE UPDATE ON portfolio_holdings
@@ -206,11 +212,13 @@ CREATE TRIGGER update_ai_trading_strategies_updated_at BEFORE UPDATE ON ai_tradi
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, email, display_name)
+  INSERT INTO users (id, email, display_name, first_name, membership_type)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1))
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+    NEW.raw_user_meta_data->>'first_name',
+    'FREE_TRIAL'
   );
   RETURN NEW;
 END;
@@ -233,7 +241,7 @@ DECLARE
 BEGIN
   -- 사용자 구독 티어 조회
   SELECT subscription_tier INTO user_tier
-  FROM profiles WHERE id = user_uuid;
+  FROM users WHERE id = user_uuid;
   
   -- 오늘 거래 횟수 조회
   SELECT COUNT(*) INTO daily_trades

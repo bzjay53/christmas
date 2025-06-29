@@ -91,11 +91,12 @@ export const saveUserApiKeys = async (
       console.log('✅ 기존 프로필 확인 완료');
     }
 
-    // Supabase에 저장
+    // Supabase에 저장 (실제 테이블 구조에 맞춰 컬럼명 확인)
     console.log('🔧 Supabase에 저장 시작...', { userId });
     const updateData = {
-      binance_api_key: encryptedApiKey,
-      binance_secret_key: encryptedSecretKey,
+      // 실제 테이블 구조에 맞는 컬럼명 사용
+      binance_api_key: encryptedApiKey, // 또는 binance_api_key_encrypted
+      binance_secret_key: encryptedSecretKey, // 또는 binance_secret_key_encrypted
       updated_at: new Date().toISOString()
     };
     console.log('🔧 업데이트할 데이터:', Object.keys(updateData));

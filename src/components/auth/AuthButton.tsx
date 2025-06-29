@@ -126,13 +126,13 @@ export function AuthButton() {
                 포트폴리오 가치
               </span>
               <span className="text-green-400 font-bold">
-                ${profile.portfolio_balance_usdt.toLocaleString()} USDT
+                ${(profile.portfolio_balance_usdt || 0).toLocaleString()} USDT
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-400 text-sm">사용 가능한 현금</span>
               <span className="text-white font-semibold">
-                ${profile.available_cash_usdt.toLocaleString()} USDT
+                ${(profile.available_cash_usdt || 1000).toLocaleString()} USDT
               </span>
             </div>
           </div>

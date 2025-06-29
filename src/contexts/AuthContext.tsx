@@ -10,11 +10,16 @@ export interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   membership_type: string;
+  subscription_tier: string; // membership_type의 매핑된 값
   membership_start_date: string | null;
   membership_end_date: string | null;
   free_trial_end_date: string | null;
   created_at: string;
   updated_at: string;
+  // 추가 필드들 (스키마에 맞춰)
+  display_name?: string | null;
+  portfolio_balance_usdt?: number;
+  available_cash_usdt?: number;
 }
 
 // 인증 컨텍스트 타입
@@ -34,6 +39,22 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// 멤버십 타입 매핑 함수
+const mapMembershipToSubscriptionTier = (membershipType: string): string => {
+  switch (membershipType) {
+    case 'FREE_TRIAL':
+      return 'free';
+    case 'BASIC':
+      return 'basic';
+    case 'PREMIUM':
+      return 'premium';
+    case 'VIP':
+      return 'vip';
+    default:
+      return 'free';
+  }
+};
 
 // 멤버십 타입별 권한 설정
 const MEMBERSHIP_PERMISSIONS = {
@@ -97,7 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
 
-      return data as UserProfile;
+      // subscription_tier 매핑 추가
+      const profile = data as UserProfile;
+      profile.subscription_tier = mapMembershipToSubscriptionTier(profile.membership_type);
+      profile.display_name = profile.first_name || profile.last_name || null;
+      profile.portfolio_balance_usdt = profile.portfolio_balance_usdt || 0;
+      profile.available_cash_usdt = profile.available_cash_usdt || 1000;
+
+      return profile;
     } catch (error) {
       console.error('프로필 조회 에러:', error);
       return null;
@@ -130,8 +158,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log('기본 프로필 생성 완료:', data.email);
-      setProfile(data as UserProfile);
-      return data as UserProfile;
+      // subscription_tier 매핑 추가
+      const profile = data as UserProfile;
+      profile.subscription_tier = mapMembershipToSubscriptionTier(profile.membership_type);
+      profile.display_name = profile.first_name || profile.last_name || null;
+      profile.portfolio_balance_usdt = profile.portfolio_balance_usdt || 0;
+      profile.available_cash_usdt = profile.available_cash_usdt || 1000;
+      
+      setProfile(profile);
+      return profile;
     } catch (error) {
       console.error('기본 프로필 생성 중 오류:', error);
       return null;
