@@ -87,7 +87,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code === 'PGRST116') {
+        // 프로필이 없으면 기본 프로필 생성
+        console.log('프로필이 없습니다. 기본 프로필을 생성합니다...');
+        const defaultProfile = await createDefaultProfile({ id: userId, email: '' } as User);
+        return defaultProfile;
+      } else if (error) {
         console.error('프로필 조회 실패:', error);
         return null;
       }

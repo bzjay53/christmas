@@ -59,17 +59,36 @@ export const saveUserApiKeys = async (
     const encryptedSecretKey = await encryptApiKey(secretKey);
     console.log('🔧 암호화 완료', { encryptedLength: encryptedApiKey.length });
 
-    // Supabase 연결 테스트 먼저 수행
-    console.log('🔧 Supabase 연결 테스트 중...');
-    try {
-      const { data: testData, error: testError } = await supabase
+    // 사용자 프로필 존재 여부 확인 및 생성
+    console.log('🔧 사용자 프로필 확인 중...');
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (profileError && profileError.code === 'PGRST116') {
+      // 프로필이 존재하지 않으면 생성
+      console.log('🔧 프로필이 없습니다. 새로 생성합니다...');
+      const { error: createError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .single();
-      console.log('🔧 연결 테스트 결과:', { testError, hasData: !!testData });
-    } catch (testErr) {
-      console.log('🔧 연결 테스트 예외:', testErr);
+        .insert({
+          id: userId,
+          subscription_tier: 'free',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      
+      if (createError) {
+        console.error('🔧 프로필 생성 실패:', createError);
+        return { success: false, error: createError };
+      }
+      console.log('✅ 프로필 생성 완료');
+    } else if (profileError) {
+      console.error('🔧 프로필 조회 오류:', profileError);
+      return { success: false, error: profileError };
+    } else {
+      console.log('✅ 기존 프로필 확인 완료');
     }
 
     // Supabase에 저장
