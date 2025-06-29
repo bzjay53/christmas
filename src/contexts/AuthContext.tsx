@@ -99,38 +99,130 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // 기본 프로필 생성
+  const createDefaultProfile = async (user: User): Promise<UserProfile | null> => {
+    try {
+      console.log('기본 프로필 생성 시도:', user.email);
+      
+      const defaultProfile = {
+        id: user.id,
+        email: user.email!,
+        display_name: user.user_metadata?.display_name || null,
+        role: 'basic' as const,
+        subscription_tier: 'free' as const,
+        portfolio_balance_usdt: 0,
+        available_cash_usdt: 1000, // 신규 사용자 체험용
+        kyc_status: 'pending' as const,
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([defaultProfile])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('기본 프로필 생성 실패:', error);
+        return null;
+      }
+
+      console.log('기본 프로필 생성 완료:', data.email);
+      setProfile(data as UserProfile);
+      return data as UserProfile;
+    } catch (error) {
+      console.error('기본 프로필 생성 중 오류:', error);
+      return null;
+    }
+  };
+
   // 세션 초기화
   useEffect(() => {
+    let isMounted = true; // 컴포넌트 언마운트 방지
+    
     // 현재 세션 확인
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id).then(setProfile);
+    const initializeAuth = async () => {
+      try {
+        console.log('세션 초기화 시작');
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('세션 확인 오류:', error);
+          if (isMounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            console.log('기존 세션 발견:', session.user.email);
+            // 프로필 로드 시도
+            try {
+              const userProfile = await fetchUserProfile(session.user.id);
+              if (isMounted) {
+                setProfile(userProfile);
+                console.log('초기 프로필 로드 완료');
+              }
+            } catch (profileError) {
+              console.error('초기 프로필 로드 실패:', profileError);
+            }
+          }
+          
+          setLoading(false);
+          console.log('세션 초기화 완료');
+        }
+      } catch (error) {
+        console.error('세션 초기화 예외:', error);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // 인증 상태 변경 리스너
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return;
+        
         console.log('Auth state changed:', event, session?.user?.email);
         
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (session?.user) {
-          const userProfile = await fetchUserProfile(session.user.id);
-          setProfile(userProfile);
-        } else {
-          setProfile(null);
+        if (session?.user && event === 'SIGNED_IN') {
+          // 로그인 시에만 프로필 로드
+          try {
+            const userProfile = await fetchUserProfile(session.user.id);
+            if (isMounted) {
+              setProfile(userProfile);
+              console.log('상태 변경 시 프로필 로드 완료');
+            }
+          } catch (profileError) {
+            console.error('상태 변경 시 프로필 로드 실패:', profileError);
+          }
+        } else if (!session?.user) {
+          // 로그아웃 시 프로필 클리어
+          if (isMounted) {
+            setProfile(null);
+          }
         }
         
-        setLoading(false);
+        if (isMounted && event !== 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // 회원가입
@@ -179,6 +271,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
+      console.log('로그인 시도:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -186,22 +280,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('로그인 에러:', error);
+        setLoading(false);
         return { error };
       }
 
       if (data.user) {
         console.log('로그인 성공:', data.user.email);
-        // 프로필 즉시 로드
-        const userProfile = await fetchUserProfile(data.user.id);
-        setProfile(userProfile);
+        
+        // 사용자 정보 즉시 설정
+        setUser(data.user);
+        setSession(data.session);
+        
+        // 프로필 로드 (백그라운드에서 실행)
+        try {
+          const userProfile = await fetchUserProfile(data.user.id);
+          if (userProfile) {
+            setProfile(userProfile);
+            console.log('프로필 로드 완료:', userProfile.email);
+          } else {
+            console.warn('프로필 로드 실패 - 기본 프로필 생성 시도');
+            // 프로필이 없으면 기본 프로필 생성
+            await createDefaultProfile(data.user);
+          }
+        } catch (profileError) {
+          console.error('프로필 로드 중 오류:', profileError);
+          // 프로필 로드 실패해도 로그인은 성공으로 처리
+        }
+        
+        // 로그인 완료 처리
+        setLoading(false);
+        console.log('로그인 프로세스 완료');
       }
 
       return { error: null };
     } catch (error) {
       console.error('로그인 예외:', error);
-      return { error: error as AuthError };
-    } finally {
       setLoading(false);
+      return { error: error as AuthError };
     }
   };
 

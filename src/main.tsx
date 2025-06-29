@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import SimpleRouter from './SimpleRouter'
 import AppRouter from './AppRouter'
 import App from './App'
 import AppSimple from './AppSimple'
@@ -20,8 +21,8 @@ if (!rootElement) {
     const root = createRoot(rootElement);
     console.log('React Root 생성 완료');
     
-    console.log('AppRouter 컴포넌트 렌더링 시작...');
-    root.render(<AppRouter />);
+    console.log('SimpleRouter 컴포넌트 렌더링 시작...');
+    root.render(<SimpleRouter />);
     console.log('React 앱 마운트 완료!');
     
     setTimeout(() => {
