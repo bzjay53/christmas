@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { CryptoCard } from './components/crypto/CryptoCard';
 import { TradingButtons } from './components/crypto/TradingButtons';
 import { LiveChart } from './components/crypto/LiveChart';
+import { AuthProvider } from './contexts/AuthContext';
+import { AuthButton } from './components/auth/AuthButton';
+import { AITradingDashboard } from './components/ai/AITradingDashboard';
+import { TradingStrategies } from './components/trading/TradingStrategies';
+import { RiskManagement } from './components/risk/RiskManagement';
 import type { CryptoData } from './types/crypto';
 import './App.css';
 
@@ -206,24 +211,30 @@ function App() {
   const daysUntilChristmas = Math.ceil((new Date('2025-12-25').getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative">
-      <BackgroundEffect />
-      
-      <div className="container mx-auto px-4 py-6 relative z-10">
+    <AuthProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative">
+        <BackgroundEffect />
+        
+        <div className="container mx-auto px-4 py-6 relative z-10">
         {/* 헤더 */}
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">
-            Binance Dashboard v1
-          </h1>
-          <div className="flex items-center justify-center gap-4 text-sm mb-2">
-            <div className="text-green-400 font-semibold flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              Market Open
-            </div>
-            <div className="text-gray-400">Real-time Data</div>
+        <header className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-4xl font-bold">
+              Binance Dashboard v1
+            </h1>
+            <AuthButton />
           </div>
-          <div className="text-gray-400 text-xs">
-            Last Update: {lastUpdate.toLocaleTimeString('ko-KR')}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 text-sm mb-2">
+              <div className="text-green-400 font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                Market Open
+              </div>
+              <div className="text-gray-400">Real-time Data</div>
+            </div>
+            <div className="text-gray-400 text-xs">
+              Last Update: {lastUpdate.toLocaleTimeString('ko-KR')}
+            </div>
           </div>
         </header>
 
@@ -297,6 +308,29 @@ function App() {
               config={{ interval: '1m', type: 'line', indicators: [], theme: 'dark' }}
             />
           </div>
+        </div>
+
+        {/* AI 자동 매매 대시보드 */}
+        <div className="mb-8">
+          <AITradingDashboard selectedSymbol={selectedSymbol} />
+        </div>
+
+        {/* 매매 전략 시스템 */}
+        <div className="mb-8">
+          <TradingStrategies 
+            selectedSymbol={selectedSymbol} 
+            onStrategySelect={(strategy) => {
+              console.log('선택된 전략:', strategy);
+            }}
+          />
+        </div>
+
+        {/* 리스크 관리 시스템 */}
+        <div className="mb-8">
+          <RiskManagement 
+            selectedSymbol={selectedSymbol}
+            currentPortfolioValue={portfolio.totalValue}
+          />
         </div>
 
         {/* 인기 코인 TOP 10 테이블 */}
@@ -404,8 +438,9 @@ function App() {
             © 2025 Binance Dashboard. Real-time crypto trading platform.
           </div>
         </footer>
+        </div>
       </div>
-    </div>
+    </AuthProvider>
   );
 }
 
