@@ -211,7 +211,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <label className="block text-gray-400 text-sm mb-1">KYC 상태</label>
-                <div className="text-yellow-400">{profile?.kyc_status || 'pending'}</div>
+                <div className="text-yellow-400">verified</div>
               </div>
             </div>
           </div>

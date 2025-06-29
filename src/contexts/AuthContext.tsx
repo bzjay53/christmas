@@ -10,7 +10,7 @@ export interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   membership_type: string;
-  subscription_tier: string; // membership_type의 매핑된 값
+  subscription_tier: 'free' | 'basic' | 'premium' | 'vip'; // membership_type의 매핑된 값
   membership_start_date: string | null;
   membership_end_date: string | null;
   free_trial_end_date: string | null;
@@ -41,7 +41,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 멤버십 타입 매핑 함수
-const mapMembershipToSubscriptionTier = (membershipType: string): string => {
+const mapMembershipToSubscriptionTier = (membershipType: string): 'free' | 'basic' | 'premium' | 'vip' => {
   switch (membershipType) {
     case 'FREE_TRIAL':
       return 'free';
