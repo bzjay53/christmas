@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Clock, Target, Shield, TrendingUp, Zap, Calendar, BarChart3, Settings } from 'lucide-react';
+import { Clock, Target, Shield, TrendingUp, Zap, Calendar, BarChart3, Settings, DollarSign, Percent } from 'lucide-react';
+import { safePlaceOrder } from '../../lib/stocksService';
 
 // 매매 전략 타입 정의
 export interface TradingStrategy {
@@ -23,9 +24,16 @@ interface TradingStrategiesProps {
 }
 
 export function TradingStrategies({ selectedSymbol, onStrategySelect }: TradingStrategiesProps) {
-  const { profile, hasPermission } = useAuth();
+  const { user, profile, hasPermission } = useAuth();
   const [selectedStrategy, setSelectedStrategy] = useState<TradingStrategy | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'scalping' | 'short_term' | 'medium_term' | 'long_term'>('all');
+  const [quickSettings, setQuickSettings] = useState({
+    orderAmount: 100,
+    stopLoss: 5,
+    takeProfit: 10,
+    riskLevel: 'neutral' as 'aggressive' | 'neutral' | 'defensive'
+  });
+  const [isTrading, setIsTrading] = useState(false);
 
   // 매매 전략 데이터
   const strategies: TradingStrategy[] = [
@@ -202,6 +210,46 @@ export function TradingStrategies({ selectedSymbol, onStrategySelect }: TradingS
     onStrategySelect(strategy);
   };
 
+  // Quick Settings 거래 실행
+  const handleQuickTrade = async (action: 'buy' | 'sell') => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    setIsTrading(true);
+    
+    try {
+      // 현재 가격 추정 (실제로는 실시간 가격을 가져와야 함)
+      const estimatedPrice = 43250; // TODO: 실제 가격 API 호출
+      const quantity = quickSettings.orderAmount / estimatedPrice;
+
+      const result = await safePlaceOrder(
+        user.id,
+        selectedSymbol,
+        action,
+        quantity,
+        estimatedPrice,
+        profile?.subscription_tier || 'free'
+      );
+
+      if (result.success) {
+        alert(`✅ ${action === 'buy' ? '매수' : '매도'} 주문 완료!\n` +
+              `💰 금액: $${quickSettings.orderAmount}\n` +
+              `📊 수량: ${quantity.toFixed(6)} ${selectedSymbol}\n` +
+              `🛡️ 손절: ${quickSettings.stopLoss}%\n` +
+              `🎯 익절: ${quickSettings.takeProfit}%`);
+      } else {
+        alert(`❌ 거래 실패\n${result.message}`);
+      }
+    } catch (error) {
+      console.error('Quick Trade 오류:', error);
+      alert('거래 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsTrading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-900/60 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
       {/* 헤더 */}
@@ -238,6 +286,135 @@ export function TradingStrategies({ selectedSymbol, onStrategySelect }: TradingS
             {label}
           </button>
         ))}
+      </div>
+
+      {/* Quick Settings */}
+      <div className="mb-6 bg-gray-800/50 rounded-xl p-4 border border-gray-600/50">
+        <h3 className="text-yellow-400 font-bold mb-4 flex items-center gap-2">
+          <Zap size={20} />
+          Quick Settings
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* 주문 금액 설정 */}
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">주문 금액</label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setQuickSettings(prev => ({ ...prev, orderAmount: 100 }))}
+                  className={`flex-1 px-3 py-2 rounded text-sm font-semibold transition-colors ${
+                    quickSettings.orderAmount === 100
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  $100
+                </button>
+                <button
+                  onClick={() => setQuickSettings(prev => ({ ...prev, orderAmount: 500 }))}
+                  className={`flex-1 px-3 py-2 rounded text-sm font-semibold transition-colors ${
+                    quickSettings.orderAmount === 500
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  $500
+                </button>
+              </div>
+              <input
+                type="number"
+                value={quickSettings.orderAmount}
+                onChange={(e) => setQuickSettings(prev => ({ ...prev, orderAmount: Number(e.target.value) }))}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                placeholder="Custom amount"
+                min="10"
+              />
+            </div>
+          </div>
+
+          {/* 손절 설정 */}
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Stop Loss</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={quickSettings.stopLoss}
+                onChange={(e) => setQuickSettings(prev => ({ ...prev, stopLoss: Number(e.target.value) }))}
+                className="flex-1"
+              />
+              <span className="text-red-400 font-bold text-sm w-12">{quickSettings.stopLoss}%</span>
+            </div>
+          </div>
+
+          {/* 익절 설정 */}
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Take Profit</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="2"
+                max="50"
+                value={quickSettings.takeProfit}
+                onChange={(e) => setQuickSettings(prev => ({ ...prev, takeProfit: Number(e.target.value) }))}
+                className="flex-1"
+              />
+              <span className="text-green-400 font-bold text-sm w-12">{quickSettings.takeProfit}%</span>
+            </div>
+          </div>
+
+          {/* 리스크 레벨 */}
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Risk Level</label>
+            <select
+              value={quickSettings.riskLevel}
+              onChange={(e) => setQuickSettings(prev => ({ ...prev, riskLevel: e.target.value as any }))}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+            >
+              <option value="defensive">🛡️ Defensive</option>
+              <option value="neutral">⚖️ Neutral</option>
+              <option value="aggressive">⚡ Aggressive</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Quick Trade 버튼들 */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => handleQuickTrade('buy')}
+            disabled={isTrading}
+            className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
+              isTrading
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-green-600 text-white hover:bg-green-500 active:scale-95'
+            }`}
+          >
+            {isTrading ? 'Processing...' : `🚀 Buy $${quickSettings.orderAmount}`}
+          </button>
+          <button
+            onClick={() => handleQuickTrade('sell')}
+            disabled={isTrading}
+            className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
+              isTrading
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-red-600 text-white hover:bg-red-500 active:scale-95'
+            }`}
+          >
+            {isTrading ? 'Processing...' : `📉 Sell $${quickSettings.orderAmount}`}
+          </button>
+        </div>
+
+        {/* 현재 설정 요약 */}
+        <div className="mt-3 p-3 bg-gray-700/30 rounded-lg">
+          <div className="text-xs text-gray-400 grid grid-cols-2 md:grid-cols-4 gap-2">
+            <span>Amount: <span className="text-white">${quickSettings.orderAmount}</span></span>
+            <span>Stop: <span className="text-red-400">{quickSettings.stopLoss}%</span></span>
+            <span>Profit: <span className="text-green-400">{quickSettings.takeProfit}%</span></span>
+            <span>Risk: <span className="text-yellow-400">{quickSettings.riskLevel}</span></span>
+          </div>
+        </div>
       </div>
 
       {/* 전략 카드들 */}
@@ -331,9 +508,57 @@ export function TradingStrategies({ selectedSymbol, onStrategySelect }: TradingS
         })}
       </div>
 
+      {/* Premium Features */}
+      <div className="mt-6 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-xl p-6 border border-purple-500/30">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-purple-400 font-bold text-lg">Premium Features</h3>
+          <div className="text-right">
+            <div className="text-white font-bold text-xl">$9.99/month</div>
+            <div className="text-purple-400 text-sm">Special Benefits</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span className="text-gray-300">Advanced AI Analysis</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span className="text-gray-300">Real-time Market Signals</span>
+            </div>
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span className="text-gray-300">Premium Notifications</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span className="text-gray-300">Extended Portfolio Tools</span>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => {
+            alert('🎉 Premium 구독 기능\n\n' +
+                  '• 고급 AI 분석 도구\n' +
+                  '• 실시간 시장 신호\n' +
+                  '• 프리미엄 알림\n' +
+                  '• 확장된 포트폴리오 도구\n\n' +
+                  '월 $9.99로 모든 프리미엄 기능을 이용하세요!');
+          }}
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all transform hover:scale-105"
+        >
+          Upgrade Now
+        </button>
+      </div>
+
       {/* 구독 업그레이드 안내 */}
       {profile?.subscription_tier === 'free' && (
-        <div className="mt-6 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-4 border border-yellow-500/30">
+        <div className="mt-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-4 border border-yellow-500/30">
           <div className="flex items-center gap-3">
             <Settings className="text-yellow-400" size={20} />
             <div>

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { LoginModal } from '../components/auth/LoginModal';
 
 // 사용자 프로필 타입 정의
 export interface UserProfile {
@@ -28,6 +29,8 @@ interface AuthContextType {
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: any }>;
   hasPermission: (feature: string) => boolean;
   showLoginModal: () => void;
+  isLoginModalOpen: boolean;
+  setIsLoginModalOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // 사용자 프로필 조회
   const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -226,22 +230,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return tierPermissions.features.includes(feature) || tierPermissions.features.includes('all');
   };
 
-  // 로그인 모달 표시 (간단한 구현)
+  // 로그인 모달 표시
   const showLoginModal = () => {
-    // 실제로는 모달 상태를 관리해야 하지만, 임시로 alert 사용
-    const email = prompt('이메일을 입력하세요:');
-    if (email) {
-      const password = prompt('비밀번호를 입력하세요:');
-      if (password) {
-        signIn(email, password).then(({ error }) => {
-          if (error) {
-            alert(`로그인 실패: ${error.message}`);
-          } else {
-            alert('로그인 성공!');
-          }
-        });
-      }
-    }
+    setIsLoginModalOpen(true);
   };
 
   const value: AuthContextType = {
@@ -255,11 +246,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateProfile,
     hasPermission,
     showLoginModal,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
   };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </AuthContext.Provider>
   );
 }
